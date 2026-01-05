@@ -1,0 +1,171 @@
+/**
+ * Puck Theme CSS Variables
+ *
+ * This file provides shadcn/ui-compatible CSS variables for Puck components.
+ * Import this file in your project's global CSS to style Puck editor components.
+ *
+ * WHEN TO USE THIS FILE:
+ * - If you DON'T use shadcn/ui, copy this file and import it
+ * - If you DO use shadcn/ui, you can skip this - variables already exist
+ *
+ * Usage:
+ *   1. Copy to your project: src/styles/puck-theme.css
+ *   2. Import in your root layout or globals.css
+ *   3. Customize colors to match your brand
+ *
+ * ============================================================================
+ * TAILWIND v4 USERS
+ * ============================================================================
+ *
+ * If you're using Tailwind CSS v4, add the following to your main CSS file
+ * after @import "tailwindcss" to ensure Puck components are included in the
+ * CSS build and use your theme:
+ *
+ *   @source "../node_modules/@delmaredigital/payload-puck";
+ *
+ *   @theme inline {
+ *     --color-background: var(--background);
+ *     --color-foreground: var(--foreground);
+ *     --color-primary: var(--primary);
+ *     --color-primary-foreground: var(--primary-foreground);
+ *     --color-secondary: var(--secondary);
+ *     --color-secondary-foreground: var(--secondary-foreground);
+ *     --color-muted: var(--muted);
+ *     --color-muted-foreground: var(--muted-foreground);
+ *     --color-accent: var(--accent);
+ *     --color-accent-foreground: var(--accent-foreground);
+ *     --color-destructive: var(--destructive);
+ *     --color-destructive-foreground: var(--destructive-foreground);
+ *     --color-border: var(--border);
+ *     --color-input: var(--input);
+ *     --color-ring: var(--ring);
+ *     --color-popover: var(--popover);
+ *     --color-popover-foreground: var(--popover-foreground);
+ *     --color-card: var(--card);
+ *     --color-card-foreground: var(--card-foreground);
+ *     --radius-sm: calc(var(--radius) - 4px);
+ *     --radius-md: calc(var(--radius) - 2px);
+ *     --radius-lg: var(--radius);
+ *     --radius-xl: calc(var(--radius) + 4px);
+ *   }
+ *
+ * ============================================================================
+ */
+
+/**
+ * Light Mode (Default)
+ *
+ * These variables define the default light theme using neutral slate/zinc colors.
+ * Override these in your own CSS to match your brand colors.
+ */
+:root {
+  /* Background & Foreground
+   * --background: The main page/app background color
+   * --foreground: The default text color for content */
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+
+  /* Primary
+   * --primary: Used for primary actions, buttons, and emphasis
+   * --primary-foreground: Text color on primary backgrounds */
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+
+  /* Secondary
+   * --secondary: Used for secondary actions and less prominent UI elements
+   * --secondary-foreground: Text color on secondary backgrounds */
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+
+  /* Muted
+   * --muted: Used for muted/subtle backgrounds (e.g., disabled states, badges)
+   * --muted-foreground: Text color for muted/secondary text */
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+
+  /* Accent
+   * --accent: Used for hover states, highlights, and accented UI elements
+   * --accent-foreground: Text color on accent backgrounds */
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+
+  /* Destructive
+   * --destructive: Used for error states, delete actions, and warnings
+   * --destructive-foreground: Text color on destructive backgrounds */
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+
+  /* Border & Input
+   * --border: Default border color for cards, dividers, and containers
+   * --input: Border color specifically for form inputs */
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+
+  /* Ring
+   * --ring: Focus ring color for accessibility (keyboard navigation) */
+  --ring: #18181b;
+
+  /* Popover
+   * --popover: Background color for popovers, dropdowns, and floating menus
+   * --popover-foreground: Text color inside popovers */
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+
+  /* Card
+   * --card: Background color for card components and elevated surfaces
+   * --card-foreground: Text color inside cards */
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+
+  /* Border Radius
+   * --radius: Base border radius used throughout the UI
+   * Components use calc() to derive sm, md, lg, xl variants */
+  --radius: 0.5rem;
+}
+
+/**
+ * Dark Mode
+ *
+ * Applied when the `.dark` class is present on an ancestor element.
+ * Uses darker zinc/slate tones for comfortable viewing in low-light environments.
+ */
+.dark {
+  /* Background & Foreground */
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+
+  /* Primary */
+  --primary: #fafafa;
+  --primary-foreground: #18181b;
+
+  /* Secondary */
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+
+  /* Muted */
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+
+  /* Accent */
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+
+  /* Destructive */
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
+
+  /* Border & Input */
+  --border: #27272a;
+  --input: #27272a;
+
+  /* Ring */
+  --ring: #d4d4d8;
+
+  /* Popover */
+  --popover: #0a0a0a;
+  --popover-foreground: #fafafa;
+
+  /* Card */
+  --card: #0a0a0a;
+  --card-foreground: #fafafa;
+}
