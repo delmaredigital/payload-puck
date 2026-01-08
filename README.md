@@ -19,6 +19,7 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
 - [API Routes](#api-routes)
 - [Plugin Options](#plugin-options)
 - [Hybrid Integration](#hybrid-integration)
+- [License](#license)
 
 ---
 
