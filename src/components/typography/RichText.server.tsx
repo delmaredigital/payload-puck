@@ -24,6 +24,16 @@ import {
 import { AnimatedWrapper } from '../AnimatedWrapper'
 import type { Alignment } from '../../fields/AlignmentField'
 
+// Default padding with standard horizontal spacing (replaces hardcoded px-4)
+const DEFAULT_PADDING: PaddingValue = {
+  top: 0,
+  right: 16,
+  bottom: 0,
+  left: 16,
+  unit: 'px',
+  linked: false,
+}
+
 export interface RichTextProps {
   content: string
   alignment: Alignment | null
@@ -41,7 +51,7 @@ const defaultProps: RichTextProps = {
   dimensions: null,
   animation: null,
   margin: null,
-  customPadding: null,
+  customPadding: DEFAULT_PADDING, // Default 16px horizontal padding
 }
 
 export const RichTextConfig: ComponentConfig<RichTextProps> = {
@@ -74,8 +84,8 @@ export const RichTextConfig: ComponentConfig<RichTextProps> = {
     if (!content || content === '<p></p>') {
       return (
         <AnimatedWrapper animation={animation}>
-          <section className={cn('relative overflow-hidden px-4', alignmentClass)} style={Object.keys(style).length > 0 ? style : undefined}>
-            <div className="prose dark:prose-invert">
+          <section className={cn('relative overflow-hidden', alignmentClass)} style={Object.keys(style).length > 0 ? style : undefined}>
+            <div className="prose dark:prose-invert max-w-none">
               <p><em>No content available</em></p>
             </div>
           </section>
@@ -85,9 +95,9 @@ export const RichTextConfig: ComponentConfig<RichTextProps> = {
 
     return (
       <AnimatedWrapper animation={animation}>
-        <section className={cn('relative overflow-hidden px-4', alignmentClass)} style={Object.keys(style).length > 0 ? style : undefined}>
+        <section className={cn('relative overflow-hidden', alignmentClass)} style={Object.keys(style).length > 0 ? style : undefined}>
           <div
-            className="prose dark:prose-invert"
+            className="prose dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: content }}
           />
         </section>

@@ -79,7 +79,7 @@ function RichTextRender({
   // Render static preview (editing happens via modal in sidebar)
   return (
     <section className="relative overflow-hidden" style={style}>
-      <div className="prose dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />
+      <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
     </section>
   )
 }

@@ -29,6 +29,16 @@ import { createAnimationField } from '../../fields/AnimationField'
 import { createTransformField } from '../../fields/TransformField'
 import { createResetField } from '../../fields/ResetField'
 
+// Default padding with standard horizontal spacing (replaces hardcoded px-4)
+const DEFAULT_PADDING: PaddingValue = {
+  top: 0,
+  right: 16,
+  bottom: 0,
+  left: 16,
+  unit: 'px',
+  linked: false,
+}
+
 export interface DividerProps {
   style: string
   color: ColorValue | null
@@ -46,7 +56,7 @@ const defaultProps: DividerProps = {
   dimensions: null,
   transform: null,
   animation: null,
-  customPadding: null,
+  customPadding: DEFAULT_PADDING, // Default 16px horizontal padding, visible in editor
 }
 
 export const DividerConfig: ComponentConfig = {
@@ -90,7 +100,7 @@ export const DividerConfig: ComponentConfig = {
 
     return (
       <AnimatedWrapper animation={animation}>
-        <div className="px-4" style={Object.keys(wrapperStyle).length > 0 ? wrapperStyle : undefined}>
+        <div style={Object.keys(wrapperStyle).length > 0 ? wrapperStyle : undefined}>
           <hr
             className={cn(
               'border-t border-border',

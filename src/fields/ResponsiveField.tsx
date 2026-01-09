@@ -118,11 +118,15 @@ function ResponsiveFieldInner<T>({
   const [activeBreakpoint, setActiveBreakpoint] = useState<Breakpoint>('xs')
 
   // Get the current value for the active breakpoint
-  // Falls back through the cascade: active -> smaller breakpoints -> xs -> default
+  // Uses mobile-first cascade: falls back through smaller breakpoints to xs base
+  // NOTE: When ResponsiveField's value is null, we return null (not defaultValue)
+  // This allows inner fields to show their own defaults without materializing them
   const getCurrentValue = useCallback((): T | null => {
-    if (!value) return defaultValue ?? null
+    // When ResponsiveField has no value at all, return null
+    // Inner fields should handle null by displaying their own defaults
+    if (!value) return null
 
-    // For xs, just return xs value
+    // For xs (base), just return the xs value
     if (activeBreakpoint === 'xs') {
       return value.xs ?? defaultValue ?? null
     }
@@ -133,7 +137,7 @@ function ResponsiveFieldInner<T>({
       return override
     }
 
-    // Otherwise cascade down to find the nearest defined value
+    // Otherwise cascade down to find the nearest defined value (mobile-first inheritance)
     const breakpointOrder: Breakpoint[] = ['xl', 'lg', 'md', 'sm', 'xs']
     const activeIndex = breakpointOrder.indexOf(activeBreakpoint)
 
@@ -145,38 +149,65 @@ function ResponsiveFieldInner<T>({
       }
     }
 
+    // Safety fallback (shouldn't happen if xs is always set)
     return defaultValue ?? null
   }, [value, activeBreakpoint, defaultValue])
 
   // Check if a breakpoint has an explicit override
+  // Note: xs never shows as "override" - it's the base, not an override of something else
   const hasOverride = useCallback(
     (breakpoint: Breakpoint): boolean => {
       if (!value) return false
-      if (breakpoint === 'xs') return value.xs !== undefined
+      // xs is the base, not an override - never show override indicator
+      if (breakpoint === 'xs') return false
       return value[breakpoint] !== undefined
     },
     [value]
   )
 
+  // Find which breakpoint the current value is being inherited from
+  const getInheritanceSource = useCallback((): Breakpoint | null => {
+    if (!value || activeBreakpoint === 'xs') return null
+
+    // If this breakpoint has its own override, it's not inheriting
+    if (value[activeBreakpoint] !== undefined) return null
+
+    // Cascade down to find the nearest defined value
+    const breakpointOrder: Breakpoint[] = ['xl', 'lg', 'md', 'sm', 'xs']
+    const activeIndex = breakpointOrder.indexOf(activeBreakpoint)
+
+    for (let i = activeIndex + 1; i < breakpointOrder.length; i++) {
+      const bp = breakpointOrder[i]
+      if (value[bp] !== undefined) {
+        return bp
+      }
+    }
+
+    return null
+  }, [value, activeBreakpoint])
+
   // Handle value change for the active breakpoint
   const handleInnerChange = useCallback(
     (newValue: T | null) => {
       if (activeBreakpoint === 'xs') {
-        // XS is required, so we always set it
-        if (newValue === null && defaultValue !== undefined) {
-          onChange({ ...value, xs: defaultValue } as ResponsiveValue<T>)
-        } else if (newValue !== null) {
+        // For xs (base) breakpoint
+        if (newValue === null) {
+          // Clearing xs clears the entire responsive value
+          onChange(null)
+        } else {
           onChange({ ...value, xs: newValue } as ResponsiveValue<T>)
         }
       } else {
-        // For other breakpoints, set the override
+        // For override breakpoints (sm/md/lg/xl)
         if (newValue === null) {
-          // Remove the override
-          const newResponsive = { ...value } as ResponsiveValue<T>
+          // Remove the override for this breakpoint
+          if (!value) return
+          const newResponsive = { ...value }
           delete newResponsive[activeBreakpoint]
           onChange(newResponsive)
         } else {
-          // Ensure xs exists
+          // Set this breakpoint's override
+          // Ensure xs base exists (use defaultValue if needed)
           const xs = value?.xs ?? defaultValue
           if (xs === undefined) return
           onChange({
@@ -207,6 +238,7 @@ function ResponsiveFieldInner<T>({
   const currentValue = getCurrentValue()
   const isOverrideBreakpoint = activeBreakpoint !== 'xs'
   const currentHasOverride = hasOverride(activeBreakpoint)
+  const inheritanceSource = getInheritanceSource()
 
   // Count how many breakpoints have overrides (excluding xs)
   const overrideCount = value
@@ -265,8 +297,8 @@ function ResponsiveFieldInner<T>({
           ) : (
             <>
               {BREAKPOINTS.find((bp) => bp.key === activeBreakpoint)?.minWidth}px and up
-              {!currentHasOverride && (
-                <span className="text-muted-foreground/60"> (inheriting from xs)</span>
+              {!currentHasOverride && inheritanceSource && (
+                <span className="text-muted-foreground/60"> (inheriting from {inheritanceSource.toUpperCase()})</span>
               )}
             </>
           )}

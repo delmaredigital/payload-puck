@@ -46,13 +46,14 @@ function getCurrentBreakpoint(): Breakpoint {
 }
 
 /**
- * Gets the effective value for a breakpoint with cascade fallback
+ * Gets the effective value for a breakpoint with mobile-first cascade
+ * Falls back through smaller breakpoints to xs base
  */
 function getValueForBreakpoint<T>(
   value: ResponsiveValue<T>,
   breakpoint: Breakpoint
 ): T {
-  // For xs, return xs value directly
+  // For xs, return xs value directly (it's required)
   if (breakpoint === 'xs') {
     return value.xs
   }
@@ -63,7 +64,7 @@ function getValueForBreakpoint<T>(
     return explicitValue
   }
 
-  // Cascade down to find the nearest defined value
+  // Cascade down to find the nearest defined value (mobile-first)
   const breakpointOrder: Breakpoint[] = ['xl', 'lg', 'md', 'sm', 'xs']
   const currentIndex = breakpointOrder.indexOf(breakpoint)
 
@@ -75,7 +76,7 @@ function getValueForBreakpoint<T>(
     }
   }
 
-  // Fallback to xs
+  // Fallback to xs base (always exists in valid ResponsiveValue)
   return value.xs
 }
 
@@ -159,7 +160,7 @@ export function useResponsiveValue<T>(
       return value as T
     }
 
-    // Get value for current breakpoint with cascade
+    // Get value for current breakpoint with mobile-first cascade
     return getValueForBreakpoint(value, currentBreakpoint)
   }, [value, defaultValue, currentBreakpoint])()
 }

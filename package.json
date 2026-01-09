@@ -1,6 +1,6 @@
 {
   "name": "@delmaredigital/payload-puck",
-  "version": "0.1.3",
+  "version": "0.1.4-dev.7",
   "description": "Puck visual page builder plugin for Payload CMS",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -87,7 +87,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "dev-publish": "pnpm build && pnpm version prerelease --preid=dev && pnpm publish --registry http://localhost:4873"
   },
   "peerDependencies": {
     "@measured/puck": ">=0.20.0",

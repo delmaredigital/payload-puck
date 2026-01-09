@@ -27,6 +27,16 @@ import { AnimatedWrapper } from '../AnimatedWrapper'
 import type { MediaReference } from '../../fields/MediaField'
 import type { Alignment } from '../../fields/AlignmentField'
 
+// Default padding with standard spacing (replaces hardcoded py-4 px-4)
+const DEFAULT_PADDING: PaddingValue = {
+  top: 16,
+  right: 16,
+  bottom: 16,
+  left: 16,
+  unit: 'px',
+  linked: true,
+}
+
 // Simple ID generator for server-side rendering
 let idCounter = 0
 function generateUniqueId(): string {
@@ -61,7 +71,7 @@ const defaultProps: ImageProps = {
   alignment: null,
   transform: null,
   animation: null,
-  customPadding: null,
+  customPadding: DEFAULT_PADDING, // Default 16px padding
   visibility: null,
 }
 
@@ -110,7 +120,7 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
       return (
         <AnimatedWrapper animation={animation}>
           {visibilityCSS && <style>{visibilityCSS}</style>}
-          <div className={cn('py-4 px-4', wrapperClass)} style={Object.keys(style).length > 0 ? style : undefined}>
+          <div className={wrapperClass} style={Object.keys(style).length > 0 ? style : undefined}>
             <div className={alignmentClasses}>
               <div
                 className={cn(
@@ -165,7 +175,7 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
     return (
       <AnimatedWrapper animation={animation}>
         {visibilityCSS && <style>{visibilityCSS}</style>}
-        <div className={cn('py-4 px-4', wrapperClass)} style={Object.keys(style).length > 0 ? style : undefined}>
+        <div className={wrapperClass} style={Object.keys(style).length > 0 ? style : undefined}>
           <div className={alignmentClasses}>{content}</div>
         </div>
       </AnimatedWrapper>

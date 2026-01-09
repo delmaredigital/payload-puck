@@ -159,7 +159,7 @@ export function AccordionClient({
   if (!items || items.length === 0) {
     return (
       <AnimatedWrapper animation={animation}>
-        <div className="px-4" style={Object.keys(style).length > 0 ? style : undefined}>
+        <div style={Object.keys(style).length > 0 ? style : undefined}>
           <div className={accordionClasses} style={accordionStyle}>
             <div className="p-4 text-center text-muted-foreground">
               No accordion items. Add items in the editor.
@@ -172,7 +172,7 @@ export function AccordionClient({
 
   return (
     <AnimatedWrapper animation={animation}>
-      <div className="px-4" style={Object.keys(style).length > 0 ? style : undefined}>
+      <div style={Object.keys(style).length > 0 ? style : undefined}>
         <div className={accordionClasses} style={accordionStyle}>
           {items.map((item, index) => (
             <AccordionItem

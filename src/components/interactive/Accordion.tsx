@@ -170,7 +170,7 @@ function AccordionRenderer({
   if (!items || items.length === 0) {
     return (
       <AnimatedWrapper animation={animation}>
-        <div className="px-4" style={Object.keys(style).length > 0 ? style : undefined}>
+        <div style={Object.keys(style).length > 0 ? style : undefined}>
           <div className={accordionClasses} style={accordionStyle}>
             <div className="p-4 text-center text-muted-foreground">
               No accordion items. Add items in the editor.
@@ -183,7 +183,7 @@ function AccordionRenderer({
 
   return (
     <AnimatedWrapper animation={animation}>
-      <div className="px-4" style={Object.keys(style).length > 0 ? style : undefined}>
+      <div style={Object.keys(style).length > 0 ? style : undefined}>
         <div className={accordionClasses} style={accordionStyle}>
           {items.map((item, index) => (
             <AccordionItem
@@ -198,6 +198,16 @@ function AccordionRenderer({
       </div>
     </AnimatedWrapper>
   )
+}
+
+// Default padding with standard horizontal spacing (replaces hardcoded px-4)
+const DEFAULT_PADDING: PaddingValue = {
+  top: 0,
+  right: 16,
+  bottom: 0,
+  left: 16,
+  unit: 'px',
+  linked: false,
 }
 
 export interface AccordionProps {
@@ -232,7 +242,7 @@ const defaultProps: AccordionProps = {
   dimensions: null,
   transform: null,
   animation: null,
-  customPadding: null,
+  customPadding: DEFAULT_PADDING, // Default 16px horizontal padding, visible in editor
 }
 
 export const AccordionConfig: ComponentConfig = {

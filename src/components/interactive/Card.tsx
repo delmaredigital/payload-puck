@@ -34,6 +34,16 @@ import { createAnimationField } from '../../fields/AnimationField'
 import { createTransformField } from '../../fields/TransformField'
 import type { MediaReference } from '../../fields/MediaField'
 
+// Default content padding for card (replaces hardcoded p-4)
+const DEFAULT_CONTENT_PADDING: PaddingValue = {
+  top: 16,
+  right: 16,
+  bottom: 16,
+  left: 16,
+  unit: 'px',
+  linked: true,
+}
+
 export interface CardProps {
   image: MediaReference | null
   heading: string
@@ -48,7 +58,7 @@ export interface CardProps {
   alignment: Alignment | null
   transform: TransformValue | null
   animation: AnimationValue | null
-  customPadding: PaddingValue | null
+  contentPadding: PaddingValue | null // Renamed from customPadding for clarity
 }
 
 const defaultProps: CardProps = {
@@ -65,7 +75,7 @@ const defaultProps: CardProps = {
   alignment: null,
   transform: null,
   animation: null,
-  customPadding: null,
+  contentPadding: DEFAULT_CONTENT_PADDING, // Default 16px padding, visible in editor
 }
 
 export const CardConfig: ComponentConfig = {
@@ -110,10 +120,10 @@ export const CardConfig: ComponentConfig = {
     animation: createAnimationField({ label: 'Animation' }),
     // Spacing (grouped at bottom)
     margin: createMarginField({ label: 'Margin' }),
-    customPadding: createPaddingField({ label: 'Padding' }),
+    contentPadding: createPaddingField({ label: 'Content Padding' }),
   },
   defaultProps,
-  render: ({ image, heading, text, link, openInNewTab, shadow, background, dimensions, alignment, margin, border, transform, animation, customPadding }) => {
+  render: ({ image, heading, text, link, openInNewTab, shadow, background, dimensions, alignment, margin, border, transform, animation, contentPadding }) => {
     // Check if border has radius, if so don't apply rounded-lg
     const hasBorderRadius = border?.radius && border.radius > 0
     const cardClasses = cn(
@@ -158,10 +168,12 @@ export const CardConfig: ComponentConfig = {
     if (borderStyles) {
       Object.assign(cardStyle, borderStyles)
     }
-    // Apply padding to card
-    const paddingCSS = paddingValueToCSS(customPadding)
-    if (paddingCSS) {
-      cardStyle.padding = paddingCSS
+
+    // Content section style with configurable padding
+    const contentStyle: React.CSSProperties = {}
+    const contentPaddingCSS = paddingValueToCSS(contentPadding)
+    if (contentPaddingCSS) {
+      contentStyle.padding = contentPaddingCSS
     }
 
     const cardContent = (
@@ -183,7 +195,7 @@ export const CardConfig: ComponentConfig = {
         )}
 
         {/* Content */}
-        <div className="p-4">
+        <div style={contentStyle}>
           {heading && (
             <h3 className="text-lg font-semibold text-foreground mb-2">{heading}</h3>
           )}

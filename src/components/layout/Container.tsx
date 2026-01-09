@@ -1,18 +1,15 @@
 /**
  * Container Component - Puck Configuration
  *
- * Content wrapper with max-width and background options.
+ * Simple organizational wrapper for grouping content.
  * Uses Puck's slot system for nesting other components.
- * Uses Tailwind classes for layout, inline styles for dynamic user values.
  *
- * Supports both preset options and advanced custom styling:
- * - Outer (Section): background, customPadding, border (applies to full-width wrapper)
- * - Inner (Content): innerBackground, innerPadding, innerBorder (applies to max-width container)
+ * For two-layer layouts (full-bleed background with constrained content),
+ * use the Section component instead.
  *
  * Responsive Controls:
- * - dimensions: Different max-width at different breakpoints
- * - customPadding: Different outer padding at different breakpoints
- * - innerPadding: Different inner padding at different breakpoints
+ * - dimensions: Different max-width/min-height at different breakpoints
+ * - padding: Different padding at different breakpoints
  * - margin: Different margins at different breakpoints
  * - visibility: Show/hide at different breakpoints
  */
@@ -20,7 +17,6 @@
 import { useId } from 'react'
 import type { ComponentConfig } from '@measured/puck'
 import {
-  cn,
   dimensionsValueToCSS,
   borderValueToCSS,
   paddingValueToCSS,
@@ -47,14 +43,7 @@ import { createAnimationField } from '../../fields/AnimationField'
 import { createResponsiveField } from '../../fields/ResponsiveField'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'
 
-// Default dimensions for responsive field
-const DEFAULT_DIMENSIONS: DimensionsValue = {
-  mode: 'contained',
-  alignment: 'center',
-  maxWidth: { value: 1200, unit: 'px', enabled: true },
-}
-
-// Default padding for responsive field
+// Default padding (none)
 const DEFAULT_PADDING: PaddingValue = {
   top: 0,
   right: 0,
@@ -64,35 +53,33 @@ const DEFAULT_PADDING: PaddingValue = {
   linked: true,
 }
 
+// Default dimensions (full width)
+const DEFAULT_DIMENSIONS: DimensionsValue = {
+  mode: 'full',
+  alignment: 'center',
+  maxWidth: { value: 100, unit: '%', enabled: true },
+}
+
 export interface ContainerProps {
   content: unknown
-  // Outer (section-level) options
-  background: BackgroundValue | null
-  customPadding: ResponsiveValue<PaddingValue> | PaddingValue | null
+  visibility: VisibilityValue | null
   dimensions: ResponsiveValue<DimensionsValue> | DimensionsValue | null
+  background: BackgroundValue | null
   border: BorderValue | null
+  padding: ResponsiveValue<PaddingValue> | PaddingValue | null
   margin: ResponsiveValue<PaddingValue> | PaddingValue | null
   animation: AnimationValue | null
-  // Inner (content container) options
-  innerBackground: BackgroundValue | null
-  innerPadding: ResponsiveValue<PaddingValue> | PaddingValue | null
-  innerBorder: BorderValue | null
-  // Responsive visibility
-  visibility: VisibilityValue | null
 }
 
 const defaultProps: ContainerProps = {
   content: [],
-  background: null,
-  customPadding: null,
+  visibility: null,
   dimensions: null,
+  background: null,
   border: null,
+  padding: null,
   margin: null,
   animation: null,
-  innerBackground: null,
-  innerPadding: null,
-  innerBorder: null,
-  visibility: null,
 }
 
 export const ContainerConfig: ComponentConfig = {
@@ -102,156 +89,155 @@ export const ContainerConfig: ComponentConfig = {
     content: {
       type: 'slot',
     },
-    // Responsive visibility control
+    // Visibility first
     visibility: createResponsiveVisibilityField({ label: 'Visibility' }),
-    // Outer (section-level) options
-    background: createBackgroundField({ label: 'Outer Background' }),
-    border: createBorderField({ label: 'Outer Border' }),
-    // Responsive dimensions field
+    // Dimensions
     dimensions: createResponsiveField({
-      label: 'Dimensions (Responsive)',
+      label: 'Dimensions',
       innerField: (config) => createDimensionsField(config),
       defaultValue: DEFAULT_DIMENSIONS,
     }),
-    animation: createAnimationField({ label: 'Animation' }),
-    // Inner (content container) options
-    innerBackground: createBackgroundField({ label: 'Inner Background' }),
-    innerBorder: createBorderField({ label: 'Inner Border' }),
-    // Responsive inner padding
-    innerPadding: createResponsiveField({
-      label: 'Inner Padding (Responsive)',
+    // Styling
+    background: createBackgroundField({ label: 'Background' }),
+    border: createBorderField({ label: 'Border' }),
+    // Spacing
+    padding: createResponsiveField({
+      label: 'Padding',
       innerField: (config) => createPaddingField(config),
       defaultValue: DEFAULT_PADDING,
     }),
-    // Spacing (grouped at bottom) - Responsive
     margin: createResponsiveField({
-      label: 'Margin (Responsive)',
+      label: 'Margin',
       innerField: (config) => createMarginField(config),
       defaultValue: DEFAULT_PADDING,
     }),
-    customPadding: createResponsiveField({
-      label: 'Outer Padding (Responsive)',
-      innerField: (config) => createPaddingField(config),
-      defaultValue: DEFAULT_PADDING,
-    }),
+    // Animation
+    animation: createAnimationField({ label: 'Animation' }),
   },
   defaultProps,
   render: ({
     content: Content,
-    background,
-    customPadding,
+    visibility,
     dimensions,
+    background,
     border,
+    padding,
     margin,
     animation,
-    innerBackground,
-    innerPadding,
-    innerBorder,
-    visibility,
   }) => {
-    // Generate unique IDs for CSS targeting
+    // Generate unique ID for CSS targeting
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const uniqueId = useId().replace(/:/g, '')
-    const outerClass = `puck-container-outer-${uniqueId}`
-    const innerClass = `puck-container-inner-${uniqueId}`
+    const containerClass = `puck-container-${uniqueId}`
 
     // Collect all media query CSS
     const mediaQueries: string[] = []
 
-    // Generate outer wrapper styles from BackgroundValue
-    const outerBackgroundStyles = backgroundValueToCSS(background)
-    const outerStyles: React.CSSProperties = {
-      ...outerBackgroundStyles,
+    // Build container styles
+    const containerStyles: React.CSSProperties = {}
+
+    // Background
+    const backgroundStyles = backgroundValueToCSS(background)
+    if (backgroundStyles) {
+      Object.assign(containerStyles, backgroundStyles)
     }
 
-    // Add outer padding with responsive support
-    const outerPaddingResult = responsiveValueToCSS(
-      customPadding,
-      (v) => ({ padding: paddingValueToCSS(v) }),
-      outerClass
-    )
-    Object.assign(outerStyles, outerPaddingResult.baseStyles)
-    if (outerPaddingResult.mediaQueryCSS) {
-      mediaQueries.push(outerPaddingResult.mediaQueryCSS)
-    }
-
-    // Add outer border if set
-    const outerBorderStyles = borderValueToCSS(border)
-    if (outerBorderStyles) {
-      Object.assign(outerStyles, outerBorderStyles)
-    }
-
-    // Add margin with responsive support
-    const marginResult = responsiveValueToCSS(
-      margin,
-      (v) => ({ margin: marginValueToCSS(v) }),
-      outerClass
-    )
-    Object.assign(outerStyles, marginResult.baseStyles)
-    if (marginResult.mediaQueryCSS) {
-      mediaQueries.push(marginResult.mediaQueryCSS)
-    }
-
-    // Generate inner container styles
-    const innerBackgroundStyles = backgroundValueToCSS(innerBackground)
-    const innerStyles: React.CSSProperties = {
-      ...innerBackgroundStyles,
+    // Border
+    const borderStyles = borderValueToCSS(border)
+    if (borderStyles) {
+      Object.assign(containerStyles, borderStyles)
     }
 
     // Dimensions with responsive support
     const dimensionsResult = responsiveValueToCSS(
       dimensions,
       dimensionsValueToCSS,
-      innerClass
+      containerClass
     )
-    Object.assign(innerStyles, dimensionsResult.baseStyles)
+    Object.assign(containerStyles, dimensionsResult.baseStyles)
     if (dimensionsResult.mediaQueryCSS) {
       mediaQueries.push(dimensionsResult.mediaQueryCSS)
     }
 
-    // Inner padding with responsive support
-    const innerPaddingResult = responsiveValueToCSS(
-      innerPadding,
-      (v) => ({ padding: paddingValueToCSS(v) }),
-      innerClass
-    )
-    Object.assign(innerStyles, innerPaddingResult.baseStyles)
-    if (innerPaddingResult.mediaQueryCSS) {
-      mediaQueries.push(innerPaddingResult.mediaQueryCSS)
+    // Check if minHeight is set - if so, we need flex layout to make slot expand
+    const hasMinHeight = (() => {
+      if (!dimensions) return false
+      // Check if it's a responsive value
+      if (typeof dimensions === 'object' && 'xs' in dimensions) {
+        const responsiveDims = dimensions as ResponsiveValue<DimensionsValue>
+        return Object.values(responsiveDims).some((v) => {
+          if (!v || typeof v !== 'object') return false
+          const dim = v as DimensionsValue
+          return dim.minHeight?.enabled && dim.minHeight?.value > 0
+        })
+      }
+      // Non-responsive value
+      const dim = dimensions as DimensionsValue
+      return dim.minHeight?.enabled && dim.minHeight?.value > 0
+    })()
+
+    // Add flex layout when minHeight is set to make content stretch
+    if (hasMinHeight) {
+      containerStyles.display = 'flex'
+      containerStyles.flexDirection = 'column'
     }
 
-    // Inner border
-    const innerBorderStyles = borderValueToCSS(innerBorder)
-    if (innerBorderStyles) {
-      Object.assign(innerStyles, innerBorderStyles)
+    // Padding with responsive support
+    const paddingResult = responsiveValueToCSS(
+      padding,
+      (v) => ({ padding: paddingValueToCSS(v) }),
+      containerClass
+    )
+    Object.assign(containerStyles, paddingResult.baseStyles)
+    if (paddingResult.mediaQueryCSS) {
+      mediaQueries.push(paddingResult.mediaQueryCSS)
+    }
+
+    // Margin with responsive support
+    const marginResult = responsiveValueToCSS(
+      margin,
+      (v) => ({ margin: marginValueToCSS(v) }),
+      containerClass
+    )
+    Object.assign(containerStyles, marginResult.baseStyles)
+    if (marginResult.mediaQueryCSS) {
+      mediaQueries.push(marginResult.mediaQueryCSS)
     }
 
     // Visibility media queries
-    const visibilityCSS = visibilityValueToCSS(visibility, outerClass)
+    const visibilityCSS = visibilityValueToCSS(visibility, containerClass)
     if (visibilityCSS) {
       mediaQueries.push(visibilityCSS)
     }
 
-    const contentClasses = cn('px-4', innerClass)
-
-    // Check if we have any inner styling
-    const hasInnerStyles = Object.keys(innerStyles).length > 0
-
     // Combine all media queries
     const allMediaQueryCSS = mediaQueries.join('\n')
+
+    // Check if we have any styling
+    const hasStyles = Object.keys(containerStyles).length > 0
+
+    // When minHeight is set, wrap Content to ensure slot expands
+    const renderContent = () => {
+      if (hasMinHeight) {
+        return (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <Content style={{ flex: 1 }} />
+          </div>
+        )
+      }
+      return <Content />
+    }
 
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <div className={outerClass} style={outerStyles}>
-          {hasInnerStyles ? (
-            <div className={contentClasses} style={innerStyles}>
-              <Content />
-            </div>
-          ) : (
-            <Content className={contentClasses} style={innerStyles} />
-          )}
-        </div>
+        {hasStyles ? (
+          <div className={containerClass} style={containerStyles}>
+            {renderContent()}
+          </div>
+        ) : (
+          <Content className={containerClass} />
+        )}
       </AnimatedWrapper>
     )
   },

@@ -60,13 +60,14 @@ interface DimensionsFieldProps {
 // Default Values
 // =============================================================================
 
+// Default represents "unconfigured" state - full width with no constraints
 const DEFAULT_VALUE: DimensionsValue = {
-  mode: 'contained',
+  mode: 'full',
   alignment: 'center',
   maxWidth: {
-    value: 1200,
+    value: 0,
     unit: 'px',
-    enabled: true,
+    enabled: false,
   },
   advancedMode: false,
 }
@@ -354,12 +355,15 @@ function DimensionsFieldInner({
   const handleAdvancedToggle = useCallback(() => {
     const newAdvancedMode = !advancedMode
     setAdvancedMode(newAdvancedMode)
-    // Persist to value - must be outside setState callback to avoid setState during render
-    onChange({
-      ...currentValue,
-      advancedMode: newAdvancedMode,
-    })
-  }, [advancedMode, currentValue, onChange])
+    // Only persist advancedMode if there's already a value set
+    // This prevents materializing defaults when user is just exploring the UI
+    if (value !== null) {
+      onChange({
+        ...currentValue,
+        advancedMode: newAdvancedMode,
+      })
+    }
+  }, [advancedMode, currentValue, onChange, value])
 
   // Mode labels
   const modeConfig = [

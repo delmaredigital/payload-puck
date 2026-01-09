@@ -211,6 +211,9 @@ export const HeaderActions = memo(function HeaderActions({
         Back
       </button>
 
+      {/* Version indicator for debugging */}
+      <span className="text-[10px] text-gray-400 font-mono">v0.2.0</span>
+
       {/* Document status badge */}
       {documentStatus && (() => {
         // Determine badge state

@@ -39,6 +39,16 @@ import { createTransformField } from '../../fields/TransformField'
 import { createResetField } from '../../fields/ResetField'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'
 
+// Default padding with standard spacing (replaces hardcoded py-4 px-4)
+const DEFAULT_PADDING: PaddingValue = {
+  top: 16,
+  right: 16,
+  bottom: 16,
+  left: 16,
+  unit: 'px',
+  linked: true,
+}
+
 export interface ImageProps {
   image: MediaReference | null
   alt: string
@@ -67,7 +77,7 @@ const defaultProps: ImageProps = {
   alignment: null,
   transform: null,
   animation: null,
-  customPadding: null,
+  customPadding: DEFAULT_PADDING, // Default 16px padding, visible in editor
   visibility: null,
 }
 
@@ -148,7 +158,7 @@ export const ImageConfig: ComponentConfig = {
       return (
         <AnimatedWrapper animation={animation}>
           {visibilityCSS && <style>{visibilityCSS}</style>}
-          <div className={cn('py-4 px-4', wrapperClass)} style={Object.keys(style).length > 0 ? style : undefined}>
+          <div className={wrapperClass} style={Object.keys(style).length > 0 ? style : undefined}>
             <div className={alignmentClasses}>
               <div
                 className={cn(
@@ -203,7 +213,7 @@ export const ImageConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {visibilityCSS && <style>{visibilityCSS}</style>}
-        <div className={cn('py-4 px-4', wrapperClass)} style={Object.keys(style).length > 0 ? style : undefined}>
+        <div className={wrapperClass} style={Object.keys(style).length > 0 ? style : undefined}>
           <div className={alignmentClasses}>{content}</div>
         </div>
       </AnimatedWrapper>

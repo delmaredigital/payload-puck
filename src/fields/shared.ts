@@ -1355,7 +1355,8 @@ export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 /**
  * Responsive value that can have different values at different breakpoints.
- * XS (extra small) is required, other breakpoints are optional overrides.
+ * Uses mobile-first approach: xs is the required base, larger breakpoints inherit upward.
+ * sm/md/lg/xl are optional overrides that apply at their breakpoint and above.
  */
 export interface ResponsiveValue<T> {
   xs: T
@@ -1386,6 +1387,7 @@ export const BREAKPOINTS: Array<{
 
 /**
  * Type guard to check if a value is a ResponsiveValue (has breakpoint structure)
+ * Checks for the required xs property which indicates mobile-first responsive value
  */
 export function isResponsiveValue<T>(value: unknown): value is ResponsiveValue<T> {
   if (!value || typeof value !== 'object') return false
@@ -1454,7 +1456,7 @@ export function responsiveValueToCSS<T>(
     return { baseStyles: {}, mediaQueryCSS: '' }
   }
 
-  // If not responsive (single value), return as base styles only
+  // If not responsive (single value), return as base styles only (can use inline)
   if (!isResponsiveValue<T>(value)) {
     const styles = converter(value as T)
     return {
@@ -1463,9 +1465,11 @@ export function responsiveValueToCSS<T>(
     }
   }
 
-  // Generate media queries for each breakpoint
-  const mediaQueries: string[] = []
-  let baseStyles: React.CSSProperties = {}
+  // For responsive values, we need to put ALL styles in the <style> tag
+  // This is because inline styles have higher specificity than media queries,
+  // so media queries can't override inline styles. By putting everything
+  // in the style tag, CSS cascade works properly.
+  const cssRules: string[] = []
 
   BREAKPOINTS.forEach((bp) => {
     const bpValue = value[bp.key]
@@ -1474,19 +1478,22 @@ export function responsiveValueToCSS<T>(
     const cssProps = converter(bpValue)
     if (!cssProps) return
 
+    const styleString = cssPropertiesToString(cssProps)
+    if (!styleString) return
+
     if (bp.key === 'xs') {
-      baseStyles = cssProps
+      // Base styles go without media query
+      cssRules.push(`.${uniqueId} { ${styleString} }`)
     } else {
-      const styleString = cssPropertiesToString(cssProps)
-      if (styleString) {
-        mediaQueries.push(
-          `@media (min-width: ${bp.minWidth}px) { .${uniqueId} { ${styleString} } }`
-        )
-      }
+      // Breakpoint overrides go in media queries
+      cssRules.push(
+        `@media (min-width: ${bp.minWidth}px) { .${uniqueId} { ${styleString} } }`
+      )
     }
   })
 
-  return { baseStyles, mediaQueryCSS: mediaQueries.join('\n') }
+  // Return empty baseStyles - everything goes through the style tag
+  return { baseStyles: {}, mediaQueryCSS: cssRules.join('\n') }
 }
 
 /**
