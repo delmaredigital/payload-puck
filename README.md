@@ -12,6 +12,7 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
 - [Core Concepts](#core-concepts)
 - [Components](#components)
 - [Custom Fields](#custom-fields)
+- [Building Custom Components](#building-custom-components)
 - [Theming](#theming)
 - [Layouts](#layouts)
 - [Page-Tree Integration](#page-tree-integration)
@@ -172,6 +173,8 @@ export default async function Page({
 
 ### Tailwind Typography (Required)
 
+> Required only if using the RichText component.
+
 The RichText component uses `@tailwindcss/typography`:
 
 ```bash
@@ -194,6 +197,8 @@ module.exports = {
 
 ### Package Scanning (Required)
 
+> Required if your project uses Tailwind CSS. Ensures component classes are included in your build.
+
 Tell Tailwind to scan the plugin's components:
 
 **Tailwind v4:**
@@ -213,9 +218,11 @@ module.exports = {
 }
 ```
 
-### Theme CSS Variables
+### Theme CSS Variables (Optional)
 
-The plugin uses [shadcn/ui](https://ui.shadcn.com)-style CSS variables. If you don't use shadcn/ui, define these in your CSS:
+> Optional - the plugin includes sensible defaults. Define these only to customize colors in rendered content (links, borders, etc).
+
+The plugin uses [shadcn/ui](https://ui.shadcn.com)-style CSS variables. If you don't use shadcn/ui and want to customize colors, define these in your CSS:
 
 ```css
 :root {
@@ -369,6 +376,155 @@ import {
 
 ---
 
+## Building Custom Components
+
+The plugin exports individual component configs and field factories for building custom Puck configurations.
+
+### Cherry-Picking Components
+
+Import only the components you need:
+
+```typescript
+import {
+  SectionConfig,
+  HeadingConfig,
+  TextConfig,
+  ImageConfig,
+  ButtonConfig,
+} from '@delmaredigital/payload-puck/components'
+
+export const puckConfig: Config = {
+  components: {
+    Section: SectionConfig,
+    Heading: HeadingConfig,
+    Text: TextConfig,
+    Image: ImageConfig,
+    Button: ButtonConfig,
+  },
+  categories: {
+    layout: { components: ['Section'] },
+    content: { components: ['Heading', 'Text', 'Image', 'Button'] },
+  },
+}
+```
+
+### Using Field Factories
+
+Build custom components with pre-built fields:
+
+```typescript
+import type { ComponentConfig } from '@measured/puck'
+import {
+  createMediaField,
+  createBackgroundField,
+  createPaddingField,
+  backgroundValueToCSS,
+  paddingValueToCSS,
+} from '@delmaredigital/payload-puck/fields'
+
+export const HeroConfig: ComponentConfig = {
+  label: 'Hero',
+  fields: {
+    image: createMediaField({ label: 'Background Image' }),
+    overlay: createBackgroundField({ label: 'Overlay' }),
+    padding: createPaddingField({ label: 'Padding' }),
+  },
+  defaultProps: {
+    image: null,
+    overlay: null,
+    padding: { top: 80, bottom: 80, left: 24, right: 24, unit: 'px', linked: false },
+  },
+  render: ({ image, overlay, padding }) => (
+    <section
+      style={{
+        background: backgroundValueToCSS(overlay),
+        padding: paddingValueToCSS(padding),
+      }}
+    >
+      {/* Hero content */}
+    </section>
+  ),
+}
+```
+
+### Server vs Editor Variants
+
+For `PageRenderer` (frontend), components need server-safe configs without React hooks:
+
+```typescript
+// Import server variants for PageRenderer
+import {
+  SectionServerConfig,
+  HeadingServerConfig,
+  TextServerConfig,
+} from '@delmaredigital/payload-puck/components'
+
+<PageRenderer config={{ components: { Section: SectionServerConfig, ... } }} data={page.puckData} />
+```
+
+For custom components, create two files:
+- `MyComponent.tsx` - Full editor version with fields and interactivity
+- `MyComponent.server.tsx` - Server-safe version (no hooks, no 'use client')
+
+### Extending Built-in Configs
+
+Use `extendConfig()` to add custom components:
+
+```typescript
+import { extendConfig, fullConfig } from '@delmaredigital/payload-puck/config/editor'
+import { HeroConfig } from './components/Hero'
+
+export const puckConfig = extendConfig({
+  base: fullConfig,
+  components: {
+    Hero: HeroConfig,
+  },
+  categories: {
+    custom: { title: 'Custom', components: ['Hero'] },
+  },
+})
+```
+
+> **Note:** Use `fullConfig` from `/config/editor` for extending the editor. For server-side rendering, use `baseConfig` from `/config`.
+
+### Available Field Factories
+
+| Factory | Description |
+|---------|-------------|
+| `createMediaField()` | Payload media library picker |
+| `createBackgroundField()` | Solid, gradient, or image backgrounds |
+| `createColorPickerField()` | Color picker with opacity |
+| `createPaddingField()` | Visual padding editor |
+| `createMarginField()` | Visual margin editor |
+| `createBorderField()` | Border styling |
+| `createDimensionsField()` | Width/height constraints |
+| `createAnimationField()` | Entrance animations |
+| `createAlignmentField()` | Text alignment |
+| `createTiptapField()` | Inline rich text editor |
+
+### CSS Helper Functions
+
+Convert field values to CSS:
+
+```typescript
+import {
+  backgroundValueToCSS,
+  paddingValueToCSS,
+  marginValueToCSS,
+  borderValueToCSS,
+  dimensionsValueToCSS,
+  colorValueToCSS,
+} from '@delmaredigital/payload-puck/fields'
+
+const style = {
+  background: backgroundValueToCSS(props.background),
+  padding: paddingValueToCSS(props.padding),
+  ...dimensionsValueToCSS(props.dimensions),
+}
+```
+
+---
+
 ## Theming
 
 Customize button styles, color presets, and focus rings:
@@ -390,6 +546,18 @@ import { ThemeProvider } from '@delmaredigital/payload-puck/theme'
 }}>
   <PageRenderer config={baseConfig} data={page.puckData} />
 </ThemeProvider>
+```
+
+Access theme values in custom components with `useTheme()`:
+
+```typescript
+import { useTheme } from '@delmaredigital/payload-puck/theme'
+
+function CustomButton({ variant }) {
+  const theme = useTheme()
+  const classes = theme.buttonVariants[variant]?.classes
+  return <button className={classes}>...</button>
+}
 ```
 
 ---
@@ -585,36 +753,17 @@ createPuckPlugin({
 
 ### Custom API Routes (Advanced)
 
-If you need custom API route handling beyond the built-in endpoints, you can disable automatic endpoints and create your own:
+The built-in endpoints handle most use cases. Only disable them if you need custom authentication or middleware.
 
-```typescript
-// payload.config.ts
-createPuckPlugin({
-  enableEndpoints: false, // Disable built-in endpoints
-})
-```
+If needed, three route factories are available:
 
-Then create custom routes using the provided factories:
+| Factory | Route Pattern | Methods |
+|---------|---------------|---------|
+| `createPuckApiRoutes` | `/api/puck/[collection]` | GET (list), POST (create) |
+| `createPuckApiRoutesWithId` | `/api/puck/[collection]/[id]` | GET, PATCH, DELETE |
+| `createPuckApiRoutesVersions` | `/api/puck/[collection]/[id]/versions` | GET, POST (restore) |
 
-```typescript
-// app/api/puck/[collection]/route.ts
-import { createPuckApiRoutes } from '@delmaredigital/payload-puck/api'
-import { getPayload } from 'payload'
-import config from '@payload-config'
-import { headers } from 'next/headers'
-
-export const { GET, POST } = createPuckApiRoutes({
-  payloadConfig: config,
-  auth: {
-    authenticate: async (request) => {
-      const payload = await getPayload({ config })
-      const { user } = await payload.auth({ headers: await headers() })
-      if (!user) return { authenticated: false }
-      return { authenticated: true, user: { id: user.id } }
-    },
-  },
-})
-```
+See the JSDoc in `@delmaredigital/payload-puck/api` for usage examples.
 
 ---
 
