@@ -8,7 +8,7 @@
  * like Elementor/Divi - each breakpoint is just on or off.
  */
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import {
   Smartphone,
@@ -18,8 +18,6 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
-import { Label } from '../components/ui/label'
-import { cn } from '../lib/utils'
 import type { Breakpoint, VisibilityValue } from './shared'
 import { BREAKPOINTS, DEFAULT_VISIBILITY } from './shared'
 
@@ -38,12 +36,87 @@ interface ResponsiveVisibilityFieldProps {
 // Breakpoint Icons
 // =============================================================================
 
-const BREAKPOINT_ICONS: Record<Breakpoint, React.ComponentType<{ className?: string }>> = {
+const BREAKPOINT_ICONS: Record<Breakpoint, React.ComponentType<{ className?: string; style?: CSSProperties }>> = {
   xs: Smartphone,
   sm: Smartphone,
   md: Tablet,
   lg: Laptop,
   xl: Monitor,
+}
+
+// =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  warningBadge: {
+    fontSize: '12px',
+    color: 'var(--theme-warning-500)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  } as CSSProperties,
+  toggleGrid: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  toggleButton: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '2px',
+    padding: '8px',
+    borderRadius: '6px',
+    flex: 1,
+    minWidth: '52px',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    border: '1px solid',
+  } as CSSProperties,
+  toggleVisible: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    color: 'rgb(16, 185, 129)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  } as CSSProperties,
+  toggleHidden: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    color: 'rgb(239, 68, 68)',
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+  } as CSSProperties,
+  toggleDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  toggleLabel: {
+    fontSize: '10px',
+    fontWeight: 500,
+  } as CSSProperties,
+  toggleIcon: {
+    position: 'absolute',
+    top: '4px',
+    right: '4px',
+  } as CSSProperties,
+  helpText: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
 }
 
 // =============================================================================
@@ -75,22 +148,19 @@ function VisibilityToggle({
       onClick={onClick}
       disabled={disabled}
       title={`${label}${minWidth ? ` (${minWidth}px+)` : ''}: ${isVisible ? 'Visible' : 'Hidden'}`}
-      className={cn(
-        'relative flex flex-col items-center justify-center gap-0.5 p-2 rounded-md transition-all flex-1 min-w-[52px]',
-        isVisible
-          ? 'bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/40'
-          : 'bg-red-500/15 text-red-500 hover:bg-red-500/25 border border-red-500/40',
-        disabled && 'opacity-50 cursor-not-allowed'
-      )}
+      style={{
+        ...styles.toggleButton,
+        ...(isVisible ? styles.toggleVisible : styles.toggleHidden),
+        ...(disabled ? styles.toggleDisabled : {}),
+      }}
     >
-      <DeviceIcon className="h-4 w-4" />
-      <span className="text-[10px] font-medium">{label}</span>
-      {/* Visibility icon overlay */}
-      <div className="absolute top-1 right-1">
+      <DeviceIcon style={{ width: '16px', height: '16px' }} />
+      <span style={styles.toggleLabel}>{label}</span>
+      <div style={styles.toggleIcon as CSSProperties}>
         {isVisible ? (
-          <Eye className="h-3 w-3" />
+          <Eye style={{ width: '12px', height: '12px' }} />
         ) : (
-          <EyeOff className="h-3 w-3" />
+          <EyeOff style={{ width: '12px', height: '12px' }} />
         )}
       </div>
     </button>
@@ -134,22 +204,22 @@ function ResponsiveVisibilityFieldInner({
   const hasHiddenBreakpoints = BREAKPOINTS.some((bp) => !getVisibility(bp.key))
 
   return (
-    <div className="puck-field space-y-2">
+    <div className="puck-field" style={styles.container}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div style={styles.header}>
         {label && (
-          <Label className="text-sm font-medium text-foreground">{label}</Label>
+          <label style={styles.label}>{label}</label>
         )}
         {hasHiddenBreakpoints && (
-          <span className="text-xs text-amber-600 flex items-center gap-1">
-            <EyeOff className="h-3 w-3" />
+          <span style={styles.warningBadge}>
+            <EyeOff style={{ width: '12px', height: '12px' }} />
             Partially hidden
           </span>
         )}
       </div>
 
       {/* Visibility Grid */}
-      <div className="flex gap-1">
+      <div style={styles.toggleGrid}>
         {BREAKPOINTS.map((bp) => (
           <VisibilityToggle
             key={bp.key}
@@ -164,7 +234,7 @@ function ResponsiveVisibilityFieldInner({
       </div>
 
       {/* Help text */}
-      <p className="text-xs text-muted-foreground">
+      <p style={styles.helpText}>
         Toggle visibility per screen size. Each breakpoint is independent.
       </p>
     </div>

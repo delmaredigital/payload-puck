@@ -11,7 +11,7 @@
  * - Per-side toggles (top, right, bottom, left)
  */
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import {
   X,
@@ -22,17 +22,6 @@ import {
 } from 'lucide-react'
 import { ColorPickerField } from './ColorPickerField'
 import type { BorderValue, ColorValue } from './shared'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -76,6 +65,133 @@ const BORDER_STYLES: Array<{ value: BorderStyle; label: string }> = [
 ]
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  preview: {
+    height: '64px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  previewText: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  inputLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  input: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  select: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sidesSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  sidesLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  sidesButtons: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  sideButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sideButtonActive: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sidesInfo: {
+    fontSize: '10px',
+    color: 'var(--theme-elevation-500)',
+    textAlign: 'center',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // BorderField Component
 // =============================================================================
 
@@ -115,10 +231,10 @@ function BorderFieldInner({
   }, [currentValue, onChange])
 
   // Handle style change
-  const handleStyleChange = useCallback((newStyle: BorderStyle) => {
+  const handleStyleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     onChange({
       ...currentValue,
-      style: newStyle,
+      style: e.target.value as BorderStyle,
     })
   }, [currentValue, onChange])
 
@@ -144,33 +260,36 @@ function BorderFieldInner({
     currentValue.sides.bottom &&
     currentValue.sides.left
 
+  const sideConfig = [
+    { side: 'top' as const, icon: ArrowUp, title: 'Top border' },
+    { side: 'right' as const, icon: ArrowRight, title: 'Right border' },
+    { side: 'bottom' as const, icon: ArrowDown, title: 'Bottom border' },
+    { side: 'left' as const, icon: ArrowLeft, title: 'Left border' },
+  ]
+
   return (
-    <div className="puck-field space-y-4">
+    <div className="puck-field" style={styles.container}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div style={styles.header}>
         {label && (
-          <Label className="text-sm font-medium text-foreground">
-            {label}
-          </Label>
+          <label style={styles.label}>{label}</label>
         )}
         {value && !readOnly && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-destructive"
+            style={styles.clearButton}
             title="Clear border"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
       {/* Border preview */}
       <div
-        className="h-16 bg-muted/50 rounded flex items-center justify-center"
         style={{
+          ...styles.preview,
           borderWidth: currentValue.style !== 'none' ? `${currentValue.width}px` : 0,
           borderStyle: currentValue.style,
           borderColor: currentValue.color?.hex || '#000000',
@@ -182,140 +301,96 @@ function BorderFieldInner({
           opacity: (currentValue.color?.opacity ?? 100) / 100,
         }}
       >
-        <span className="text-xs text-muted-foreground">Preview</span>
+        <span style={styles.previewText}>Preview</span>
       </div>
 
       {/* Width and Style row */}
-      <div className="grid grid-cols-2 gap-3">
+      <div style={styles.grid}>
         {/* Width */}
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Width (px)</Label>
-          <Input
+        <div style={styles.inputGroup as CSSProperties}>
+          <label style={styles.inputLabel}>Width (px)</label>
+          <input
             type="number"
             min={0}
             max={20}
             value={currentValue.width}
             onChange={handleWidthChange}
             disabled={readOnly}
-            className="h-8 text-sm font-mono"
+            style={styles.input}
           />
         </div>
 
         {/* Style */}
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Style</Label>
-          <Select
+        <div style={styles.inputGroup as CSSProperties}>
+          <label style={styles.inputLabel}>Style</label>
+          <select
             value={currentValue.style}
-            onValueChange={(val) => handleStyleChange(val as BorderStyle)}
+            onChange={handleStyleChange}
             disabled={readOnly}
+            style={styles.select}
           >
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue placeholder="Select style" />
-            </SelectTrigger>
-            <SelectContent>
-              {BORDER_STYLES.map((style) => (
-                <SelectItem key={style.value} value={style.value}>
-                  {style.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {BORDER_STYLES.map((style) => (
+              <option key={style.value} value={style.value}>
+                {style.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
       {/* Radius */}
-      <div className="space-y-1">
-        <Label className="text-xs text-muted-foreground">Radius (px)</Label>
-        <Input
+      <div style={styles.inputGroup as CSSProperties}>
+        <label style={styles.inputLabel}>Radius (px)</label>
+        <input
           type="number"
           min={0}
           max={100}
           value={currentValue.radius}
           onChange={handleRadiusChange}
           disabled={readOnly}
-          className="h-8 text-sm font-mono"
+          style={styles.input}
         />
       </div>
 
       {/* Color */}
-      <div className="space-y-1">
-        <ColorPickerField
-          value={currentValue.color}
-          onChange={handleColorChange}
-          label="Color"
-          readOnly={readOnly}
-          showOpacity={true}
-          presets={[
-            { hex: '#000000', label: 'Black' },
-            { hex: '#374151', label: 'Gray 700' },
-            { hex: '#6b7280', label: 'Gray 500' },
-            { hex: '#d1d5db', label: 'Gray 300' },
-            { hex: '#e5e7eb', label: 'Gray 200' },
-            { hex: '#3b82f6', label: 'Blue' },
-            { hex: '#ef4444', label: 'Red' },
-          ]}
-        />
-      </div>
+      <ColorPickerField
+        value={currentValue.color}
+        onChange={handleColorChange}
+        label="Color"
+        readOnly={readOnly}
+        showOpacity={true}
+        presets={[
+          { hex: '#000000', label: 'Black' },
+          { hex: '#374151', label: 'Gray 700' },
+          { hex: '#6b7280', label: 'Gray 500' },
+          { hex: '#d1d5db', label: 'Gray 300' },
+          { hex: '#e5e7eb', label: 'Gray 200' },
+          { hex: '#3b82f6', label: 'Blue' },
+          { hex: '#ef4444', label: 'Red' },
+        ]}
+      />
 
       {/* Per-side toggles */}
       {!readOnly && (
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Sides</Label>
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              type="button"
-              variant={currentValue.sides.top ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => handleSideToggle('top')}
-              className={cn(
-                "h-8 w-8",
-                currentValue.sides.top && "bg-primary hover:bg-primary/90"
-              )}
-              title="Top border"
-            >
-              <ArrowUp className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant={currentValue.sides.right ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => handleSideToggle('right')}
-              className={cn(
-                "h-8 w-8",
-                currentValue.sides.right && "bg-primary hover:bg-primary/90"
-              )}
-              title="Right border"
-            >
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant={currentValue.sides.bottom ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => handleSideToggle('bottom')}
-              className={cn(
-                "h-8 w-8",
-                currentValue.sides.bottom && "bg-primary hover:bg-primary/90"
-              )}
-              title="Bottom border"
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant={currentValue.sides.left ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => handleSideToggle('left')}
-              className={cn(
-                "h-8 w-8",
-                currentValue.sides.left && "bg-primary hover:bg-primary/90"
-              )}
-              title="Left border"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+        <div style={styles.sidesSection as CSSProperties}>
+          <label style={styles.sidesLabel}>Sides</label>
+          <div style={styles.sidesButtons}>
+            {sideConfig.map(({ side, icon: Icon, title }) => {
+              const isActive = currentValue.sides[side]
+              return (
+                <button
+                  key={side}
+                  type="button"
+                  onClick={() => handleSideToggle(side)}
+                  style={isActive ? styles.sideButtonActive : styles.sideButton}
+                  title={title}
+                >
+                  <Icon style={{ width: '16px', height: '16px' }} />
+                </button>
+              )
+            })}
           </div>
-          <p className="text-[10px] text-muted-foreground text-center">
+          <p style={styles.sidesInfo as CSSProperties}>
             {allSidesEnabled ? 'All sides' : 'Custom sides'}
           </p>
         </div>

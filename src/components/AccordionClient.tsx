@@ -140,20 +140,15 @@ export function AccordionClient({
     ? backgroundStyles
     : {}
 
+  const marginCSS = marginValueToCSS(margin)
+  const paddingCSS = paddingValueToCSS(customPadding)
+  const transformStyles = transformValueToCSS(transform)
+
   const style: React.CSSProperties = {
     ...dimensionsStyles,
-  }
-  const marginCSS = marginValueToCSS(margin)
-  if (marginCSS) {
-    style.margin = marginCSS
-  }
-  const paddingCSS = paddingValueToCSS(customPadding)
-  if (paddingCSS) {
-    style.padding = paddingCSS
-  }
-  const transformStyles = transformValueToCSS(transform)
-  if (transformStyles) {
-    Object.assign(style, transformStyles)
+    ...(marginCSS ? { margin: marginCSS } : {}),
+    ...(paddingCSS ? { padding: paddingCSS } : {}),
+    ...transformStyles,
   }
 
   if (!items || items.length === 0) {

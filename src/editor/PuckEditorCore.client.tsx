@@ -47,6 +47,9 @@ interface PuckDataWithMeta extends Data {
       title?: string
       slug?: string
       pageLayout?: string
+      // Page-tree integration fields
+      folder?: string | null
+      pageSegment?: string
       [key: string]: unknown
     }
   }
@@ -252,6 +255,9 @@ export function PuckEditorCore({
             puckData: data,
             title: typedData.root?.props?.title || pageTitle,
             slug: typedData.root?.props?.slug || pageSlug,
+            // Page-tree integration: include folder and pageSegment if present
+            folder: typedData.root?.props?.folder,
+            pageSegment: typedData.root?.props?.pageSegment,
             draft: true, // Save as draft, don't publish
           }),
         })
@@ -295,6 +301,9 @@ export function PuckEditorCore({
             puckData: data,
             title: typedData.root?.props?.title || pageTitle,
             slug: typedData.root?.props?.slug || pageSlug,
+            // Page-tree integration: include folder and pageSegment if present
+            folder: typedData.root?.props?.folder,
+            pageSegment: typedData.root?.props?.pageSegment,
             status: 'published',
           }),
         })
@@ -380,6 +389,9 @@ export function PuckEditorCore({
           puckData: data,
           title: data?.root?.props?.title || pageTitle,
           slug: data?.root?.props?.slug || pageSlug,
+          // Page-tree integration: include folder and pageSegment if present
+          folder: data?.root?.props?.folder,
+          pageSegment: data?.root?.props?.pageSegment,
           draft: true,
         }),
       })

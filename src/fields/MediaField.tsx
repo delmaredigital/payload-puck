@@ -7,15 +7,9 @@
  * media collection, allowing users to browse and select images.
  */
 
-import React, { useState, useEffect, useCallback, memo } from 'react'
+import React, { useState, useEffect, useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { Image, X, Search, Loader2, Upload, AlertCircle, Link } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog'
-import { Skeleton } from '../components/ui/skeleton'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -64,6 +58,379 @@ interface UrlState {
 }
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  label: {
+    display: 'block',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-700)',
+    marginBottom: '8px',
+  } as CSSProperties,
+  previewContainer: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '16px',
+  } as CSSProperties,
+  imagePreview: {
+    position: 'relative',
+  } as CSSProperties,
+  previewImage: {
+    width: '96px',
+    height: '96px',
+    objectFit: 'cover',
+    borderRadius: '6px',
+    border: '1px solid var(--theme-elevation-200)',
+  } as CSSProperties,
+  removeButton: {
+    position: 'absolute',
+    top: '-8px',
+    right: '-8px',
+    padding: '4px',
+    backgroundColor: 'var(--theme-error-500)',
+    color: 'white',
+    borderRadius: '50%',
+    border: 'none',
+    cursor: 'pointer',
+    opacity: 0,
+    transition: 'opacity 0.15s',
+  } as CSSProperties,
+  placeholder: {
+    width: '96px',
+    height: '96px',
+    backgroundColor: 'var(--theme-elevation-100)',
+    borderRadius: '6px',
+    border: '1px dashed var(--theme-elevation-300)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  actionsColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  buttonOutline: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-700)',
+    backgroundColor: 'var(--theme-bg)',
+    border: '1px solid var(--theme-elevation-300)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+  } as CSSProperties,
+  buttonGhost: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-error-600)',
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+  } as CSSProperties,
+  buttonPrimary: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-bg)',
+    backgroundColor: 'var(--theme-elevation-900)',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+  } as CSSProperties,
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  urlDisplay: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    marginTop: '8px',
+  } as CSSProperties,
+  // Dialog styles
+  dialogOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 9999,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  dialogContent: {
+    backgroundColor: 'var(--theme-bg)',
+    borderRadius: '8px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    width: '100%',
+    maxWidth: '800px',
+    maxHeight: '90vh',
+    margin: '16px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  } as CSSProperties,
+  dialogHeader: {
+    padding: '16px 20px',
+    borderBottom: '1px solid var(--theme-elevation-200)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexShrink: 0,
+  } as CSSProperties,
+  dialogTitle: {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: 'var(--theme-elevation-900)',
+    margin: 0,
+  } as CSSProperties,
+  closeButton: {
+    padding: '4px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    color: 'var(--theme-elevation-500)',
+    borderRadius: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  tabBar: {
+    display: 'flex',
+    borderBottom: '1px solid var(--theme-elevation-200)',
+    padding: '0 20px',
+    flexShrink: 0,
+  } as CSSProperties,
+  tabButton: {
+    padding: '12px 16px',
+    fontSize: '14px',
+    fontWeight: 500,
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderBottom: '2px solid transparent',
+    cursor: 'pointer',
+    transition: 'color 0.15s, border-color 0.15s',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  tabButtonActive: {
+    color: 'var(--theme-elevation-900)',
+    borderBottomColor: 'var(--theme-elevation-900)',
+  } as CSSProperties,
+  searchContainer: {
+    padding: '16px 20px',
+    position: 'relative',
+    flexShrink: 0,
+  } as CSSProperties,
+  searchInput: {
+    width: '100%',
+    padding: '8px 12px 8px 40px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-300)',
+    borderRadius: '6px',
+    outline: 'none',
+  } as CSSProperties,
+  searchIcon: {
+    position: 'absolute',
+    left: '32px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: 'var(--theme-elevation-400)',
+    pointerEvents: 'none',
+  } as CSSProperties,
+  contentArea: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '16px 20px',
+  } as CSSProperties,
+  mediaGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '16px',
+  } as CSSProperties,
+  mediaItem: {
+    position: 'relative',
+    aspectRatio: '1',
+    overflow: 'hidden',
+    borderRadius: '6px',
+    border: '2px solid var(--theme-elevation-200)',
+    cursor: 'pointer',
+    transition: 'border-color 0.15s, box-shadow 0.15s',
+    backgroundColor: 'var(--theme-elevation-100)',
+  } as CSSProperties,
+  mediaItemSelected: {
+    borderColor: 'var(--theme-elevation-900)',
+    boxShadow: '0 0 0 2px var(--theme-elevation-200)',
+  } as CSSProperties,
+  mediaItemImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  } as CSSProperties,
+  mediaItemAlt: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    color: 'white',
+    fontSize: '12px',
+    padding: '4px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  } as CSSProperties,
+  loadMoreContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '16px',
+  } as CSSProperties,
+  emptyState: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '200px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  skeleton: {
+    backgroundColor: 'var(--theme-elevation-200)',
+    borderRadius: '6px',
+    aspectRatio: '1',
+    animation: 'pulse 2s infinite',
+  } as CSSProperties,
+  uploadContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '300px',
+    padding: '20px',
+  } as CSSProperties,
+  uploadPreview: {
+    width: '100%',
+    maxWidth: '448px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  } as CSSProperties,
+  uploadImageContainer: {
+    position: 'relative',
+    aspectRatio: '16/9',
+    backgroundColor: 'var(--theme-elevation-100)',
+    borderRadius: '8px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  uploadImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  } as CSSProperties,
+  uploadMeta: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-500)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  errorBox: {
+    padding: '12px',
+    backgroundColor: 'var(--theme-error-50)',
+    border: '1px solid var(--theme-error-200)',
+    borderRadius: '6px',
+    color: 'var(--theme-error-700)',
+    fontSize: '14px',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '8px',
+  } as CSSProperties,
+  actionsRow: {
+    display: 'flex',
+    gap: '8px',
+  } as CSSProperties,
+  dropZone: {
+    textAlign: 'center',
+  } as CSSProperties,
+  dropZoneIcon: {
+    width: '64px',
+    height: '64px',
+    color: 'var(--theme-elevation-300)',
+    margin: '0 auto 16px',
+  } as CSSProperties,
+  hiddenInput: {
+    display: 'none',
+  } as CSSProperties,
+  urlContainer: {
+    width: '100%',
+    maxWidth: '448px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  } as CSSProperties,
+  urlIntro: {
+    textAlign: 'center',
+    marginBottom: '24px',
+  } as CSSProperties,
+  urlIcon: {
+    width: '48px',
+    height: '48px',
+    color: 'var(--theme-elevation-400)',
+    margin: '0 auto 8px',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  inputLabel: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-700)',
+  } as CSSProperties,
+  input: {
+    width: '100%',
+    padding: '8px 12px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-300)',
+    borderRadius: '6px',
+    outline: 'none',
+  } as CSSProperties,
+  previewLoading: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'var(--theme-elevation-100)',
+  } as CSSProperties,
+  icon: {
+    width: '16px',
+    height: '16px',
+  } as CSSProperties,
+  iconSmall: {
+    width: '12px',
+    height: '12px',
+    flexShrink: 0,
+  } as CSSProperties,
+}
+
+// =============================================================================
 // Utility Functions
 // =============================================================================
 
@@ -92,6 +459,8 @@ function MediaFieldInner({
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [activeTab, setActiveTab] = useState<DialogTab>('browse')
+  const [hoveredItem, setHoveredItem] = useState<string | number | null>(null)
+  const [previewHovered, setPreviewHovered] = useState(false)
   const [uploadState, setUploadState] = useState<UploadState>({
     file: null,
     preview: null,
@@ -115,7 +484,6 @@ function MediaFieldInner({
         sort: '-createdAt',
       })
 
-      // Filter by images only
       params.set('where[mimeType][contains]', 'image')
 
       if (searchTerm) {
@@ -194,7 +562,7 @@ function MediaFieldInner({
     fetchMedia(searchQuery, nextPage)
   }
 
-  // Reset upload state and cleanup object URL
+  // Reset upload state
   const resetUploadState = useCallback(() => {
     setUploadState((prev) => {
       if (prev.preview) URL.revokeObjectURL(prev.preview)
@@ -215,7 +583,6 @@ function MediaFieldInner({
       return
     }
 
-    // Basic URL validation
     try {
       new URL(url)
     } catch {
@@ -223,7 +590,6 @@ function MediaFieldInner({
       return
     }
 
-    // Use the URL directly (external image)
     onChange({
       id: `external-${Date.now()}`,
       url: url,
@@ -233,12 +599,10 @@ function MediaFieldInner({
     resetUrlState()
   }, [urlState.url, onChange, resetUrlState])
 
-  // Handle URL preview load
   const handleUrlPreviewLoad = useCallback(() => {
     setUrlState((prev) => ({ ...prev, previewLoaded: true, error: null }))
   }, [])
 
-  // Handle URL preview error
   const handleUrlPreviewError = useCallback(() => {
     setUrlState((prev) => ({
       ...prev,
@@ -257,7 +621,6 @@ function MediaFieldInner({
       return
     }
 
-    // Cleanup previous preview URL
     setUploadState((prev) => {
       if (prev.preview) URL.revokeObjectURL(prev.preview)
       return prev
@@ -310,73 +673,84 @@ function MediaFieldInner({
   }, [uploadState.file, apiEndpoint, onChange, resetUploadState])
 
   // Handle dialog close
-  const handleDialogClose = useCallback(
-    (open: boolean) => {
-      setIsOpen(open)
-      if (!open) {
-        resetUploadState()
-        resetUrlState()
-        setActiveTab('browse')
+  const handleDialogClose = useCallback(() => {
+    setIsOpen(false)
+    resetUploadState()
+    resetUrlState()
+    setActiveTab('browse')
+  }, [resetUploadState, resetUrlState])
+
+  // Handle escape key
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleDialogClose()
       }
-    },
-    [resetUploadState, resetUrlState]
-  )
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen, handleDialogClose])
 
   return (
     <div className="puck-field">
-      {label && (
-        <Label className="block text-sm font-medium text-foreground mb-2">
-          {label}
-        </Label>
-      )}
+      {label && <label style={styles.label}>{label}</label>}
 
-      <div className="space-y-2">
-        <div className="flex items-start gap-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={styles.previewContainer}>
           {/* Preview */}
           {value?.url ? (
-            <div className="relative group">
+            <div
+              style={styles.imagePreview}
+              onMouseEnter={() => setPreviewHovered(true)}
+              onMouseLeave={() => setPreviewHovered(false)}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={value.url}
                 alt={value.alt || ''}
-                className="w-24 h-24 object-cover rounded-md border border-border"
+                style={styles.previewImage}
               />
               {!readOnly && (
                 <button
                   type="button"
                   onClick={handleRemove}
-                  className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    ...styles.removeButton,
+                    opacity: previewHovered ? 1 : 0,
+                  }}
                   aria-label="Remove image"
                 >
-                  <X className="h-3 w-3" />
+                  <X style={styles.iconSmall} />
                 </button>
               )}
             </div>
           ) : (
-            <div className="w-24 h-24 bg-muted rounded-md border border-dashed border-input flex items-center justify-center">
-              <Image className="h-8 w-8 text-muted-foreground" />
+            <div style={styles.placeholder}>
+              <Image style={{ width: '32px', height: '32px', color: 'var(--theme-elevation-400)' }} />
             </div>
           )}
 
           {/* Actions */}
           {!readOnly && (
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+            <div style={styles.actionsColumn}>
+              <button
+                type="button"
                 onClick={() => setIsOpen(true)}
+                style={styles.buttonOutline}
               >
                 {value ? 'Change Image' : 'Select Image'}
-              </Button>
+              </button>
               {value && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={handleRemove}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  style={styles.buttonGhost}
                 >
                   Remove
-                </Button>
+                </button>
               )}
             </div>
           )}
@@ -384,9 +758,9 @@ function MediaFieldInner({
 
         {/* Current URL display */}
         {value?.url && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Link className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate max-w-[280px]" title={value.url}>
+          <div style={styles.urlDisplay}>
+            <Link style={styles.iconSmall} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }} title={value.url}>
               {value.url}
             </span>
           </div>
@@ -394,295 +768,308 @@ function MediaFieldInner({
       </div>
 
       {/* Media Picker Dialog */}
-      <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-        <DialogContent>
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle>Select Media</DialogTitle>
-          </DialogHeader>
-
-          {/* Tab Bar */}
-          <div className="flex border-b border-border -mt-2 flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => setActiveTab('browse')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'browse'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Browse Library
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('upload')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'upload'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Upload New
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('url')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'url'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              From URL
-            </button>
-          </div>
-
-          {/* Search (browse tab only) */}
-          {activeTab === 'browse' && (
-            <div className="relative flex-shrink-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search by alt text..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+      {isOpen && (
+        <div style={styles.dialogOverlay} onClick={handleDialogClose}>
+          <div style={styles.dialogContent} onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div style={styles.dialogHeader}>
+              <h2 style={styles.dialogTitle}>Select Media</h2>
+              <button type="button" onClick={handleDialogClose} style={styles.closeButton}>
+                <X style={styles.icon} />
+              </button>
             </div>
-          )}
 
-          {/* Content Area - explicit max height for reliable scrolling */}
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 180px)' }}>
-            {activeTab === 'browse' ? (
-              /* Browse Tab - Media Grid */
-              loading && mediaList.length === 0 ? (
-                <div className="grid grid-cols-4 gap-4">
-                  {[...Array(8)].map((_, i) => (
-                    <Skeleton key={i} className="aspect-square rounded-md" />
-                  ))}
-                </div>
-              ) : mediaList.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No images found
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-4 gap-4">
-                    {mediaList.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => handleSelect(item)}
-                        className={cn(
-                          'relative aspect-square overflow-hidden rounded-md border-2 transition-all hover:border-primary hover:shadow-md',
-                          value?.id === item.id ? 'border-primary ring-2 ring-ring/30' : 'border-border'
-                        )}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={item.url}
-                          alt={item.alt || item.filename || ''}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        {item.alt && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate">
-                            {item.alt}
-                          </div>
-                        )}
-                      </button>
+            {/* Tab Bar */}
+            <div style={styles.tabBar}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('browse')}
+                style={{
+                  ...styles.tabButton,
+                  ...(activeTab === 'browse' ? styles.tabButtonActive : {}),
+                }}
+              >
+                Browse Library
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('upload')}
+                style={{
+                  ...styles.tabButton,
+                  ...(activeTab === 'upload' ? styles.tabButtonActive : {}),
+                }}
+              >
+                Upload New
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('url')}
+                style={{
+                  ...styles.tabButton,
+                  ...(activeTab === 'url' ? styles.tabButtonActive : {}),
+                }}
+              >
+                From URL
+              </button>
+            </div>
+
+            {/* Search (browse tab only) */}
+            {activeTab === 'browse' && (
+              <div style={styles.searchContainer}>
+                <Search style={styles.searchIcon as CSSProperties} />
+                <input
+                  type="text"
+                  placeholder="Search by alt text..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={styles.searchInput}
+                />
+              </div>
+            )}
+
+            {/* Content Area */}
+            <div style={styles.contentArea}>
+              {activeTab === 'browse' ? (
+                /* Browse Tab */
+                loading && mediaList.length === 0 ? (
+                  <div style={styles.mediaGrid}>
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} style={styles.skeleton} />
                     ))}
                   </div>
-
-                  {/* Load More */}
-                  {hasMore && (
-                    <div className="flex justify-center mt-4">
-                      <Button
-                        variant="outline"
-                        onClick={handleLoadMore}
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Loading...
-                          </>
-                        ) : (
-                          'Load More'
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )
-            ) : activeTab === 'upload' ? (
-              /* Upload Tab */
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px]">
-                {uploadState.preview ? (
-                  <div className="w-full max-w-md space-y-4">
-                    {/* Preview */}
-                    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={uploadState.preview}
-                        alt="Preview"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>
-                        <span className="font-medium">Filename:</span> {uploadState.file?.name}
-                      </p>
-                      <p>
-                        <span className="font-medium">Size:</span>{' '}
-                        {formatFileSize(uploadState.file?.size)}
-                      </p>
-                    </div>
-
-                    {/* Error */}
-                    {uploadState.error && (
-                      <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md text-destructive text-sm flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                        <span>{uploadState.error}</span>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <Button onClick={handleUpload} disabled={uploadState.uploading}>
-                        {uploadState.uploading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload & Select
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={resetUploadState}
-                        disabled={uploadState.uploading}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
+                ) : mediaList.length === 0 ? (
+                  <div style={styles.emptyState}>No images found</div>
                 ) : (
-                  <div className="text-center">
-                    <Image className="h-16 w-16 text-muted mx-auto mb-4" />
-                    <label className="cursor-pointer">
-                      <Button asChild>
-                        <span>Select Image</span>
-                      </Button>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="mt-2 text-sm text-muted-foreground">Select an image file to upload</p>
-                    {uploadState.error && (
-                      <div className="mt-4 p-3 bg-destructive/10 border border-destructive/30 rounded-md text-destructive text-sm">
-                        {uploadState.error}
+                  <>
+                    <div style={styles.mediaGrid}>
+                      {mediaList.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handleSelect(item)}
+                          onMouseEnter={() => setHoveredItem(item.id)}
+                          onMouseLeave={() => setHoveredItem(null)}
+                          style={{
+                            ...styles.mediaItem,
+                            ...(value?.id === item.id ? styles.mediaItemSelected : {}),
+                            ...(hoveredItem === item.id ? { borderColor: 'var(--theme-elevation-600)' } : {}),
+                          }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.url}
+                            alt={item.alt || item.filename || ''}
+                            style={styles.mediaItemImage}
+                            loading="lazy"
+                          />
+                          {item.alt && (
+                            <div style={styles.mediaItemAlt}>{item.alt}</div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    {hasMore && (
+                      <div style={styles.loadMoreContainer}>
+                        <button
+                          type="button"
+                          onClick={handleLoadMore}
+                          disabled={loading}
+                          style={{
+                            ...styles.buttonOutline,
+                            ...(loading ? styles.buttonDisabled : {}),
+                          }}
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 style={{ ...styles.icon, marginRight: '8px', animation: 'spin 1s linear infinite' }} />
+                              Loading...
+                            </>
+                          ) : (
+                            'Load More'
+                          )}
+                        </button>
                       </div>
                     )}
-                  </div>
-                )}
-              </div>
-            ) : activeTab === 'url' ? (
-              /* URL Tab */
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px]">
-                <div className="w-full max-w-md space-y-4">
-                  <div className="text-center mb-6">
-                    <Link className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Enter an image URL from an external source
-                    </p>
-                  </div>
+                  </>
+                )
+              ) : activeTab === 'upload' ? (
+                /* Upload Tab */
+                <div style={styles.uploadContainer}>
+                  {uploadState.preview ? (
+                    <div style={styles.uploadPreview}>
+                      <div style={styles.uploadImageContainer}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={uploadState.preview}
+                          alt="Preview"
+                          style={styles.uploadImage}
+                        />
+                      </div>
 
-                  {/* URL Input */}
-                  <div className="space-y-2">
-                    <Label htmlFor="image-url">Image URL</Label>
-                    <Input
-                      id="image-url"
-                      type="url"
-                      placeholder="https://example.com/image.jpg"
-                      value={urlState.url}
-                      onChange={(e) =>
-                        setUrlState((prev) => ({
-                          ...prev,
-                          url: e.target.value,
-                          error: null,
-                          previewLoaded: false,
-                        }))
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          handleUrlSubmit()
-                        }
-                      }}
-                    />
-                  </div>
+                      <div style={styles.uploadMeta}>
+                        <p><span style={{ fontWeight: 500 }}>Filename:</span> {uploadState.file?.name}</p>
+                        <p><span style={{ fontWeight: 500 }}>Size:</span> {formatFileSize(uploadState.file?.size)}</p>
+                      </div>
 
-                  {/* Preview */}
-                  {urlState.url && !urlState.error && (
-                    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={urlState.url}
-                        alt="Preview"
-                        className="w-full h-full object-contain"
-                        onLoad={handleUrlPreviewLoad}
-                        onError={handleUrlPreviewError}
-                      />
-                      {!urlState.previewLoaded && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      {uploadState.error && (
+                        <div style={styles.errorBox}>
+                          <AlertCircle style={{ ...styles.icon, flexShrink: 0, marginTop: '2px' }} />
+                          <span>{uploadState.error}</span>
+                        </div>
+                      )}
+
+                      <div style={styles.actionsRow}>
+                        <button
+                          type="button"
+                          onClick={handleUpload}
+                          disabled={uploadState.uploading}
+                          style={{
+                            ...styles.buttonPrimary,
+                            ...(uploadState.uploading ? styles.buttonDisabled : {}),
+                          }}
+                        >
+                          {uploadState.uploading ? (
+                            <>
+                              <Loader2 style={{ ...styles.icon, marginRight: '8px', animation: 'spin 1s linear infinite' }} />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload style={{ ...styles.icon, marginRight: '8px' }} />
+                              Upload & Select
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetUploadState}
+                          disabled={uploadState.uploading}
+                          style={{
+                            ...styles.buttonOutline,
+                            ...(uploadState.uploading ? styles.buttonDisabled : {}),
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={styles.dropZone}>
+                      <Image style={styles.dropZoneIcon} />
+                      <label style={{ cursor: 'pointer' }}>
+                        <button type="button" style={styles.buttonPrimary}>
+                          Select Image
+                        </button>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          style={styles.hiddenInput}
+                        />
+                      </label>
+                      <p style={{ marginTop: '8px', fontSize: '14px', color: 'var(--theme-elevation-500)' }}>
+                        Select an image file to upload
+                      </p>
+                      {uploadState.error && (
+                        <div style={{ ...styles.errorBox, marginTop: '16px' }}>
+                          {uploadState.error}
                         </div>
                       )}
                     </div>
                   )}
-
-                  {/* Error */}
-                  {urlState.error && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md text-destructive text-sm flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <span>{urlState.error}</span>
+                </div>
+              ) : activeTab === 'url' ? (
+                /* URL Tab */
+                <div style={styles.uploadContainer}>
+                  <div style={styles.urlContainer}>
+                    <div style={styles.urlIntro as CSSProperties}>
+                      <Link style={styles.urlIcon} />
+                      <p style={{ fontSize: '14px', color: 'var(--theme-elevation-500)' }}>
+                        Enter an image URL from an external source
+                      </p>
                     </div>
-                  )}
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleUrlSubmit}
-                      disabled={!urlState.url || urlState.loading}
-                    >
-                      <Link className="h-4 w-4 mr-2" />
-                      Use This URL
-                    </Button>
-                    {urlState.url && (
-                      <Button variant="outline" onClick={resetUrlState}>
-                        Clear
-                      </Button>
+                    <div style={styles.inputGroup as CSSProperties}>
+                      <label style={styles.inputLabel} htmlFor="image-url">Image URL</label>
+                      <input
+                        id="image-url"
+                        type="url"
+                        placeholder="https://example.com/image.jpg"
+                        value={urlState.url}
+                        onChange={(e) =>
+                          setUrlState((prev) => ({
+                            ...prev,
+                            url: e.target.value,
+                            error: null,
+                            previewLoaded: false,
+                          }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleUrlSubmit()
+                          }
+                        }}
+                        style={styles.input}
+                      />
+                    </div>
+
+                    {urlState.url && !urlState.error && (
+                      <div style={styles.uploadImageContainer}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={urlState.url}
+                          alt="Preview"
+                          style={styles.uploadImage}
+                          onLoad={handleUrlPreviewLoad}
+                          onError={handleUrlPreviewError}
+                        />
+                        {!urlState.previewLoaded && (
+                          <div style={styles.previewLoading}>
+                            <Loader2 style={{ width: '32px', height: '32px', animation: 'spin 1s linear infinite', color: 'var(--theme-elevation-400)' }} />
+                          </div>
+                        )}
+                      </div>
                     )}
+
+                    {urlState.error && (
+                      <div style={styles.errorBox}>
+                        <AlertCircle style={{ ...styles.icon, flexShrink: 0, marginTop: '2px' }} />
+                        <span>{urlState.error}</span>
+                      </div>
+                    )}
+
+                    <div style={styles.actionsRow}>
+                      <button
+                        type="button"
+                        onClick={handleUrlSubmit}
+                        disabled={!urlState.url || urlState.loading}
+                        style={{
+                          ...styles.buttonPrimary,
+                          ...((!urlState.url || urlState.loading) ? styles.buttonDisabled : {}),
+                        }}
+                      >
+                        <Link style={{ ...styles.icon, marginRight: '8px' }} />
+                        Use This URL
+                      </button>
+                      {urlState.url && (
+                        <button
+                          type="button"
+                          onClick={resetUrlState}
+                          style={styles.buttonOutline}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   )
 }

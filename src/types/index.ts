@@ -18,9 +18,10 @@ export interface PuckAdminConfig {
   addEditButton?: boolean
 
   /**
-   * URL pattern for the Puck editor page (outside of Payload admin)
-   * Use {id} as placeholder for document ID
-   * @default '/pages/{id}/edit'
+   * Custom URL pattern for the Puck editor (for backwards compatibility)
+   * By default, the plugin uses the integrated admin view at /admin/puck-editor/:collection/:id
+   * Use {id} as placeholder for document ID, {collection} for collection slug
+   * @deprecated The editor is now integrated into Payload admin. Only use this for custom external editors.
    */
   editorPathPattern?: string
 
@@ -93,6 +94,89 @@ export interface PuckPluginOptions {
    * All values are optional and will fall back to defaults
    */
   theme?: ThemeConfig
+
+  /**
+   * Whether to enable the integrated admin view
+   * When enabled, the Puck editor is accessible at /admin/puck-editor/:collection/:id
+   * @default true
+   */
+  enableAdminView?: boolean
+
+  /**
+   * Custom path for the admin view (without /admin prefix)
+   * @default '/puck-editor'
+   */
+  adminViewPath?: string
+
+  /**
+   * Whether to enable built-in API endpoints
+   * When enabled, endpoints are registered at /api/puck/:collection/:id
+   * @default true
+   */
+  enableEndpoints?: boolean
+
+  /**
+   * Integration with @delmaredigital/payload-page-tree plugin
+   *
+   * **Auto-detection:** The Puck editor automatically detects if page-tree is active
+   * by checking for the `pageSegment` field on the collection. No configuration needed
+   * in most cases.
+   *
+   * Use this option only if you need to:
+   * - Explicitly disable page-tree integration: `pageTreeIntegration: false`
+   * - Override default field names if you customized page-tree config
+   *
+   * @example
+   * ```typescript
+   * // Usually not needed - auto-detected!
+   * createPuckPlugin({
+   *   pagesCollection: 'pages',
+   * })
+   *
+   * // Override field names if customized:
+   * createPuckPlugin({
+   *   pageTreeIntegration: {
+   *     folderSlug: 'my-folders',
+   *     pageSegmentFieldName: 'urlSegment',
+   *   },
+   * })
+   *
+   * // Explicitly disable even if page-tree is present:
+   * createPuckPlugin({
+   *   pageTreeIntegration: false,
+   * })
+   * ```
+   */
+  pageTreeIntegration?: boolean | PageTreeIntegrationOptions
+}
+
+/**
+ * Configuration options for page-tree integration
+ */
+export interface PageTreeIntegrationOptions {
+  /**
+   * Collection slug for folders
+   * @default 'payload-folders'
+   */
+  folderSlug?: string
+
+  /**
+   * Field name for folder path segments
+   * @default 'pathSegment'
+   */
+  segmentFieldName?: string
+
+  /**
+   * Field name for page segments
+   * @default 'pageSegment'
+   */
+  pageSegmentFieldName?: string
+
+  /**
+   * Field name for the folder relationship
+   * @default 'folder'
+   */
+  folderFieldName?: string
 }
 
 // =============================================================================
@@ -177,6 +261,17 @@ export interface PageDocument {
   createdAt: string
   updatedAt: string
   _status?: 'draft' | 'published'
+  // Page-tree fields (when pageTreeIntegration is enabled)
+  folder?: string | { id: string; name?: string; pathSegment?: string }
+  pageSegment?: string
+}
+
+/**
+ * Puck root props when page-tree integration is enabled
+ */
+export interface PageTreeRootProps extends PuckRootProps {
+  folder?: string | null
+  pageSegment?: string
 }
 
 // =============================================================================

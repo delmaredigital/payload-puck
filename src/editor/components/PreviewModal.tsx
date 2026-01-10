@@ -1,19 +1,14 @@
 'use client'
 
-import { useState, useCallback, memo, type MouseEvent } from 'react'
+import { useState, useCallback, memo, useEffect, type MouseEvent, type CSSProperties } from 'react'
 import type { Data as PuckData } from '@measured/puck'
-import {
-  Dialog,
-  DialogContentFullscreen,
-} from '../../components/ui/dialog'
 import {
   X,
   ExternalLink,
   AlertTriangle,
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
-import { PageRenderer } from '../../render/PageRenderer'
-import type { LayoutDefinition } from '../../layouts'
+import { PageRenderer } from '../../render/PageRenderer.js'
+import type { LayoutDefinition } from '../../layouts/index.js'
 
 export interface PreviewModalProps {
   /**
@@ -54,6 +49,206 @@ export interface PreviewModalProps {
   isSaving?: boolean
 }
 
+// Styles
+const styles = {
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 9990,
+    backgroundColor: 'var(--theme-bg)',
+  } as CSSProperties,
+  controlPanel: {
+    position: 'fixed',
+    top: '50%',
+    right: '16px',
+    transform: 'translateY(-50%)',
+    zIndex: 9998,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    alignItems: 'flex-end',
+  } as CSSProperties,
+  controlCard: {
+    backgroundColor: 'var(--theme-bg)',
+    borderRadius: '8px',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    border: '1px solid var(--theme-elevation-200)',
+    padding: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  closeButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-bg)',
+    backgroundColor: 'var(--theme-elevation-900)',
+    borderRadius: '6px',
+    transition: 'background-color 0.15s',
+    border: 'none',
+    cursor: 'pointer',
+  } as CSSProperties,
+  viewButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 12px',
+    fontSize: '14px',
+    color: 'var(--theme-elevation-600)',
+    backgroundColor: 'transparent',
+    borderRadius: '6px',
+    transition: 'background-color 0.15s, color 0.15s',
+    border: 'none',
+    cursor: 'pointer',
+  } as CSSProperties,
+  unsavedBadge: {
+    backgroundColor: 'var(--theme-warning-100)',
+    color: 'var(--theme-warning-700)',
+    padding: '6px 12px',
+    borderRadius: '9999px',
+    fontSize: '12px',
+    fontWeight: 500,
+    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+  } as CSSProperties,
+  content: {
+    height: '100%',
+    overflow: 'auto',
+    backgroundColor: 'var(--theme-bg)',
+  } as CSSProperties,
+  emptyState: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  // Navigation dialog styles
+  dialogOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 9999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  } as CSSProperties,
+  dialogContainer: {
+    backgroundColor: 'var(--theme-bg)',
+    borderRadius: '8px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    maxWidth: '448px',
+    width: '100%',
+    margin: '0 16px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  dialogHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '16px 20px',
+    borderBottom: '1px solid var(--theme-elevation-200)',
+    backgroundColor: 'var(--theme-warning-50)',
+  } as CSSProperties,
+  dialogIconWrapper: {
+    flexShrink: 0,
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--theme-warning-100)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  dialogTitle: {
+    fontSize: '16px',
+    fontWeight: 600,
+    color: 'var(--theme-elevation-900)',
+    margin: 0,
+  } as CSSProperties,
+  dialogSubtitle: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-500)',
+    margin: 0,
+  } as CSSProperties,
+  dialogBody: {
+    padding: '16px 20px',
+  } as CSSProperties,
+  dialogBodyText: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-700)',
+    margin: 0,
+    marginBottom: '8px',
+  } as CSSProperties,
+  dialogUrl: {
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    backgroundColor: 'var(--theme-elevation-100)',
+    padding: '8px 12px',
+    borderRadius: '4px',
+    color: 'var(--theme-elevation-800)',
+    wordBreak: 'break-all',
+  } as CSSProperties,
+  dialogWarning: {
+    fontSize: '14px',
+    color: 'var(--theme-warning-600)',
+    marginTop: '12px',
+    fontWeight: 500,
+  } as CSSProperties,
+  dialogFooter: {
+    padding: '16px 20px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderTop: '1px solid var(--theme-elevation-200)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  buttonSecondary: {
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-700)',
+    backgroundColor: 'var(--theme-bg)',
+    border: '1px solid var(--theme-elevation-300)',
+    borderRadius: '6px',
+    transition: 'background-color 0.15s',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonPrimary: {
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-bg)',
+    backgroundColor: 'var(--theme-elevation-900)',
+    border: 'none',
+    borderRadius: '6px',
+    transition: 'background-color 0.15s',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonDanger: {
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-error-700)',
+    backgroundColor: 'var(--theme-error-50)',
+    border: '1px solid var(--theme-error-200)',
+    borderRadius: '6px',
+    transition: 'background-color 0.15s',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  icon: {
+    width: '16px',
+    height: '16px',
+  } as CSSProperties,
+}
+
 /**
  * Full-screen preview modal with client-side rendering
  *
@@ -80,6 +275,25 @@ export const PreviewModal = memo(function PreviewModal({
   // Navigation confirmation state
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
   const [isNavigating, setIsNavigating] = useState(false)
+  const [viewButtonHovered, setViewButtonHovered] = useState(false)
+
+  // Handle escape key
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (pendingNavigation) {
+          setPendingNavigation(null)
+        } else {
+          onClose()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen, pendingNavigation, onClose])
 
   // Intercept link clicks
   const handleContentClick = useCallback((e: MouseEvent<HTMLDivElement>) => {
@@ -110,14 +324,12 @@ export const PreviewModal = memo(function PreviewModal({
 
     const navigate = () => {
       setIsNavigating(true)
-      // Close the preview and navigate
       onClose()
       window.location.href = pendingNavigation
     }
 
     if (saveFirst && onSave) {
       onSave().then(navigate).catch(() => {
-        // Save failed, don't navigate
         setIsNavigating(false)
       })
     } else {
@@ -130,104 +342,112 @@ export const PreviewModal = memo(function PreviewModal({
     setPendingNavigation(null)
   }, [])
 
+  if (!isOpen) return null
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContentFullscreen
-        hideCloseButton
-        accessibleTitle={`Preview: ${pageTitle || 'Page'}`}
-        className="p-0"
-      >
-        {/* Floating control panel - middle-right of screen, avoids sticky headers */}
-        <div className="fixed top-1/2 right-4 -translate-y-1/2 z-[9998] flex flex-col gap-2 items-end">
-          {/* Main controls card */}
-          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex flex-col gap-1">
-            {/* Close button - prominent */}
+    <div style={styles.overlay}>
+      {/* Floating control panel */}
+      <div style={styles.controlPanel}>
+        <div style={styles.controlCard}>
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onClose}
+            style={styles.closeButton}
+            title="Close preview (Esc)"
+          >
+            <X style={styles.icon} />
+            Close Preview
+          </button>
+
+          {/* View page button */}
+          {onOpenInNewTab && (
             <button
               type="button"
-              onClick={onClose}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition-colors"
-              title="Close preview (Esc)"
+              onClick={onOpenInNewTab}
+              style={{
+                ...styles.viewButton,
+                ...(viewButtonHovered ? {
+                  backgroundColor: 'var(--theme-elevation-100)',
+                  color: 'var(--theme-elevation-900)',
+                } : {}),
+              }}
+              onMouseEnter={() => setViewButtonHovered(true)}
+              onMouseLeave={() => setViewButtonHovered(false)}
+              title="Open published page in new tab"
             >
-              <X className="h-4 w-4" />
-              Close Preview
+              <ExternalLink style={styles.icon} />
+              View Page
             </button>
+          )}
+        </div>
 
-            {/* View page button */}
-            {onOpenInNewTab && (
-              <button
-                type="button"
-                onClick={onOpenInNewTab}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                title="Open published page in new tab"
-              >
-                <ExternalLink className="h-4 w-4" />
-                View Page
-              </button>
-            )}
+        {/* Status badge */}
+        {hasUnsavedChanges && (
+          <div style={styles.unsavedBadge}>
+            Unsaved changes
           </div>
+        )}
+      </div>
 
-          {/* Status badge */}
-          {hasUnsavedChanges && (
-            <div className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm">
-              Unsaved changes
-            </div>
-          )}
-        </div>
+      {/* Preview content */}
+      <div
+        style={styles.content}
+        onClickCapture={handleContentClick}
+      >
+        {data ? (
+          <PageRenderer data={data} layouts={layouts} />
+        ) : (
+          <div style={styles.emptyState}>
+            No content to preview
+          </div>
+        )}
+      </div>
 
-        {/* Preview content - full height, no padding needed */}
-        <div
-          className="h-full overflow-auto bg-white"
-          onClickCapture={handleContentClick}
-        >
-          {data ? (
-            <PageRenderer data={data} layouts={layouts} />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              No content to preview
-            </div>
-          )}
-        </div>
-
-        {/* Navigation confirmation dialog */}
-        {pendingNavigation && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-            <div
-              className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200 bg-amber-50">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">Navigate away?</h3>
-                  <p className="text-sm text-gray-500">This will close the preview</p>
-                </div>
+      {/* Navigation confirmation dialog */}
+      {pendingNavigation && (
+        <div style={styles.dialogOverlay}>
+          <div
+            style={styles.dialogContainer}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={styles.dialogHeader}>
+              <div style={styles.dialogIconWrapper}>
+                <AlertTriangle style={{ width: '20px', height: '20px', color: 'var(--theme-warning-600)' }} />
               </div>
-
-              {/* Body */}
-              <div className="px-5 py-4">
-                <p className="text-sm text-gray-700 mb-2">
-                  You&apos;re about to navigate to:
-                </p>
-                <p className="text-sm font-mono bg-gray-100 px-3 py-2 rounded text-gray-800 break-all">
-                  {pendingNavigation}
-                </p>
-                {hasUnsavedChanges && (
-                  <p className="text-sm text-amber-600 mt-3 font-medium">
-                    You have unsaved changes that will be lost.
-                  </p>
-                )}
+              <div>
+                <h3 style={styles.dialogTitle}>Navigate away?</h3>
+                <p style={styles.dialogSubtitle}>This will close the preview</p>
               </div>
+            </div>
 
-              {/* Footer */}
-              <div className="px-5 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:justify-end">
+            {/* Body */}
+            <div style={styles.dialogBody}>
+              <p style={styles.dialogBodyText}>
+                You&apos;re about to navigate to:
+              </p>
+              <p style={styles.dialogUrl}>
+                {pendingNavigation}
+              </p>
+              {hasUnsavedChanges && (
+                <p style={styles.dialogWarning}>
+                  You have unsaved changes that will be lost.
+                </p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={styles.dialogFooter}>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={handleCancelNavigation}
                   disabled={isNavigating || isSaving}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  style={{
+                    ...styles.buttonSecondary,
+                    ...((isNavigating || isSaving) ? styles.buttonDisabled : {}),
+                  }}
                 >
                   Cancel
                 </button>
@@ -236,7 +456,10 @@ export const PreviewModal = memo(function PreviewModal({
                     type="button"
                     onClick={() => handleNavigate(true)}
                     disabled={isNavigating || isSaving}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    style={{
+                      ...styles.buttonPrimary,
+                      ...((isNavigating || isSaving) ? styles.buttonDisabled : {}),
+                    }}
                   >
                     {isSaving ? 'Saving...' : 'Save & Navigate'}
                   </button>
@@ -245,20 +468,18 @@ export const PreviewModal = memo(function PreviewModal({
                   type="button"
                   onClick={() => handleNavigate(false)}
                   disabled={isNavigating || isSaving}
-                  className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50",
-                    hasUnsavedChanges
-                      ? "text-red-700 bg-red-50 border border-red-200 hover:bg-red-100"
-                      : "text-white bg-gray-900 hover:bg-gray-800"
-                  )}
+                  style={{
+                    ...(hasUnsavedChanges ? styles.buttonDanger : styles.buttonPrimary),
+                    ...((isNavigating || isSaving) ? styles.buttonDisabled : {}),
+                  }}
                 >
                   {isNavigating ? 'Navigating...' : hasUnsavedChanges ? 'Navigate without saving' : 'Navigate'}
                 </button>
               </div>
             </div>
           </div>
-        )}
-      </DialogContentFullscreen>
-    </Dialog>
+        </div>
+      )}
+    </div>
   )
 })

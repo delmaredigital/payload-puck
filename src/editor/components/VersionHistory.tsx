@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef, memo } from 'react'
+import { useState, useCallback, useEffect, useRef, memo, type CSSProperties } from 'react'
 import {
   History,
   Loader2,
@@ -49,6 +49,180 @@ export interface VersionHistoryProps {
   disabled?: boolean
 }
 
+// Shared styles
+const styles = {
+  container: {
+    position: 'relative',
+  } as CSSProperties,
+  button: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    padding: '6px 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    borderRadius: '6px',
+    transition: 'background-color 0.15s',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    border: '1px solid var(--theme-elevation-200)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  icon: {
+    width: '16px',
+    height: '16px',
+    marginRight: '4px',
+    flexShrink: 0,
+  } as CSSProperties,
+  iconSmall: {
+    width: '12px',
+    height: '12px',
+    marginLeft: '4px',
+    flexShrink: 0,
+  } as CSSProperties,
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    border: '1px solid var(--theme-elevation-200)',
+    borderRadius: '8px',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    zIndex: 50,
+    width: '320px',
+    maxHeight: '400px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  header: {
+    borderBottom: '1px solid var(--theme-elevation-200)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+  } as CSSProperties,
+  headerTitle: {
+    fontWeight: 500,
+    fontSize: '14px',
+    color: 'var(--theme-elevation-900)',
+  } as CSSProperties,
+  closeButton: {
+    color: 'var(--theme-elevation-400)',
+    transition: 'color 0.15s',
+    padding: '4px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+  } as CSSProperties,
+  content: {
+    maxHeight: '340px',
+    overflowY: 'auto',
+  } as CSSProperties,
+  loadingContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '32px',
+  } as CSSProperties,
+  loadingIcon: {
+    width: '20px',
+    height: '20px',
+    color: 'var(--theme-elevation-400)',
+    animation: 'spin 1s linear infinite',
+  } as CSSProperties,
+  errorText: {
+    fontSize: '14px',
+    color: 'var(--theme-error-600)',
+    padding: '16px',
+    textAlign: 'center',
+  } as CSSProperties,
+  emptyText: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-500)',
+    padding: '16px',
+    textAlign: 'center',
+  } as CSSProperties,
+  listContainer: {
+    padding: '8px',
+  } as CSSProperties,
+  versionItem: {
+    borderRadius: '6px',
+    transition: 'background-color 0.15s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 12px',
+    gap: '12px',
+  } as CSSProperties,
+  versionInfo: {
+    flex: 1,
+    minWidth: 0,
+  } as CSSProperties,
+  versionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  versionDate: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-900)',
+  } as CSSProperties,
+  badgeCurrent: {
+    fontSize: '12px',
+    fontWeight: 500,
+    borderRadius: '9999px',
+    padding: '2px 8px',
+    backgroundColor: 'var(--theme-elevation-100)',
+    color: 'var(--theme-elevation-700)',
+  } as CSSProperties,
+  badgePublished: {
+    fontSize: '12px',
+    fontWeight: 500,
+    borderRadius: '9999px',
+    padding: '2px 8px',
+    backgroundColor: 'var(--theme-success-100)',
+    color: 'var(--theme-success-700)',
+  } as CSSProperties,
+  autosaveText: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-400)',
+  } as CSSProperties,
+  versionDetails: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    marginTop: '2px',
+  } as CSSProperties,
+  restoreButton: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-700)',
+    transition: 'color 0.15s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 8px',
+    flexShrink: 0,
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+  } as CSSProperties,
+  restoreButtonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  checkIcon: {
+    width: '16px',
+    height: '16px',
+    color: 'var(--theme-elevation-400)',
+    flexShrink: 0,
+  } as CSSProperties,
+}
+
 /**
  * Version history dropdown for the Puck editor
  *
@@ -65,7 +239,8 @@ export const VersionHistory = memo(function VersionHistory({
   const [isRestoring, setIsRestoring] = useState(false)
   const [versions, setVersions] = useState<PageVersion[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [isAvailable, setIsAvailable] = useState<boolean | null>(null) // null = checking, false = not available
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Check if versions endpoint is available on mount
@@ -75,10 +250,8 @@ export const VersionHistory = memo(function VersionHistory({
         const response = await fetch(`${apiEndpoint}/${pageId}/versions?limit=1`, {
           method: 'GET',
         })
-        // 404 means endpoint doesn't exist, other errors might be auth-related
         setIsAvailable(response.status !== 404)
       } catch {
-        // Network error or other issue - assume not available
         setIsAvailable(false)
       }
     }
@@ -143,7 +316,6 @@ export const VersionHistory = memo(function VersionHistory({
 
         onRestore?.(version)
         setIsOpen(false)
-        // Reload the page to show restored version
         window.location.reload()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to restore version')
@@ -182,103 +354,87 @@ export const VersionHistory = memo(function VersionHistory({
     return null
   }
 
-  // Button styles
-  const baseBtn =
-    'inline-flex items-center whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors'
-  const secondaryBtn = `${baseBtn} text-gray-700 bg-white border border-gray-300 hover:bg-gray-100`
-
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} style={styles.container}>
       {/* Trigger button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`${secondaryBtn} disabled:opacity-50 disabled:cursor-not-allowed`}
+        style={{
+          ...styles.button,
+          ...(disabled ? styles.buttonDisabled : {}),
+        }}
       >
-        <History className="h-4 w-4 mr-1 flex-shrink-0" />
+        <History style={styles.icon} />
         History
-        <ChevronDown className="h-3 w-3 ml-1 flex-shrink-0" />
+        <ChevronDown style={styles.iconSmall} />
       </button>
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div
-          className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-80 max-h-[400px] overflow-hidden"
-        >
+        <div style={styles.dropdown}>
           {/* Header */}
-          <div
-            className="border-b border-gray-200 flex items-center justify-between px-4 py-3"
-          >
-            <span className="font-medium text-sm text-gray-900">Version History</span>
+          <div style={styles.header}>
+            <span style={styles.headerTitle}>Version History</span>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+              style={styles.closeButton}
             >
-              <X className="h-4 w-4" />
+              <X style={{ width: '16px', height: '16px' }} />
             </button>
           </div>
 
           {/* Content */}
-          <div className="max-h-[340px] overflow-y-auto">
+          <div style={styles.content}>
             {isLoading ? (
-              <div
-                className="flex items-center justify-center p-8"
-              >
-                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              <div style={styles.loadingContainer}>
+                <Loader2 style={styles.loadingIcon} />
               </div>
             ) : error ? (
-              <div
-                className="text-sm text-red-600 p-4 text-center"
-              >
+              <div style={styles.errorText as CSSProperties}>
                 {error}
               </div>
             ) : versions.length === 0 ? (
-              <div
-                className="text-sm text-gray-500 p-4 text-center"
-              >
+              <div style={styles.emptyText as CSSProperties}>
                 No version history available
               </div>
             ) : (
-              <div className="p-2">
+              <div style={styles.listContainer}>
                 {versions.map((version, index) => (
                   <div
                     key={version.id}
-                    className="hover:bg-gray-50 rounded-md transition-colors flex items-center justify-between px-3 py-2.5 gap-3"
+                    style={{
+                      ...styles.versionItem,
+                      backgroundColor: hoveredIndex === index ? 'var(--theme-elevation-50)' : 'transparent',
+                    }}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
                   >
                     {/* Version info */}
-                    <div className="flex-1 min-w-0">
-                      <div
-                        className="flex items-center gap-2"
-                      >
-                        <span className="text-sm font-medium text-gray-900">
+                    <div style={styles.versionInfo}>
+                      <div style={styles.versionHeader}>
+                        <span style={styles.versionDate}>
                           {formatDate(version.updatedAt)}
                         </span>
                         {index === 0 && (
-                          <span
-                            className="text-xs font-medium rounded-full px-2 py-0.5 bg-blue-100 text-blue-700"
-                          >
+                          <span style={styles.badgeCurrent}>
                             Current
                           </span>
                         )}
                         {version.version._status === 'published' && (
-                          <span
-                            className="text-xs font-medium rounded-full px-2 py-0.5 bg-green-100 text-green-700"
-                          >
+                          <span style={styles.badgePublished}>
                             Published
                           </span>
                         )}
                         {version.autosave && (
-                          <span
-                            className="text-xs text-gray-400"
-                            title="Autosaved"
-                          >
+                          <span style={styles.autosaveText} title="Autosaved">
                             (auto)
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div style={styles.versionDetails}>
                         {formatTime(version.updatedAt)}
                         {version.version.title && (
                           <span> &middot; {version.version.title}</span>
@@ -292,12 +448,15 @@ export const VersionHistory = memo(function VersionHistory({
                         type="button"
                         onClick={() => handleRestore(version)}
                         disabled={isRestoring}
-                        className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50 flex items-center gap-1 px-2 py-1 flex-shrink-0"
+                        style={{
+                          ...styles.restoreButton,
+                          ...(isRestoring ? styles.restoreButtonDisabled : {}),
+                        }}
                       >
                         {isRestoring ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <Loader2 style={{ width: '12px', height: '12px', animation: 'spin 1s linear infinite' }} />
                         ) : (
-                          <RotateCcw className="h-3 w-3" />
+                          <RotateCcw style={{ width: '12px', height: '12px' }} />
                         )}
                         Restore
                       </button>
@@ -305,8 +464,8 @@ export const VersionHistory = memo(function VersionHistory({
 
                     {/* Current indicator */}
                     {index === 0 && (
-                      <span className="text-gray-400 flex-shrink-0">
-                        <Check className="h-4 w-4" />
+                      <span style={{ flexShrink: 0 }}>
+                        <Check style={styles.checkIcon} />
                       </span>
                     )}
                   </div>

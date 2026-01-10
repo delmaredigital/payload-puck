@@ -7,13 +7,9 @@
  * that reveals detailed controls for height, padding, and font size.
  */
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { X } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -64,6 +60,149 @@ const CUSTOM_DEFAULTS: Required<Omit<SizeValue, 'mode'>> = {
 }
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonGroup: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+  } as CSSProperties,
+  button: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '4px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonActive: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '4px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  customPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+  } as CSSProperties,
+  unitRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  unitLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+    flexShrink: 0,
+  } as CSSProperties,
+  unitButtons: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  unitButton: {
+    height: '28px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  unitButtonActive: {
+    height: '28px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  inputGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  inputLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  input: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  summary: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    fontFamily: 'monospace',
+    paddingTop: '4px',
+    borderTop: '1px solid var(--theme-elevation-100)',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // SizeField Component
 // =============================================================================
 
@@ -77,10 +216,8 @@ function SizeFieldInner({
 }: SizeFieldProps) {
   const currentValue = value || DEFAULT_VALUE
 
-  // Handle mode change
   const handleModeChange = useCallback((mode: SizeMode) => {
     if (mode === 'custom') {
-      // Initialize custom values when switching to custom
       onChange({
         mode,
         ...CUSTOM_DEFAULTS,
@@ -90,7 +227,6 @@ function SizeFieldInner({
     }
   }, [onChange])
 
-  // Handle numeric value changes
   const handleValueChange = useCallback((
     field: 'height' | 'paddingX' | 'paddingY' | 'fontSize',
     val: number
@@ -101,7 +237,6 @@ function SizeFieldInner({
     })
   }, [currentValue, onChange])
 
-  // Handle unit change
   const handleUnitChange = useCallback((unit: SizeUnit) => {
     onChange({
       ...currentValue,
@@ -109,7 +244,6 @@ function SizeFieldInner({
     })
   }, [currentValue, onChange])
 
-  // Handle clear
   const handleClear = useCallback(() => {
     onChange(null)
   }, [onChange])
@@ -122,145 +256,121 @@ function SizeFieldInner({
   ]
 
   return (
-    <div className="puck-field space-y-3">
+    <div className="puck-field" style={styles.container}>
       {/* Header with label and clear */}
-      <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-foreground">
-          {label}
-        </Label>
+      <div style={styles.header}>
+        <label style={styles.label}>{label}</label>
         {value && !readOnly && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-destructive"
+            style={styles.clearButton}
             title="Reset to default"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
       {/* Size mode selector */}
-      <div className="flex flex-wrap gap-1">
+      <div style={styles.buttonGroup}>
         {presets.map(({ mode, label: modeLabel }) => {
           const isActive = currentValue.mode === mode
           return (
-            <Button
+            <button
               key={mode}
               type="button"
-              variant={isActive ? 'default' : 'secondary'}
-              size="sm"
               onClick={() => handleModeChange(mode)}
               disabled={readOnly}
-              className={cn(
-                "text-xs",
-                isActive && "bg-primary hover:bg-primary/90"
-              )}
+              style={isActive ? styles.buttonActive : styles.button}
             >
               {modeLabel}
-            </Button>
+            </button>
           )
         })}
       </div>
 
       {/* Custom size controls */}
       {currentValue.mode === 'custom' && (
-        <div className="space-y-3 p-3 bg-muted/50 rounded-md">
+        <div style={styles.customPanel as CSSProperties}>
           {/* Unit selector */}
-          <div className="flex items-center gap-2">
-            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground flex-shrink-0">
-              Unit:
-            </Label>
-            <div className="flex gap-1">
+          <div style={styles.unitRow}>
+            <label style={styles.unitLabel as CSSProperties}>Unit:</label>
+            <div style={styles.unitButtons}>
               {(['px', 'rem'] as SizeUnit[]).map((unit) => {
                 const isActive = (currentValue.unit || 'px') === unit
                 return (
-                  <Button
+                  <button
                     key={unit}
                     type="button"
-                    variant={isActive ? 'default' : 'outline'}
-                    size="sm"
                     onClick={() => handleUnitChange(unit)}
                     disabled={readOnly}
-                    className={cn(
-                      "text-xs font-mono h-7 px-2",
-                      isActive && "bg-primary hover:bg-primary/90"
-                    )}
+                    style={isActive ? styles.unitButtonActive : styles.unitButton}
                   >
                     {unit}
-                  </Button>
+                  </button>
                 )
               })}
             </div>
           </div>
 
           {/* Numeric inputs */}
-          <div className="grid grid-cols-2 gap-2">
+          <div style={styles.inputGrid}>
             {showHeight && (
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  Height
-                </Label>
-                <Input
+              <div style={styles.inputGroup as CSSProperties}>
+                <label style={styles.inputLabel as CSSProperties}>Height</label>
+                <input
                   type="number"
                   min={0}
                   value={currentValue.height ?? CUSTOM_DEFAULTS.height}
                   onChange={(e) => handleValueChange('height', parseInt(e.target.value, 10) || 0)}
                   disabled={readOnly}
-                  className="h-8 text-sm font-mono"
+                  style={styles.input}
                 />
               </div>
             )}
 
             {showFontSize && (
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  Font Size
-                </Label>
-                <Input
+              <div style={styles.inputGroup as CSSProperties}>
+                <label style={styles.inputLabel as CSSProperties}>Font Size</label>
+                <input
                   type="number"
                   min={0}
                   value={currentValue.fontSize ?? CUSTOM_DEFAULTS.fontSize}
                   onChange={(e) => handleValueChange('fontSize', parseInt(e.target.value, 10) || 0)}
                   disabled={readOnly}
-                  className="h-8 text-sm font-mono"
+                  style={styles.input}
                 />
               </div>
             )}
 
-            <div className="space-y-1">
-              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Padding X
-              </Label>
-              <Input
+            <div style={styles.inputGroup as CSSProperties}>
+              <label style={styles.inputLabel as CSSProperties}>Padding X</label>
+              <input
                 type="number"
                 min={0}
                 value={currentValue.paddingX ?? CUSTOM_DEFAULTS.paddingX}
                 onChange={(e) => handleValueChange('paddingX', parseInt(e.target.value, 10) || 0)}
                 disabled={readOnly}
-                className="h-8 text-sm font-mono"
+                style={styles.input}
               />
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Padding Y
-              </Label>
-              <Input
+            <div style={styles.inputGroup as CSSProperties}>
+              <label style={styles.inputLabel as CSSProperties}>Padding Y</label>
+              <input
                 type="number"
                 min={0}
                 value={currentValue.paddingY ?? CUSTOM_DEFAULTS.paddingY}
                 onChange={(e) => handleValueChange('paddingY', parseInt(e.target.value, 10) || 0)}
                 disabled={readOnly}
-                className="h-8 text-sm font-mono"
+                style={styles.input}
               />
             </div>
           </div>
 
           {/* Preview summary */}
-          <div className="text-xs text-muted-foreground font-mono pt-1 border-t border-border/50">
+          <div style={styles.summary}>
             {showHeight && `h: ${currentValue.height ?? CUSTOM_DEFAULTS.height}${currentValue.unit || 'px'}`}
             {showHeight && ' | '}
             {`p: ${currentValue.paddingY ?? CUSTOM_DEFAULTS.paddingY}${currentValue.unit || 'px'} ${currentValue.paddingX ?? CUSTOM_DEFAULTS.paddingX}${currentValue.unit || 'px'}`}
@@ -280,9 +390,6 @@ export const SizeField = memo(SizeFieldInner)
 
 /**
  * Convert SizeValue to CSS properties object
- *
- * For preset modes, returns undefined (use Tailwind classes instead)
- * For custom mode, returns inline styles
  */
 export function sizeValueToCSS(size: SizeValue | null | undefined): React.CSSProperties | undefined {
   if (!size || size.mode !== 'custom') return undefined
@@ -309,7 +416,6 @@ export function sizeValueToCSS(size: SizeValue | null | undefined): React.CSSPro
 
 /**
  * Get Tailwind classes for preset size modes
- * Returns empty string for custom mode (use inline styles instead)
  */
 export function getSizeClasses(size: SizeValue | null | undefined, sizeMap: Record<string, string>): string {
   if (!size) return sizeMap.default || ''
@@ -329,13 +435,6 @@ interface CreateSizeFieldConfig {
 
 /**
  * Creates a Puck field configuration for size control
- *
- * @example
- * ```ts
- * fields: {
- *   size: createSizeField({ label: 'Button Size' }),
- * }
- * ```
  */
 export function createSizeField(
   config: CreateSizeFieldConfig = {}

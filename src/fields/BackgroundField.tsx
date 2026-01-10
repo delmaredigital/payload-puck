@@ -10,7 +10,7 @@
  * - Image: Background image from media library with sizing options
  */
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { X } from 'lucide-react'
 import type {
@@ -21,20 +21,10 @@ import type {
   GradientMask,
   BackgroundOverlay,
 } from './shared'
-import { backgroundValueToCSS, colorValueToCSS, getBackgroundImageOpacity } from './shared'
+import { backgroundValueToCSS, getBackgroundImageOpacity } from './shared'
 import { ColorPickerField } from './ColorPickerField'
 import { MediaField, type MediaReference } from './MediaField'
 import { GradientEditor } from './GradientEditor'
-import { Label } from '../components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select'
-import { Checkbox } from '../components/ui/checkbox'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -101,6 +91,204 @@ const DEFAULT_OVERLAY: BackgroundOverlay = {
 }
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  tabContainer: {
+    display: 'flex',
+    gap: '4px',
+    padding: '4px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '8px',
+  } as CSSProperties,
+  tabButton: {
+    flex: 1,
+    padding: '6px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: 'none',
+    borderRadius: '6px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  tabButtonActive: {
+    flex: 1,
+    padding: '6px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: 'none',
+    borderRadius: '6px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  tabButtonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  previewContainer: {
+    position: 'relative',
+    height: '64px',
+    borderRadius: '6px',
+    border: '1px solid var(--theme-elevation-150)',
+    overflow: 'hidden',
+  } as CSSProperties,
+  previewEmpty: {
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    backgroundColor: 'var(--theme-elevation-50)',
+  } as CSSProperties,
+  checkerboard: {
+    position: 'absolute',
+    inset: 0,
+    backgroundImage:
+      'linear-gradient(45deg, #e0e0e0 25%, transparent 25%), linear-gradient(-45deg, #e0e0e0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e0e0e0 75%), linear-gradient(-45deg, transparent 75%, #e0e0e0 75%)',
+    backgroundSize: '12px 12px',
+    backgroundPosition: '0 0, 0 6px, 6px -6px, -6px 0px',
+  } as CSSProperties,
+  contentContainer: {
+    minHeight: '100px',
+  } as CSSProperties,
+  emptyContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '96px',
+    fontSize: '14px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  imageOptionsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  } as CSSProperties,
+  optionsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    paddingTop: '8px',
+    borderTop: '1px solid var(--theme-elevation-150)',
+  } as CSSProperties,
+  optionRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  optionLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    width: '80px',
+    flexShrink: 0,
+  } as CSSProperties,
+  optionLabelSmall: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    width: '48px',
+    flexShrink: 0,
+  } as CSSProperties,
+  select: {
+    flex: 1,
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  selectSmall: {
+    flex: 1,
+    minWidth: 0,
+    height: '28px',
+    padding: '0 8px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  slider: {
+    flex: 1,
+    minWidth: 0,
+    height: '6px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sliderValue: {
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    color: 'var(--theme-elevation-500)',
+    width: '32px',
+    textAlign: 'right',
+    flexShrink: 0,
+  } as CSSProperties,
+  checkboxRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+  } as CSSProperties,
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  checkboxLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  maskSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    paddingLeft: '24px',
+  } as CSSProperties,
+  overlaySection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    paddingTop: '12px',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // Tab Button Component
 // =============================================================================
 
@@ -117,13 +305,10 @@ function TabButton({ active, onClick, disabled, children }: TabButtonProps) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        'px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex-1',
-        active
-          ? 'bg-primary text-primary-foreground'
-          : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-        disabled && 'opacity-50 cursor-not-allowed'
-      )}
+      style={{
+        ...(active ? styles.tabButtonActive : styles.tabButton),
+        ...(disabled ? styles.tabButtonDisabled : {}),
+      }}
     >
       {children}
     </button>
@@ -144,40 +329,24 @@ function BackgroundPreview({ value }: BackgroundPreviewProps) {
   const hasBackground = value.type !== 'none' && Object.keys(style).length > 0
 
   return (
-    <div
-      className={cn(
-        'relative h-16 rounded-md border border-input overflow-hidden',
-        !hasBackground && 'bg-muted'
-      )}
-    >
+    <div style={styles.previewContainer as CSSProperties}>
       {/* Checkerboard background for transparency preview */}
-      {hasBackground && (
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              'linear-gradient(45deg, #e0e0e0 25%, transparent 25%), linear-gradient(-45deg, #e0e0e0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e0e0e0 75%), linear-gradient(-45deg, transparent 75%, #e0e0e0 75%)',
-            backgroundSize: '12px 12px',
-            backgroundPosition: '0 0, 0 6px, 6px -6px, -6px 0px',
-          }}
-        />
-      )}
+      {hasBackground && <div style={styles.checkerboard as CSSProperties} />}
 
       {/* Background layer */}
       {hasBackground && (
         <div
-          className="absolute inset-0"
           style={{
+            position: 'absolute',
+            inset: 0,
             ...style,
             opacity: imageOpacity !== undefined ? imageOpacity : 1,
-          }}
+          } as CSSProperties}
         />
       )}
 
       {!hasBackground && (
-        <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-          No background
-        </div>
+        <div style={styles.previewEmpty}>No background</div>
       )}
     </div>
   )
@@ -279,7 +448,7 @@ function ImageOptionsInner({ value, onChange, readOnly, apiEndpoint }: ImageOpti
   const maskEnabled = value.mask?.enabled ?? false
 
   return (
-    <div className="space-y-4">
+    <div style={styles.imageOptionsContainer as CSSProperties}>
       {/* Media Picker */}
       <MediaField
         value={value.media}
@@ -290,180 +459,154 @@ function ImageOptionsInner({ value, onChange, readOnly, apiEndpoint }: ImageOpti
 
       {/* Image Options - only show when image is selected */}
       {value.media && (
-        <div className="space-y-3 pt-2 border-t border-border">
+        <div style={styles.optionsSection as CSSProperties}>
           {/* Opacity */}
-          <div className="flex items-center gap-2 min-w-0">
-            <Label className="text-xs text-muted-foreground w-16 flex-shrink-0">Opacity</Label>
-            <div className="flex-1 min-w-0">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={opacity}
-                onChange={handleOpacityChange}
-                disabled={readOnly}
-                className="w-full h-1.5 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            <span className="text-xs text-muted-foreground font-mono w-8 text-right flex-shrink-0">
-              {opacity}%
-            </span>
+          <div style={styles.optionRow}>
+            <label style={styles.optionLabel}>Opacity</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={opacity}
+              onChange={handleOpacityChange}
+              disabled={readOnly}
+              style={styles.slider}
+            />
+            <span style={styles.sliderValue as CSSProperties}>{opacity}%</span>
           </div>
 
           {/* Size */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground w-20">Size</Label>
-            <Select
+          <div style={styles.optionRow}>
+            <label style={styles.optionLabel}>Size</label>
+            <select
               value={value.size}
-              onValueChange={(v) => handleSizeChange(v as BackgroundImageValue['size'])}
+              onChange={(e) => handleSizeChange(e.target.value as BackgroundImageValue['size'])}
               disabled={readOnly}
+              style={styles.select}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cover">Cover</SelectItem>
-                <SelectItem value="contain">Contain</SelectItem>
-                <SelectItem value="auto">Auto</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="cover">Cover</option>
+              <option value="contain">Contain</option>
+              <option value="auto">Auto</option>
+            </select>
           </div>
 
           {/* Position */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground w-20">Position</Label>
-            <Select
+          <div style={styles.optionRow}>
+            <label style={styles.optionLabel}>Position</label>
+            <select
               value={value.position}
-              onValueChange={(v) => handlePositionChange(v as BackgroundImageValue['position'])}
+              onChange={(e) => handlePositionChange(e.target.value as BackgroundImageValue['position'])}
               disabled={readOnly}
+              style={styles.select}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="center">Center</SelectItem>
-                <SelectItem value="top">Top</SelectItem>
-                <SelectItem value="bottom">Bottom</SelectItem>
-                <SelectItem value="left">Left</SelectItem>
-                <SelectItem value="right">Right</SelectItem>
-                <SelectItem value="top-left">Top Left</SelectItem>
-                <SelectItem value="top-right">Top Right</SelectItem>
-                <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                <SelectItem value="bottom-right">Bottom Right</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="center">Center</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+            </select>
           </div>
 
           {/* Repeat */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground w-20">Repeat</Label>
-            <Select
+          <div style={styles.optionRow}>
+            <label style={styles.optionLabel}>Repeat</label>
+            <select
               value={value.repeat}
-              onValueChange={(v) => handleRepeatChange(v as BackgroundImageValue['repeat'])}
+              onChange={(e) => handleRepeatChange(e.target.value as BackgroundImageValue['repeat'])}
               disabled={readOnly}
+              style={styles.select}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="no-repeat">No Repeat</SelectItem>
-                <SelectItem value="repeat">Repeat</SelectItem>
-                <SelectItem value="repeat-x">Repeat X</SelectItem>
-                <SelectItem value="repeat-y">Repeat Y</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="no-repeat">No Repeat</option>
+              <option value="repeat">Repeat</option>
+              <option value="repeat-x">Repeat X</option>
+              <option value="repeat-y">Repeat Y</option>
+            </select>
           </div>
 
           {/* Attachment */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground w-20">Attachment</Label>
-            <Select
+          <div style={styles.optionRow}>
+            <label style={styles.optionLabel}>Attachment</label>
+            <select
               value={value.attachment}
-              onValueChange={(v) => handleAttachmentChange(v as BackgroundImageValue['attachment'])}
+              onChange={(e) => handleAttachmentChange(e.target.value as BackgroundImageValue['attachment'])}
               disabled={readOnly}
+              style={styles.select}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="scroll">Scroll</SelectItem>
-                <SelectItem value="fixed">Fixed</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="scroll">Scroll</option>
+              <option value="fixed">Fixed</option>
+            </select>
           </div>
 
           {/* Fade to Transparent (Gradient Mask) */}
-          <div className="space-y-2 pt-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '12px' } as CSSProperties}>
+            <label style={styles.checkboxRow}>
+              <input
+                type="checkbox"
                 checked={maskEnabled}
-                onCheckedChange={handleMaskToggle}
+                onChange={(e) => handleMaskToggle(e.target.checked)}
                 disabled={readOnly}
+                style={styles.checkbox}
               />
-              <span className="text-xs text-muted-foreground">Fade to transparent</span>
+              <span style={styles.checkboxLabel}>Fade to transparent</span>
             </label>
 
             {maskEnabled && (
-              <div className="space-y-2 pl-6">
+              <div style={styles.maskSection as CSSProperties}>
                 {/* Direction */}
-                <div className="flex items-center gap-2 min-w-0">
-                  <Label className="text-xs text-muted-foreground w-12 flex-shrink-0">Dir</Label>
-                  <Select
+                <div style={styles.optionRow}>
+                  <label style={styles.optionLabelSmall}>Dir</label>
+                  <select
                     value={value.mask?.direction || 'to-bottom'}
-                    onValueChange={(v) => handleMaskDirectionChange(v as GradientMask['direction'])}
+                    onChange={(e) => handleMaskDirectionChange(e.target.value as GradientMask['direction'])}
                     disabled={readOnly}
+                    style={styles.selectSmall}
                   >
-                    <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="to-top">To Top</SelectItem>
-                      <SelectItem value="to-bottom">To Bottom</SelectItem>
-                      <SelectItem value="to-left">To Left</SelectItem>
-                      <SelectItem value="to-right">To Right</SelectItem>
-                      <SelectItem value="to-top-left">To Top Left</SelectItem>
-                      <SelectItem value="to-top-right">To Top Right</SelectItem>
-                      <SelectItem value="to-bottom-left">To Bottom Left</SelectItem>
-                      <SelectItem value="to-bottom-right">To Bottom Right</SelectItem>
-                      <SelectItem value="from-center">From Center (Radial)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="to-top">To Top</option>
+                    <option value="to-bottom">To Bottom</option>
+                    <option value="to-left">To Left</option>
+                    <option value="to-right">To Right</option>
+                    <option value="to-top-left">To Top Left</option>
+                    <option value="to-top-right">To Top Right</option>
+                    <option value="to-bottom-left">To Bottom Left</option>
+                    <option value="to-bottom-right">To Bottom Right</option>
+                    <option value="from-center">From Center (Radial)</option>
+                  </select>
                 </div>
 
                 {/* Start Position */}
-                <div className="flex items-center gap-2 min-w-0">
-                  <Label className="text-xs text-muted-foreground w-12 flex-shrink-0">Start</Label>
-                  <div className="flex-1 min-w-0">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={value.mask?.startPosition ?? 0}
-                      onChange={handleMaskStartPositionChange}
-                      disabled={readOnly}
-                      className="w-full h-1.5 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground font-mono w-8 text-right flex-shrink-0">
+                <div style={styles.optionRow}>
+                  <label style={styles.optionLabelSmall}>Start</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={value.mask?.startPosition ?? 0}
+                    onChange={handleMaskStartPositionChange}
+                    disabled={readOnly}
+                    style={styles.slider}
+                  />
+                  <span style={styles.sliderValue as CSSProperties}>
                     {value.mask?.startPosition ?? 0}%
                   </span>
                 </div>
 
                 {/* End Position */}
-                <div className="flex items-center gap-2 min-w-0">
-                  <Label className="text-xs text-muted-foreground w-12 flex-shrink-0">End</Label>
-                  <div className="flex-1 min-w-0">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={value.mask?.endPosition ?? 100}
-                      onChange={handleMaskEndPositionChange}
-                      disabled={readOnly}
-                      className="w-full h-1.5 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground font-mono w-8 text-right flex-shrink-0">
+                <div style={styles.optionRow}>
+                  <label style={styles.optionLabelSmall}>End</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={value.mask?.endPosition ?? 100}
+                    onChange={handleMaskEndPositionChange}
+                    disabled={readOnly}
+                    style={styles.slider}
+                  />
+                  <span style={styles.sliderValue as CSSProperties}>
                     {value.mask?.endPosition ?? 100}%
                   </span>
                 </div>
@@ -603,20 +746,18 @@ function BackgroundFieldInner({
   const overlayType = currentValue.overlay?.type ?? 'solid'
 
   return (
-    <div className="puck-field space-y-3">
+    <div className="puck-field" style={styles.container}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        {label && (
-          <Label className="block text-sm font-medium text-foreground">{label}</Label>
-        )}
+      <div style={styles.header}>
+        {label && <label style={styles.label}>{label}</label>}
         {value && !readOnly && (
           <button
             type="button"
             onClick={handleClear}
             title="Clear background"
-            className="flex items-center justify-center w-6 h-6 rounded border-none bg-transparent cursor-pointer text-muted-foreground hover:bg-accent hover:text-destructive"
+            style={styles.clearButton}
           >
-            <X className="w-4 h-4" />
+            <X style={{ width: '16px', height: '16px' }} />
           </button>
         )}
       </div>
@@ -625,7 +766,7 @@ function BackgroundFieldInner({
       <BackgroundPreview value={currentValue} />
 
       {/* Type Tabs */}
-      <div className="flex gap-1 bg-muted/50 p-1 rounded-lg">
+      <div style={styles.tabContainer}>
         <TabButton
           active={currentType === 'none'}
           onClick={() => handleTypeChange('none')}
@@ -657,11 +798,9 @@ function BackgroundFieldInner({
       </div>
 
       {/* Tab Content */}
-      <div className="min-h-[100px]">
+      <div style={styles.contentContainer}>
         {currentType === 'none' && (
-          <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
-            No background selected
-          </div>
+          <div style={styles.emptyContent}>No background selected</div>
         )}
 
         {currentType === 'solid' && (
@@ -683,7 +822,7 @@ function BackgroundFieldInner({
         )}
 
         {currentType === 'image' && (
-          <div className="space-y-4">
+          <div style={styles.imageOptionsContainer as CSSProperties}>
             <ImageOptions
               value={currentValue.image || DEFAULT_IMAGE}
               onChange={handleImageChange}
@@ -693,20 +832,22 @@ function BackgroundFieldInner({
 
             {/* Overlay Section - only show when image is selected */}
             {currentValue.image?.media && (
-              <div className="space-y-3 pt-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
+              <div style={styles.overlaySection as CSSProperties}>
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
                     checked={overlayEnabled}
-                    onCheckedChange={handleOverlayToggle}
+                    onChange={(e) => handleOverlayToggle(e.target.checked)}
                     disabled={readOnly}
+                    style={styles.checkbox}
                   />
-                  <span className="text-xs text-muted-foreground">Enable overlay</span>
+                  <span style={styles.checkboxLabel}>Enable overlay</span>
                 </label>
 
                 {overlayEnabled && (
-                  <div className="space-y-3">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' } as CSSProperties}>
                     {/* Overlay Type Toggle */}
-                    <div className="flex gap-1 bg-muted/50 p-1 rounded-lg">
+                    <div style={styles.tabContainer}>
                       <TabButton
                         active={overlayType === 'solid'}
                         onClick={() => handleOverlayTypeChange('solid')}

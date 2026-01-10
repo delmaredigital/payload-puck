@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback, type ReactNode } from 'react'
+import { memo, useCallback, type ReactNode, type CSSProperties } from 'react'
 import { createUsePuck, type Data } from '@measured/puck'
 import {
   ArrowLeft,
@@ -15,8 +15,7 @@ import {
   AlertTriangle,
   Eye,
 } from 'lucide-react'
-import { VersionHistory } from './VersionHistory'
-import { cn } from '../../lib/utils'
+import { VersionHistory } from './VersionHistory.js'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()
@@ -121,29 +120,193 @@ export interface HeaderActionsProps {
   onDismissError?: () => void
 }
 
+// Shared styles
+const styles = {
+  buttonBase: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    fontSize: '14px',
+    fontWeight: 500,
+    borderRadius: '6px',
+    transition: 'background-color 0.15s, border-color 0.15s',
+    cursor: 'pointer',
+    border: 'none',
+  } as CSSProperties,
+  buttonSecondary: {
+    padding: '6px 12px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    border: '1px solid var(--theme-elevation-200)',
+  } as CSSProperties,
+  buttonPrimary: {
+    padding: '6px 12px',
+    backgroundColor: 'var(--theme-elevation-900)',
+    color: 'var(--theme-bg)',
+    border: '1px solid var(--theme-elevation-900)',
+  } as CSSProperties,
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  icon: {
+    width: '16px',
+    height: '16px',
+    marginRight: '4px',
+    flexShrink: 0,
+  } as CSSProperties,
+  iconSmall: {
+    width: '14px',
+    height: '14px',
+  } as CSSProperties,
+  badge: {
+    padding: '4px 10px',
+    borderRadius: '9999px',
+    fontSize: '12px',
+    fontWeight: 500,
+    whiteSpace: 'nowrap',
+  } as CSSProperties,
+  badgePublished: {
+    backgroundColor: 'var(--theme-success-100)',
+    color: 'var(--theme-success-700)',
+    border: '1px solid var(--theme-success-200)',
+  } as CSSProperties,
+  badgeUnpublished: {
+    backgroundColor: 'var(--theme-warning-100)',
+    color: 'var(--theme-warning-700)',
+    border: '1px solid var(--theme-warning-200)',
+  } as CSSProperties,
+  badgeDraft: {
+    backgroundColor: 'var(--theme-elevation-100)',
+    color: 'var(--theme-elevation-600)',
+    border: '1px solid var(--theme-elevation-200)',
+  } as CSSProperties,
+  statusText: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    whiteSpace: 'nowrap',
+  } as CSSProperties,
+  unsavedText: {
+    fontSize: '12px',
+    color: 'var(--theme-warning-600)',
+    fontWeight: 500,
+    whiteSpace: 'nowrap',
+  } as CSSProperties,
+  versionText: {
+    fontSize: '10px',
+    color: 'var(--theme-elevation-400)',
+    fontFamily: 'monospace',
+  } as CSSProperties,
+  errorButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 10px',
+    backgroundColor: 'var(--theme-error-50)',
+    border: '1px solid var(--theme-error-200)',
+    borderRadius: '6px',
+    color: 'var(--theme-error-700)',
+    fontSize: '12px',
+    fontWeight: 500,
+    cursor: 'pointer',
+  } as CSSProperties,
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 9999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  } as CSSProperties,
+  modalContainer: {
+    backgroundColor: 'var(--theme-bg)',
+    borderRadius: '8px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    maxWidth: '448px',
+    width: '100%',
+    margin: '0 16px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  modalHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '16px 20px',
+    borderBottom: '1px solid var(--theme-elevation-150)',
+    backgroundColor: 'var(--theme-error-50)',
+  } as CSSProperties,
+  modalIconWrapper: {
+    flexShrink: 0,
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--theme-error-100)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  modalTitle: {
+    fontSize: '16px',
+    fontWeight: 600,
+    color: 'var(--theme-elevation-900)',
+    margin: 0,
+  } as CSSProperties,
+  modalSubtitle: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-500)',
+    margin: 0,
+  } as CSSProperties,
+  modalBody: {
+    padding: '16px 20px',
+  } as CSSProperties,
+  modalBodyText: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-700)',
+    margin: 0,
+  } as CSSProperties,
+  modalFooter: {
+    padding: '16px 20px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderTop: '1px solid var(--theme-elevation-150)',
+    display: 'flex',
+    justifyContent: 'flex-end',
+  } as CSSProperties,
+  toggleContainer: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  toggleButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '12px',
+    fontWeight: 500,
+    borderRadius: '4px',
+    transition: 'background-color 0.15s',
+    padding: '6px 10px',
+    cursor: 'pointer',
+  } as CSSProperties,
+  toggleActive: {
+    backgroundColor: 'var(--theme-elevation-900)',
+    color: 'var(--theme-bg)',
+    border: '1px solid var(--theme-elevation-900)',
+  } as CSSProperties,
+  toggleInactive: {
+    backgroundColor: 'var(--theme-elevation-100)',
+    color: 'var(--theme-elevation-500)',
+    border: '1px solid var(--theme-elevation-200)',
+  } as CSSProperties,
+}
+
 /**
  * Custom header actions component for the Puck editor
  *
  * Provides standard actions: Back, Edit/Interactive toggle, View Page, Save Draft
  * Also displays save status and last saved time.
- *
- * @example
- * ```tsx
- * const overrides = {
- *   headerActions: ({ children }) => (
- *     <HeaderActions
- *       onBack={handleBack}
- *       onPreview={handlePreview}
- *       onSave={handleSave}
- *       isSaving={isSaving}
- *       hasUnsavedChanges={hasUnsavedChanges}
- *       lastSaved={lastSaved}
- *     >
- *       {children}
- *     </HeaderActions>
- *   ),
- * }
- * ```
  */
 export const HeaderActions = memo(function HeaderActions({
   children,
@@ -193,9 +356,6 @@ export const HeaderActions = memo(function HeaderActions({
     }
   }, [onPublish, appState.data])
 
-  // Common button base class (non-color styles that Puck doesn't override)
-  const btnBase = 'inline-flex items-center whitespace-nowrap text-sm font-medium rounded-md transition-colors'
-
   return (
     <>
       {/* Custom actions at start */}
@@ -205,73 +365,60 @@ export const HeaderActions = memo(function HeaderActions({
       <button
         type="button"
         onClick={onBack}
-        className={cn(btnBase, "px-3 py-1.5 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50")}
+        style={{ ...styles.buttonBase, ...styles.buttonSecondary }}
       >
-        <ArrowLeft className="h-4 w-4 mr-1 flex-shrink-0" />
+        <ArrowLeft style={styles.icon} />
         Back
       </button>
 
       {/* Version indicator for debugging */}
-      <span className="text-[10px] text-gray-400 font-mono">v0.2.0</span>
+      <span style={styles.versionText}>v0.2.0</span>
 
       {/* Document status badge */}
       {documentStatus && (() => {
-        // Determine badge state
         const isPublished = documentStatus === 'published'
         const hasUnpublishedChanges = documentStatus === 'draft' && wasPublished
 
-        // Badge label based on state
         let badgeLabel: string
+        let badgeStyle: CSSProperties
 
         if (isPublished) {
           badgeLabel = 'Published'
+          badgeStyle = { ...styles.badge, ...styles.badgePublished }
         } else if (hasUnpublishedChanges) {
           badgeLabel = 'Unpublished Changes'
+          badgeStyle = { ...styles.badge, ...styles.badgeUnpublished }
         } else {
           badgeLabel = 'Draft'
+          badgeStyle = { ...styles.badge, ...styles.badgeDraft }
         }
 
-        return (
-          <span
-            className={cn(
-              "px-2.5 py-1 border rounded-full text-xs font-medium whitespace-nowrap",
-              isPublished && "bg-green-100 text-green-800 border-green-300",
-              hasUnpublishedChanges && "bg-orange-100 text-orange-700 border-orange-200",
-              !isPublished && !hasUnpublishedChanges && "bg-amber-100 text-amber-700 border-amber-200"
-            )}
-          >
-            {badgeLabel}
-          </span>
-        )
+        return <span style={badgeStyle}>{badgeLabel}</span>
       })()}
 
       {/* Interactive mode toggle */}
       {showInteractiveToggle && (
-        <div className="flex gap-1">
+        <div style={styles.toggleContainer}>
           <button
             type="button"
             onClick={() => isInteractive && togglePreviewMode()}
-            className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium rounded transition-colors px-2.5 py-1.5 border",
-              !isInteractive
-                ? "bg-blue-500 text-white border-blue-500"
-                : "bg-gray-100 text-gray-500 border-gray-200"
-            )}
+            style={{
+              ...styles.toggleButton,
+              ...(!isInteractive ? styles.toggleActive : styles.toggleInactive),
+            }}
           >
-            <MousePointer className="h-3.5 w-3.5" />
+            <MousePointer style={styles.iconSmall} />
             Edit
           </button>
           <button
             type="button"
             onClick={() => !isInteractive && togglePreviewMode()}
-            className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium rounded transition-colors px-2.5 py-1.5 border",
-              isInteractive
-                ? "bg-blue-500 text-white border-blue-500"
-                : "bg-gray-100 text-gray-500 border-gray-200"
-            )}
+            style={{
+              ...styles.toggleButton,
+              ...(isInteractive ? styles.toggleActive : styles.toggleInactive),
+            }}
           >
-            <MousePointerClick className="h-3.5 w-3.5" />
+            <MousePointerClick style={styles.iconSmall} />
             Interactive
           </button>
         </div>
@@ -279,23 +426,23 @@ export const HeaderActions = memo(function HeaderActions({
 
       {/* Status indicators */}
       {lastSaved && !saveError && (
-        <span className="text-xs text-gray-500 flex items-center gap-1 whitespace-nowrap">
-          <Check className="h-3 w-3 flex-shrink-0" />
+        <span style={styles.statusText}>
+          <Check style={{ width: '12px', height: '12px', flexShrink: 0 }} />
           Saved {lastSaved.toLocaleTimeString()}
         </span>
       )}
       {hasUnsavedChanges && !saveError && (
-        <span className="text-xs text-amber-600 font-medium whitespace-nowrap">Unsaved</span>
+        <span style={styles.unsavedText}>Unsaved</span>
       )}
 
       {/* Error indicator in header - clicking opens modal */}
       {saveError && (
         <button
           type="button"
-          onClick={() => {}} // Modal is already open when saveError exists
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded-md text-red-700 text-xs font-medium"
+          onClick={() => {}}
+          style={styles.errorButton}
         >
-          <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+          <AlertTriangle style={{ width: '16px', height: '16px', color: 'var(--theme-error-500)', flexShrink: 0 }} />
           Error
         </button>
       )}
@@ -303,35 +450,35 @@ export const HeaderActions = memo(function HeaderActions({
       {/* Error Modal */}
       {saveError && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+          style={styles.modalOverlay}
           onClick={onDismissError}
         >
           <div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden"
+            style={styles.modalContainer}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200 bg-red-50">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+            <div style={styles.modalHeader}>
+              <div style={styles.modalIconWrapper}>
+                <AlertTriangle style={{ width: '20px', height: '20px', color: 'var(--theme-error-600)' }} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-gray-900">Save Failed</h3>
-                <p className="text-sm text-gray-500">Unable to save your changes</p>
+                <h3 style={styles.modalTitle}>Save Failed</h3>
+                <p style={styles.modalSubtitle}>Unable to save your changes</p>
               </div>
             </div>
 
             {/* Modal Body */}
-            <div className="px-5 py-4">
-              <p className="text-sm text-gray-700">{saveError}</p>
+            <div style={styles.modalBody}>
+              <p style={styles.modalBodyText}>{saveError}</p>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <div style={styles.modalFooter}>
               <button
                 type="button"
                 onClick={onDismissError}
-                className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
+                style={{ ...styles.buttonBase, ...styles.buttonPrimary }}
               >
                 Close
               </button>
@@ -346,12 +493,13 @@ export const HeaderActions = memo(function HeaderActions({
           type="button"
           onClick={onOpenPreview}
           disabled={isSaving}
-          className={cn(
-            btnBase,
-            "px-3 py-1.5 bg-blue-600 text-white border border-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          )}
+          style={{
+            ...styles.buttonBase,
+            ...styles.buttonPrimary,
+            ...(isSaving ? styles.buttonDisabled : {}),
+          }}
         >
-          <Eye className="h-4 w-4 mr-1 flex-shrink-0" />
+          <Eye style={styles.icon} />
           Preview
         </button>
       )}
@@ -361,9 +509,9 @@ export const HeaderActions = memo(function HeaderActions({
         <button
           type="button"
           onClick={onPreview}
-          className={cn(btnBase, "px-3 py-1.5 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50")}
+          style={{ ...styles.buttonBase, ...styles.buttonSecondary }}
         >
-          <ExternalLink className="h-4 w-4 mr-1 flex-shrink-0" />
+          <ExternalLink style={styles.icon} />
           View
         </button>
       )}
@@ -383,15 +531,16 @@ export const HeaderActions = memo(function HeaderActions({
           type="button"
           onClick={handleSaveClick}
           disabled={isSaving || !hasUnsavedChanges}
-          className={cn(
-            btnBase,
-            "px-3 py-1.5 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          )}
+          style={{
+            ...styles.buttonBase,
+            ...styles.buttonSecondary,
+            ...((isSaving || !hasUnsavedChanges) ? styles.buttonDisabled : {}),
+          }}
         >
           {isSaving ? (
-            <Loader2 className="h-4 w-4 mr-1 flex-shrink-0 animate-spin" />
+            <Loader2 style={{ ...styles.icon, animation: 'spin 1s linear infinite' }} />
           ) : (
-            <Save className="h-4 w-4 mr-1 flex-shrink-0" />
+            <Save style={styles.icon} />
           )}
           Save
         </button>
@@ -403,15 +552,16 @@ export const HeaderActions = memo(function HeaderActions({
           type="button"
           onClick={handlePublishClick}
           disabled={isSaving}
-          className={cn(
-            btnBase,
-            "px-3 py-1.5 bg-blue-600 text-white border border-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          )}
+          style={{
+            ...styles.buttonBase,
+            ...styles.buttonPrimary,
+            ...(isSaving ? styles.buttonDisabled : {}),
+          }}
         >
           {isSaving ? (
-            <Loader2 className="h-4 w-4 mr-1 flex-shrink-0 animate-spin" />
+            <Loader2 style={{ ...styles.icon, animation: 'spin 1s linear infinite' }} />
           ) : (
-            <Upload className="h-4 w-4 mr-1 flex-shrink-0" />
+            <Upload style={styles.icon} />
           )}
           Publish
         </button>

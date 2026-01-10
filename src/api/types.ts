@@ -320,6 +320,16 @@ export interface UpdatePageBody {
    * Used by Payload's versions.drafts system.
    */
   draft?: boolean
+  /**
+   * Folder ID for page-tree integration.
+   * When page-tree plugin is active, this determines the page's parent folder.
+   */
+  folder?: string | null
+  /**
+   * Page segment for page-tree integration.
+   * Combined with folder path to generate the full slug.
+   */
+  pageSegment?: string
 }
 
 /**

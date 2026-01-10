@@ -9,12 +9,11 @@
  * Uses Puck's usePuck hook and dispatch to properly update component data.
  */
 
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { createUsePuck } from '@measured/puck'
 import type { Data } from '@measured/puck'
 import { RefreshCw } from 'lucide-react'
-import { Button } from '../components/ui/button'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()
@@ -30,6 +29,37 @@ interface ResetFieldProps {
 }
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+  } as CSSProperties,
+  button: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    width: '100%',
+    padding: '6px 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+  } as CSSProperties,
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // ResetField Component
 // =============================================================================
 
@@ -39,18 +69,29 @@ function ResetFieldInner({
   disabled,
 }: ResetFieldProps) {
   return (
-    <div className="puck-field">
-      <Button
+    <div className="puck-field" style={styles.container}>
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={onClick}
         disabled={disabled}
-        className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-1.5"
+        style={{
+          ...styles.button,
+          ...(disabled ? styles.buttonDisabled : {}),
+        }}
+        onMouseOver={(e) => {
+          if (!disabled) {
+            e.currentTarget.style.color = 'var(--theme-error-500)'
+            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
+          }
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.color = 'var(--theme-elevation-500)'
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }}
       >
-        <RefreshCw className="h-3.5 w-3.5" />
+        <RefreshCw style={{ width: '14px', height: '14px' }} />
         {label}
-      </Button>
+      </button>
     </div>
   )
 }
@@ -63,31 +104,27 @@ export const ResetField = memo(ResetFieldInner)
 
 /**
  * Recursively update a component's props in Puck data structure
- * Handles both root content and nested zones/slots
  */
 function updateComponentInData(
   data: Data,
   componentId: string,
   newProps: Record<string, unknown>
 ): Data {
-  // Helper to update a single item
   const updateItem = (item: { type: string; props: Record<string, unknown> }) => {
     if (item.props?.id === componentId) {
       return {
         ...item,
         props: {
           ...newProps,
-          id: componentId, // Always preserve the ID
+          id: componentId,
         },
       }
     }
     return item
   }
 
-  // Update root content array
   const updatedContent = data.content.map(updateItem)
 
-  // Update zones (for nested components in slots)
   const updatedZones: Record<string, Array<{ type: string; props: Record<string, unknown> }>> = {}
   if (data.zones) {
     for (const [zoneName, zoneContent] of Object.entries(data.zones)) {
@@ -107,36 +144,16 @@ function updateComponentInData(
 // =============================================================================
 
 interface CreateResetFieldConfig<T> {
-  /** Label for the reset button */
   label?: string
-  /** Default props to reset to */
   defaultProps: T
 }
 
 /**
  * Creates a Puck field configuration for a reset button
- *
- * Place this as the first field in a component to add a reset button
- * at the top of the property panel.
- *
- * @example
- * ```ts
- * const defaultProps = { text: 'Click Me', variant: 'default' }
- *
- * const ButtonConfig: ComponentConfig = {
- *   fields: {
- *     _reset: createResetField({ defaultProps }),
- *     text: { type: 'text', label: 'Button Text' },
- *     // ... other fields
- *   },
- *   defaultProps,
- * }
- * ```
  */
 export function createResetField<T extends object>(
   config: CreateResetFieldConfig<T>
 ): CustomField<unknown> {
-  // We need to create a wrapper component to use the usePuck hook
   const ResetFieldWrapper = ({ readOnly }: { readOnly?: boolean }) => {
     const appState = usePuck((s) => s.appState)
     const dispatch = usePuck((s) => s.dispatch)
@@ -150,14 +167,12 @@ export function createResetField<T extends object>(
 
       const componentId = selectedItem.props.id as string
 
-      // Update the component's props in the data
       const updatedData = updateComponentInData(
         appState.data,
         componentId,
         config.defaultProps as unknown as Record<string, unknown>
       )
 
-      // Dispatch the data update
       dispatch({
         type: 'setData',
         data: updatedData,

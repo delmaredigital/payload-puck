@@ -1,8 +1,17 @@
 import type { CollectionConfig, Config as PayloadConfig, Field, Plugin } from 'payload'
-import type { PuckPluginOptions, PuckAdminConfig } from '../types'
+import type { PuckPluginOptions, PuckAdminConfig, PageTreeIntegrationOptions } from '../types'
 import { generatePagesCollection } from './collections/Pages'
 import { TemplatesCollection } from '../collections/Templates'
 import { getPuckFields } from './fields'
+import {
+  createListHandler,
+  createCreateHandler,
+  createGetHandler,
+  createUpdateHandler,
+  createDeleteHandler,
+  createVersionsHandler,
+  createRestoreHandler,
+} from '../endpoints/index.js'
 
 /**
  * Get all field names from a collection's fields array (including nested group fields and tabs)
@@ -87,10 +96,11 @@ function generatePuckEditField(
  *
  * This plugin:
  * - Generates a Pages collection with puckData field
+ * - Registers the Puck editor as an admin view at /admin/puck-editor/:collection/:id
  * - Adds an "Edit with Puck" button in the admin document view
+ * - Optionally registers API endpoints for CRUD operations
  *
- * The Puck editor itself runs outside of Payload admin. Create your own
- * editor page (e.g., /pages/[id]/edit) using the PuckEditor component.
+ * The Puck editor is fully integrated into Payload's admin UI.
  *
  * @example
  * ```typescript
@@ -107,7 +117,6 @@ function generatePuckEditField(
  *         delete: ({ req }) => req.user?.role === 'admin',
  *       },
  *       admin: {
- *         editorPathPattern: '/pages/{id}/edit',
  *         buttonLabel: 'Visual Editor',
  *       },
  *     }),
@@ -119,10 +128,44 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
   const {
     pagesCollection = 'pages',
     autoGenerateCollection = true,
-    admin: adminConfig = {},
+    admin: pluginAdminConfig = {},
+    enableAdminView = true,
+    adminViewPath = '/puck-editor',
+    enableEndpoints = true,
+    pageTreeIntegration, // No default - undefined means auto-detect
   } = options
 
-  const { addEditButton = true } = adminConfig
+  const { addEditButton = true } = pluginAdminConfig
+
+  // Parse page-tree integration config
+  // - undefined: auto-detect at runtime (null stored, view will check for pageSegment field)
+  // - false: explicitly disabled (store false to prevent auto-detection)
+  // - true: use defaults
+  // - object: use custom field names
+  let pageTreeConfig: PageTreeIntegrationOptions | false | null = null
+  if (pageTreeIntegration === undefined) {
+    // Not specified - store null to trigger auto-detection in the view
+    pageTreeConfig = null
+  } else if (pageTreeIntegration === false) {
+    // Explicitly disabled - store false to prevent auto-detection
+    pageTreeConfig = false
+  } else if (pageTreeIntegration === true) {
+    // Explicitly enabled with defaults
+    pageTreeConfig = {
+      folderSlug: 'payload-folders',
+      segmentFieldName: 'pathSegment',
+      pageSegmentFieldName: 'pageSegment',
+      folderFieldName: 'folder',
+    }
+  } else {
+    // Custom config object
+    pageTreeConfig = {
+      folderSlug: pageTreeIntegration.folderSlug ?? 'payload-folders',
+      segmentFieldName: pageTreeIntegration.segmentFieldName ?? 'pathSegment',
+      pageSegmentFieldName: pageTreeIntegration.pageSegmentFieldName ?? 'pageSegment',
+      folderFieldName: pageTreeIntegration.folderFieldName ?? 'folder',
+    }
+  }
 
   return (incomingConfig: PayloadConfig): PayloadConfig => {
     // Generate Pages collection if auto-generate is enabled
@@ -144,7 +187,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
 
       // Generate the edit button field if enabled
       const editButtonField = addEditButton
-        ? [generatePuckEditField(pagesCollection, adminConfig)]
+        ? [generatePuckEditField(pagesCollection, pluginAdminConfig)]
         : []
 
       if (existingCollectionIndex >= 0) {
@@ -200,9 +243,84 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
       }
     }
 
+    // Build the admin config with view registration
+    const payloadAdminConfig: PayloadConfig['admin'] = {
+      ...incomingConfig.admin,
+    }
+
+    // Register the Puck editor admin view if enabled
+    if (enableAdminView) {
+      payloadAdminConfig.components = {
+        ...payloadAdminConfig.components,
+        views: {
+          ...payloadAdminConfig.components?.views,
+          puckEditor: {
+            Component: '@delmaredigital/payload-puck/rsc#PuckEditorView',
+            path: `${adminViewPath}/:segments*` as `/${string}`,
+          },
+        },
+      }
+    }
+
+    // Register API endpoints if enabled
+    const puckCollections = [pagesCollection]
+    const endpointOptions = { collections: puckCollections }
+    const endpoints = enableEndpoints
+      ? [
+          ...(incomingConfig.endpoints || []),
+          {
+            path: '/puck/:collection',
+            method: 'get' as const,
+            handler: createListHandler(endpointOptions),
+          },
+          {
+            path: '/puck/:collection',
+            method: 'post' as const,
+            handler: createCreateHandler(endpointOptions),
+          },
+          {
+            path: '/puck/:collection/:id',
+            method: 'get' as const,
+            handler: createGetHandler(endpointOptions),
+          },
+          {
+            path: '/puck/:collection/:id',
+            method: 'patch' as const,
+            handler: createUpdateHandler(endpointOptions),
+          },
+          {
+            path: '/puck/:collection/:id',
+            method: 'delete' as const,
+            handler: createDeleteHandler(endpointOptions),
+          },
+          {
+            path: '/puck/:collection/:id/versions',
+            method: 'get' as const,
+            handler: createVersionsHandler(endpointOptions),
+          },
+          {
+            path: '/puck/:collection/:id/restore',
+            method: 'post' as const,
+            handler: createRestoreHandler(endpointOptions),
+          },
+        ]
+      : incomingConfig.endpoints || []
+
     return {
       ...incomingConfig,
+      admin: payloadAdminConfig,
       collections,
+      endpoints,
+      // Store options in custom for the view to access
+      custom: {
+        ...incomingConfig.custom,
+        puck: {
+          collections: puckCollections,
+          layouts: options.layouts,
+          // Page-tree integration config (null if not enabled)
+          pageTree: pageTreeConfig,
+        },
+      },
       onInit: async (payload) => {
         // Call existing onInit if present
         if (incomingConfig.onInit) {

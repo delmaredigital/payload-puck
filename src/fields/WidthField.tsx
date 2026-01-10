@@ -10,7 +10,7 @@
  * - Preset quick-select buttons for common widths
  */
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import {
   X,
@@ -22,10 +22,6 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import type { WidthValue } from './shared'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -65,6 +61,222 @@ const WIDTH_PRESETS = [
 ]
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  modeGroup: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+  } as CSSProperties,
+  modeButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  modeButtonActive: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  controlsPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+  } as CSSProperties,
+  sectionLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  presetGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  } as CSSProperties,
+  presetButtons: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+  } as CSSProperties,
+  presetButton: {
+    height: '28px',
+    padding: '0 12px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  presetButtonActive: {
+    height: '28px',
+    padding: '0 12px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  } as CSSProperties,
+  inputRow: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '8px',
+  } as CSSProperties,
+  input: {
+    flex: 1,
+    minWidth: '80px',
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  unitGroup: {
+    display: 'flex',
+    flexShrink: 0,
+    gap: '4px',
+  } as CSSProperties,
+  unitButton: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  unitButtonActive: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '8px',
+  } as CSSProperties,
+  alignGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  alignLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    flexShrink: 0,
+  } as CSSProperties,
+  alignButtons: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  alignButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  alignButtonActive: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  alignButtonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  summary: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    fontFamily: 'monospace',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // WidthField Component
 // =============================================================================
 
@@ -74,16 +286,14 @@ function WidthFieldInner({
   label,
   readOnly,
 }: WidthFieldProps) {
-  // Use default if no value
   const currentValue = value || DEFAULT_VALUE
 
-  // Handle mode change
   const handleModeChange = useCallback((mode: WidthMode) => {
     if (mode === 'full') {
       onChange({
         ...currentValue,
         mode,
-        alignment: 'center', // Full width typically centered
+        alignment: 'center',
       })
     } else {
       onChange({
@@ -93,7 +303,6 @@ function WidthFieldInner({
     }
   }, [currentValue, onChange])
 
-  // Handle max width change
   const handleMaxWidthChange = useCallback((maxWidth: number) => {
     onChange({
       ...currentValue,
@@ -101,7 +310,6 @@ function WidthFieldInner({
     })
   }, [currentValue, onChange])
 
-  // Handle unit change
   const handleUnitChange = useCallback((unit: WidthUnit) => {
     onChange({
       ...currentValue,
@@ -109,7 +317,6 @@ function WidthFieldInner({
     })
   }, [currentValue, onChange])
 
-  // Handle alignment change
   const handleAlignmentChange = useCallback((alignment: ContentAlignment) => {
     onChange({
       ...currentValue,
@@ -117,7 +324,6 @@ function WidthFieldInner({
     })
   }, [currentValue, onChange])
 
-  // Handle preset selection
   const handlePresetSelect = useCallback((presetValue: number) => {
     onChange({
       ...currentValue,
@@ -127,130 +333,110 @@ function WidthFieldInner({
     })
   }, [currentValue, onChange])
 
-  // Handle clear
   const handleClear = useCallback(() => {
     onChange(null)
   }, [onChange])
 
-  // Mode button labels (shorter for space)
-  const modeLabels: Record<WidthMode, string> = {
-    full: 'Full',
-    contained: 'Contain',
-    custom: 'Custom',
-  }
+  const modeConfig = [
+    { mode: 'full' as WidthMode, icon: MoveHorizontal, label: 'Full', title: 'Full width (100%)' },
+    { mode: 'contained' as WidthMode, icon: Container, label: 'Contain', title: 'Contained (centered with max-width)' },
+    { mode: 'custom' as WidthMode, icon: SlidersHorizontal, label: 'Custom', title: 'Custom width settings' },
+  ]
+
+  const alignmentConfig = [
+    { alignment: 'left' as ContentAlignment, icon: AlignLeft, title: 'Align left' },
+    { alignment: 'center' as ContentAlignment, icon: AlignCenter, title: 'Align center' },
+    { alignment: 'right' as ContentAlignment, icon: AlignRight, title: 'Align right' },
+  ]
 
   return (
-    <div className="puck-field space-y-3">
+    <div className="puck-field" style={styles.container}>
       {/* Header with label and clear */}
-      <div className="flex items-center justify-between">
+      <div style={styles.header}>
         {label && (
-          <Label className="text-sm font-medium text-foreground">
-            {label}
-          </Label>
+          <label style={styles.label}>{label}</label>
         )}
         {value && !readOnly && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-destructive"
+            style={styles.clearButton}
             title="Reset to default"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
-      {/* Width Mode Selector - segmented control */}
-      <div className="flex flex-wrap gap-1">
-        {([
-          { mode: 'full' as WidthMode, icon: MoveHorizontal, title: 'Full width (100%)' },
-          { mode: 'contained' as WidthMode, icon: Container, title: 'Contained (centered with max-width)' },
-          { mode: 'custom' as WidthMode, icon: SlidersHorizontal, title: 'Custom width settings' },
-        ]).map(({ mode, icon: Icon, title }) => {
+      {/* Width Mode Selector */}
+      <div style={styles.modeGroup}>
+        {modeConfig.map(({ mode, icon: Icon, label: modeLabel, title }) => {
           const isActive = currentValue.mode === mode
           return (
-            <Button
+            <button
               key={mode}
               type="button"
-              variant={isActive ? 'default' : 'secondary'}
-              size="sm"
               onClick={() => handleModeChange(mode)}
               disabled={readOnly}
-              className={cn(
-                "text-xs gap-1",
-                isActive && "bg-primary hover:bg-primary/90"
-              )}
+              style={isActive ? styles.modeButtonActive : styles.modeButton}
               title={title}
             >
-              <Icon className="h-3.5 w-3.5" />
-              {modeLabels[mode]}
-            </Button>
+              <Icon style={{ width: '14px', height: '14px' }} />
+              {modeLabel}
+            </button>
           )
         })}
       </div>
 
-      {/* Max Width Controls (shown for contained and custom modes) */}
+      {/* Max Width Controls */}
       {currentValue.mode !== 'full' && (
-        <div className="space-y-3 p-3 bg-muted/50 rounded-md">
+        <div style={styles.controlsPanel as CSSProperties}>
           {/* Preset Quick Selects */}
-          <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Presets</Label>
-            <div className="flex flex-wrap gap-1">
+          <div style={styles.presetGroup as CSSProperties}>
+            <label style={styles.sectionLabel as CSSProperties}>Presets</label>
+            <div style={styles.presetButtons}>
               {WIDTH_PRESETS.map((preset) => {
                 const isActive = currentValue.maxWidth === preset.value && currentValue.unit === 'px'
                 return (
-                  <Button
+                  <button
                     key={preset.value}
                     type="button"
-                    variant={isActive ? 'default' : 'outline'}
-                    size="sm"
                     onClick={() => handlePresetSelect(preset.value)}
                     disabled={readOnly}
-                    className={cn(
-                      "text-xs h-7 px-3",
-                      isActive && "bg-primary hover:bg-primary/90"
-                    )}
+                    style={isActive ? styles.presetButtonActive : styles.presetButton}
                   >
                     {preset.label}
-                  </Button>
+                  </button>
                 )
               })}
             </div>
           </div>
 
           {/* Custom Width Input */}
-          <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Max Width</Label>
-            <div className="flex items-center flex-wrap gap-2">
-              <Input
+          <div style={styles.inputGroup as CSSProperties}>
+            <label style={styles.sectionLabel as CSSProperties}>Max Width</label>
+            <div style={styles.inputRow}>
+              <input
                 type="number"
                 min={0}
                 value={currentValue.maxWidth}
                 onChange={(e) => handleMaxWidthChange(parseInt(e.target.value, 10) || 0)}
                 disabled={readOnly}
-                className="h-8 text-sm font-mono flex-1 min-w-[80px]"
+                style={styles.input}
               />
-              {/* Unit Selector */}
-              <div className="flex flex-shrink-0 gap-1">
+              <div style={styles.unitGroup}>
                 {(['px', '%', 'rem', 'vw'] as WidthUnit[]).map((unit) => {
                   const isActive = currentValue.unit === unit
                   return (
-                    <Button
+                    <button
                       key={unit}
                       type="button"
-                      variant={isActive ? 'default' : 'outline'}
-                      size="sm"
                       onClick={() => handleUnitChange(unit)}
                       disabled={readOnly}
-                      className={cn(
-                        "text-xs font-mono h-8 px-2",
-                        isActive && "bg-primary hover:bg-primary/90"
-                      )}
+                      style={isActive ? styles.unitButtonActive : styles.unitButton}
                     >
                       {unit}
-                    </Button>
+                    </button>
                   )
                 })}
               </div>
@@ -260,39 +446,33 @@ function WidthFieldInner({
       )}
 
       {/* Alignment Controls */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground flex-shrink-0">Align:</Label>
-          <div className="flex gap-1">
-            {([
-              { alignment: 'left' as ContentAlignment, icon: AlignLeft, title: 'Align left' },
-              { alignment: 'center' as ContentAlignment, icon: AlignCenter, title: 'Align center' },
-              { alignment: 'right' as ContentAlignment, icon: AlignRight, title: 'Align right' },
-            ]).map(({ alignment, icon: Icon, title }) => {
+      <div style={styles.footer}>
+        <div style={styles.alignGroup}>
+          <label style={styles.alignLabel}>Align:</label>
+          <div style={styles.alignButtons}>
+            {alignmentConfig.map(({ alignment, icon: Icon, title }) => {
               const isActive = currentValue.alignment === alignment
               const isDisabled = readOnly || currentValue.mode === 'full'
               return (
-                <Button
+                <button
                   key={alignment}
                   type="button"
-                  variant={isActive ? 'default' : 'secondary'}
-                  size="icon"
                   onClick={() => handleAlignmentChange(alignment)}
                   disabled={isDisabled}
-                  className={cn(
-                    "h-8 w-8",
-                    isActive && "bg-primary hover:bg-primary/90"
-                  )}
+                  style={{
+                    ...(isActive ? styles.alignButtonActive : styles.alignButton),
+                    ...(isDisabled ? styles.alignButtonDisabled : {}),
+                  }}
                   title={title}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                </Button>
+                  <Icon style={{ width: '14px', height: '14px' }} />
+                </button>
               )
             })}
           </div>
         </div>
         {/* Current value summary */}
-        <span className="text-xs text-muted-foreground font-mono">
+        <span style={styles.summary}>
           {currentValue.mode === 'full'
             ? '100%'
             : `${currentValue.maxWidth}${currentValue.unit}`

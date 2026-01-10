@@ -174,7 +174,7 @@ export function createPuckApiRoutesWithId(
 
       // Parse request body
       const body = (await request.json()) as UpdatePageBody
-      const { puckData, title, slug, status, draft } = body
+      const { puckData, title, slug, status, draft, folder, pageSegment } = body
 
       // Check publish permission only if explicitly publishing
       if (status === 'published') {
@@ -220,6 +220,14 @@ export function createPuckApiRoutesWithId(
       }
       if (slug !== undefined) {
         updateData.slug = slug
+      }
+
+      // Page-tree integration: explicit folder/pageSegment override the mapped values
+      if (folder !== undefined) {
+        updateData.folder = folder
+      }
+      if (pageSegment !== undefined) {
+        updateData.pageSegment = pageSegment
       }
 
       // Set status if provided (for explicit publish)

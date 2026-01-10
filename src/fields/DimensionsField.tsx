@@ -12,7 +12,7 @@
  * - Preset quick-select buttons for common widths
  */
 
-import React, { useCallback, memo, useState } from 'react'
+import React, { useCallback, memo, useState, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import {
   X,
@@ -33,11 +33,6 @@ import type {
   ContentAlignment,
 } from './shared'
 import { getDimensionsSummary } from './shared'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { Checkbox } from '../components/ui/checkbox'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -60,7 +55,6 @@ interface DimensionsFieldProps {
 // Default Values
 // =============================================================================
 
-// Default represents "unconfigured" state - full width with no constraints
 const DEFAULT_VALUE: DimensionsValue = {
   mode: 'full',
   alignment: 'center',
@@ -81,6 +75,302 @@ const WIDTH_PRESETS = [
 
 const WIDTH_UNITS: DimensionsUnit[] = ['px', 'rem', '%', 'vw']
 const HEIGHT_UNITS: DimensionsUnit[] = ['px', 'rem', '%', 'vh']
+
+// =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  modeGroup: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+  } as CSSProperties,
+  modeButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  modeButtonActive: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  controlsPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+  } as CSSProperties,
+  sectionLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  presetGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  } as CSSProperties,
+  presetButtons: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+  } as CSSProperties,
+  presetButton: {
+    height: '28px',
+    padding: '0 12px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  presetButtonActive: {
+    height: '28px',
+    padding: '0 12px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  } as CSSProperties,
+  inputRow: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '8px',
+  } as CSSProperties,
+  input: {
+    flex: 1,
+    minWidth: '80px',
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  unitGroup: {
+    display: 'flex',
+    flexShrink: 0,
+    gap: '4px',
+  } as CSSProperties,
+  unitButton: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  unitButtonActive: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '8px',
+  } as CSSProperties,
+  alignGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  alignLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    flexShrink: 0,
+  } as CSSProperties,
+  alignButtons: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  alignButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  alignButtonActive: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  alignButtonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  summary: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    fontFamily: 'monospace',
+  } as CSSProperties,
+  advancedToggle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '8px 12px',
+    fontSize: '12px',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  constraintRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    minWidth: '90px',
+  } as CSSProperties,
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  checkboxText: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  constraintInput: {
+    flex: 1,
+    minWidth: '60px',
+    height: '28px',
+    padding: '0 8px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  smallUnitButton: {
+    height: '28px',
+    padding: '0 10px',
+    fontSize: '10px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  smallUnitButtonActive: {
+    height: '28px',
+    padding: '0 10px',
+    fontSize: '10px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  constraintsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  constraintsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    paddingLeft: '4px',
+  } as CSSProperties,
+}
 
 // =============================================================================
 // ConstraintInput Sub-component
@@ -133,49 +423,52 @@ function ConstraintInput({
   )
 
   const handleToggle = useCallback(
-    (checked: boolean) => {
-      onToggle(checked)
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onToggle(e.target.checked)
     },
     [onToggle]
   )
 
   return (
-    <div className="flex items-center gap-2">
-      <label className="flex items-center gap-2 cursor-pointer min-w-[90px]">
-        <Checkbox
+    <div style={styles.constraintRow}>
+      <label style={styles.checkboxLabel}>
+        <input
+          type="checkbox"
           checked={isEnabled}
-          onCheckedChange={handleToggle}
+          onChange={handleToggle}
           disabled={disabled}
+          style={styles.checkbox}
         />
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <span style={styles.checkboxText}>{label}</span>
       </label>
 
-      <Input
+      <input
         type="number"
         min={0}
         value={isEnabled ? value : ''}
         onChange={handleValueChange}
         disabled={disabled || !isEnabled}
         placeholder={placeholder}
-        className="h-7 text-xs font-mono flex-1 min-w-[60px]"
+        style={{
+          ...styles.constraintInput,
+          ...(disabled || !isEnabled ? { opacity: 0.5 } : {}),
+        }}
       />
 
-      <div className="flex gap-0.5 flex-shrink-0">
+      <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
         {units.map((u) => (
-          <Button
+          <button
             key={u}
             type="button"
-            variant={unit === u && isEnabled ? 'default' : 'ghost'}
-            size="sm"
             onClick={() => handleUnitChange(u)}
             disabled={disabled || !isEnabled}
-            className={cn(
-              'text-[10px] font-mono h-7 px-2.5',
-              unit === u && isEnabled && 'bg-primary hover:bg-primary/90'
-            )}
+            style={{
+              ...(unit === u && isEnabled ? styles.smallUnitButtonActive : styles.smallUnitButton),
+              ...(disabled || !isEnabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
+            }}
           >
             {u}
-          </Button>
+          </button>
         ))}
       </div>
     </div>
@@ -195,10 +488,7 @@ function DimensionsFieldInner({
   showMinControls = true,
   defaultAdvancedMode = false,
 }: DimensionsFieldProps) {
-  // Use default if no value
   const currentValue = value || DEFAULT_VALUE
-
-  // Local state for advanced mode toggle
   const [advancedMode, setAdvancedMode] = useState(
     currentValue.advancedMode ?? defaultAdvancedMode
   )
@@ -355,8 +645,6 @@ function DimensionsFieldInner({
   const handleAdvancedToggle = useCallback(() => {
     const newAdvancedMode = !advancedMode
     setAdvancedMode(newAdvancedMode)
-    // Only persist advancedMode if there's already a value set
-    // This prevents materializing defaults when user is just exploring the UI
     if (value !== null) {
       onChange({
         ...currentValue,
@@ -379,77 +667,68 @@ function DimensionsFieldInner({
   ]
 
   const showWidthControls = currentValue.mode !== 'full'
-  const hasHeightConstraints = showHeightControls && (advancedMode || currentValue.minHeight?.enabled || currentValue.maxHeight?.enabled)
 
   return (
-    <div className="puck-field space-y-3">
+    <div className="puck-field" style={styles.container}>
       {/* Header with label and clear */}
-      <div className="flex items-center justify-between">
+      <div style={styles.header}>
         {label && (
-          <Label className="text-sm font-medium text-foreground">{label}</Label>
+          <label style={styles.label}>{label}</label>
         )}
         {value && !readOnly && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-destructive"
+            style={styles.clearButton}
             title="Reset to default"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
       {/* Width Mode Selector */}
-      <div className="flex flex-wrap gap-1">
+      <div style={styles.modeGroup as CSSProperties}>
         {modeConfig.map(({ mode, icon: Icon, label: modeLabel, title }) => {
           const isActive = currentValue.mode === mode
           return (
-            <Button
+            <button
               key={mode}
               type="button"
-              variant={isActive ? 'default' : 'secondary'}
-              size="sm"
               onClick={() => handleModeChange(mode)}
               disabled={readOnly}
-              className={cn('text-xs gap-1', isActive && 'bg-primary hover:bg-primary/90')}
+              style={isActive ? styles.modeButtonActive : styles.modeButton}
               title={title}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon style={{ width: '14px', height: '14px' }} />
               {modeLabel}
-            </Button>
+            </button>
           )
         })}
       </div>
 
       {/* Width Controls */}
       {showWidthControls && (
-        <div className="space-y-3 p-3 bg-muted/50 rounded-md">
+        <div style={styles.controlsPanel as CSSProperties}>
           {/* Preset Quick Selects */}
-          <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Presets
-            </Label>
-            <div className="flex flex-wrap gap-1">
+          <div style={styles.presetGroup as CSSProperties}>
+            <label style={styles.sectionLabel as CSSProperties}>Presets</label>
+            <div style={styles.presetButtons}>
               {WIDTH_PRESETS.map((preset) => {
                 const isActive =
                   currentValue.maxWidth.value === preset.value &&
                   currentValue.maxWidth.unit === 'px' &&
                   currentValue.maxWidth.enabled
                 return (
-                  <Button
+                  <button
                     key={preset.value}
                     type="button"
-                    variant={isActive ? 'default' : 'outline'}
-                    size="sm"
                     onClick={() => handlePresetSelect(preset.value)}
                     disabled={readOnly}
-                    className={cn('text-xs h-7 px-3', isActive && 'bg-primary hover:bg-primary/90')}
+                    style={isActive ? styles.presetButtonActive : styles.presetButton}
                   >
                     {preset.label}
-                  </Button>
+                  </button>
                 )
               })}
             </div>
@@ -457,12 +736,10 @@ function DimensionsFieldInner({
 
           {/* Simple Mode: Just Max Width */}
           {!advancedMode && (
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Max Width
-              </Label>
-              <div className="flex items-center flex-wrap gap-2">
-                <Input
+            <div style={styles.inputGroup as CSSProperties}>
+              <label style={styles.sectionLabel as CSSProperties}>Max Width</label>
+              <div style={styles.inputRow}>
+                <input
                   type="number"
                   min={0}
                   value={currentValue.maxWidth.value}
@@ -473,17 +750,15 @@ function DimensionsFieldInner({
                     })
                   }
                   disabled={readOnly}
-                  className="h-8 text-sm font-mono flex-1 min-w-[80px]"
+                  style={styles.input}
                 />
-                <div className="flex flex-shrink-0 gap-1">
+                <div style={styles.unitGroup}>
                   {WIDTH_UNITS.map((unit) => {
                     const isActive = currentValue.maxWidth.unit === unit
                     return (
-                      <Button
+                      <button
                         key={unit}
                         type="button"
-                        variant={isActive ? 'default' : 'outline'}
-                        size="sm"
                         onClick={() =>
                           handleMaxWidthChange({
                             ...currentValue.maxWidth,
@@ -491,13 +766,10 @@ function DimensionsFieldInner({
                           })
                         }
                         disabled={readOnly}
-                        className={cn(
-                          'text-xs font-mono h-8 px-3',
-                          isActive && 'bg-primary hover:bg-primary/90'
-                        )}
+                        style={isActive ? styles.unitButtonActive : styles.unitButton}
                       >
                         {unit}
-                      </Button>
+                      </button>
                     )
                   })}
                 </div>
@@ -507,13 +779,13 @@ function DimensionsFieldInner({
 
           {/* Advanced Mode */}
           {advancedMode && (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Width Constraints */}
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div style={styles.constraintsSection as CSSProperties}>
+                <label style={styles.sectionLabel as CSSProperties}>
                   Width Constraints
-                </Label>
-                <div className="space-y-2 pl-1">
+                </label>
+                <div style={styles.constraintsList as CSSProperties}>
                   {showMinControls && (
                     <ConstraintInput
                       label="Min Width"
@@ -537,11 +809,11 @@ function DimensionsFieldInner({
 
               {/* Height Constraints */}
               {showHeightControls && (
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                <div style={styles.constraintsSection as CSSProperties}>
+                  <label style={styles.sectionLabel as CSSProperties}>
                     Height Constraints
-                  </Label>
-                  <div className="space-y-2 pl-1">
+                  </label>
+                  <div style={styles.constraintsList as CSSProperties}>
                     {showMinControls && (
                       <ConstraintInput
                         label="Min Height"
@@ -570,11 +842,11 @@ function DimensionsFieldInner({
 
       {/* Height Constraints for Full Mode (still allow height constraints) */}
       {!showWidthControls && showHeightControls && advancedMode && (
-        <div className="space-y-2 p-3 bg-muted/50 rounded-md">
-          <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+        <div style={styles.controlsPanel as CSSProperties}>
+          <label style={styles.sectionLabel as CSSProperties}>
             Height Constraints
-          </Label>
-          <div className="space-y-2 pl-1">
+          </label>
+          <div style={styles.constraintsList as CSSProperties}>
             {showMinControls && (
               <ConstraintInput
                 label="Min Height"
@@ -598,60 +870,59 @@ function DimensionsFieldInner({
       )}
 
       {/* Footer: Alignment + Summary + Advanced Toggle */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div style={styles.footer}>
         {/* Alignment */}
-        <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground flex-shrink-0">Align:</Label>
-          <div className="flex gap-1">
+        <div style={styles.alignGroup}>
+          <label style={styles.alignLabel}>Align:</label>
+          <div style={styles.alignButtons}>
             {alignmentConfig.map(({ alignment, icon: Icon, title }) => {
               const isActive = currentValue.alignment === alignment
               const isDisabled = readOnly || currentValue.mode === 'full'
               return (
-                <Button
+                <button
                   key={alignment}
                   type="button"
-                  variant={isActive ? 'default' : 'secondary'}
-                  size="icon"
                   onClick={() => handleAlignmentChange(alignment)}
                   disabled={isDisabled}
-                  className={cn('h-8 w-8', isActive && 'bg-primary hover:bg-primary/90')}
+                  style={{
+                    ...(isActive ? styles.alignButtonActive : styles.alignButton),
+                    ...(isDisabled ? styles.alignButtonDisabled : {}),
+                  }}
                   title={title}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                </Button>
+                  <Icon style={{ width: '14px', height: '14px' }} />
+                </button>
               )
             })}
           </div>
         </div>
 
         {/* Value Summary */}
-        <span className="text-xs text-muted-foreground font-mono">
+        <span style={styles.summary}>
           {getDimensionsSummary(currentValue)}
         </span>
       </div>
 
       {/* Advanced Toggle */}
       {(showHeightControls || showMinControls) && (
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={handleAdvancedToggle}
           disabled={readOnly}
-          className="w-full text-xs text-muted-foreground hover:text-foreground"
+          style={styles.advancedToggle}
         >
           {advancedMode ? (
             <>
-              <ChevronUp className="h-3.5 w-3.5 mr-1" />
+              <ChevronUp style={{ width: '14px', height: '14px', marginRight: '4px' }} />
               Hide Advanced
             </>
           ) : (
             <>
-              <ChevronDown className="h-3.5 w-3.5 mr-1" />
+              <ChevronDown style={{ width: '14px', height: '14px', marginRight: '4px' }} />
               Show Advanced
             </>
           )}
-        </Button>
+        </button>
       )}
     </div>
   )

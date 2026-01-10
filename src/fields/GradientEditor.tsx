@@ -12,21 +12,10 @@
  * - Visual gradient preview bar
  */
 
-import React, { useCallback, memo, useState } from 'react'
+import React, { useCallback, memo, useState, type CSSProperties } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { GradientValue, GradientStop, ColorValue } from './shared'
 import { colorValueToCSS } from './shared'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -51,6 +40,194 @@ const DEFAULT_GRADIENT: GradientValue = {
   ],
   radialShape: 'circle',
   radialPosition: 'center',
+}
+
+// =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  } as CSSProperties,
+  preview: {
+    height: '48px',
+    borderRadius: '6px',
+    border: '1px solid var(--theme-elevation-150)',
+  } as CSSProperties,
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  label: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    width: '48px',
+    flexShrink: 0,
+  } as CSSProperties,
+  buttonGroup: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  button: {
+    height: '28px',
+    padding: '0 12px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonActive: {
+    height: '28px',
+    padding: '0 12px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  slider: {
+    flex: 1,
+    height: '6px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sliderValue: {
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    color: 'var(--theme-elevation-500)',
+    width: '40px',
+    textAlign: 'right',
+  } as CSSProperties,
+  select: {
+    flex: 1,
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  stopsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  addButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    height: '24px',
+    padding: '0 8px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  stopsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  } as CSSProperties,
+  stopItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    padding: '8px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  stopRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  colorPicker: {
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    flexShrink: 0,
+  } as CSSProperties,
+  hexInput: {
+    width: '80px',
+    minWidth: 0,
+    height: '28px',
+    padding: '0 6px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  swatch: {
+    width: '28px',
+    height: '28px',
+    borderRadius: '4px',
+    border: '1px solid var(--theme-elevation-150)',
+    flexShrink: 0,
+    position: 'relative',
+    overflow: 'hidden',
+  } as CSSProperties,
+  checkerboard: {
+    position: 'absolute',
+    inset: 0,
+    backgroundImage: 'linear-gradient(45deg, #e0e0e0 25%, transparent 25%), linear-gradient(-45deg, #e0e0e0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e0e0e0 75%), linear-gradient(-45deg, transparent 75%, #e0e0e0 75%)',
+    backgroundSize: '8px 8px',
+    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
+  } as CSSProperties,
+  colorOverlay: {
+    position: 'absolute',
+    inset: 0,
+  } as CSSProperties,
+  spacer: {
+    flex: 1,
+    minWidth: 0,
+  } as CSSProperties,
+  deleteButton: {
+    padding: '4px',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+    flexShrink: 0,
+  } as CSSProperties,
+  stopLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    width: '48px',
+    flexShrink: 0,
+  } as CSSProperties,
+  rangeSlider: {
+    flex: 1,
+    height: '6px',
+    minWidth: 0,
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  rangeValue: {
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    color: 'var(--theme-elevation-500)',
+    width: '32px',
+    textAlign: 'right',
+    flexShrink: 0,
+  } as CSSProperties,
 }
 
 // =============================================================================
@@ -150,98 +327,83 @@ function GradientStopEditorInner({
   const opacity = stop.color.opacity ?? 100
 
   return (
-    <div className="space-y-2 p-2 bg-muted/30 rounded-md overflow-hidden">
+    <div style={styles.stopItem as CSSProperties}>
       {/* Row 1: Color picker + hex input + preview swatch + delete */}
-      <div className="flex items-center gap-2">
+      <div style={styles.stopRow}>
         {/* Color picker */}
         <input
           type="color"
           value={stop.color.hex}
           onChange={handleColorPickerChange}
           disabled={readOnly}
-          className="w-7 h-7 rounded border border-input cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex-shrink-0"
-          style={{ padding: 0 }}
+          style={styles.colorPicker}
         />
 
         {/* Hex input */}
-        <Input
+        <input
           type="text"
           value={hexInput}
           onChange={handleHexInputChange}
           placeholder="#000000"
           disabled={readOnly}
-          className="w-20 min-w-0 h-7 text-xs font-mono px-1.5"
+          style={styles.hexInput}
         />
 
         {/* Preview swatch with checkerboard for transparency */}
         <div
-          className="w-7 h-7 rounded border border-input flex-shrink-0 relative overflow-hidden"
+          style={styles.swatch as CSSProperties}
           title={`${previewColor} at ${opacity}% opacity`}
         >
-          {/* Checkerboard background for transparency preview */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                'linear-gradient(45deg, #e0e0e0 25%, transparent 25%), linear-gradient(-45deg, #e0e0e0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e0e0e0 75%), linear-gradient(-45deg, transparent 75%, #e0e0e0 75%)',
-              backgroundSize: '8px 8px',
-              backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
-            }}
-          />
-          {/* Color overlay */}
-          <div className="absolute inset-0" style={{ backgroundColor: previewColor }} />
+          <div style={styles.checkerboard as CSSProperties} />
+          <div style={{ ...styles.colorOverlay as CSSProperties, backgroundColor: previewColor }} />
         </div>
 
         {/* Spacer */}
-        <div className="flex-1 min-w-0" />
+        <div style={styles.spacer} />
 
         {/* Delete button */}
         {canDelete && !readOnly && (
           <button
             type="button"
             onClick={() => onDelete(index)}
-            className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded flex-shrink-0"
+            style={styles.deleteButton}
             title="Remove stop"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 style={{ width: '16px', height: '16px' }} />
           </button>
         )}
       </div>
 
       {/* Row 2: Position slider */}
-      <div className="flex items-center gap-2 min-w-0">
-        <Label className="text-xs text-muted-foreground w-12 flex-shrink-0">Pos</Label>
-        <div className="flex-1 min-w-0">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={stop.position}
-            onChange={handlePositionChange}
-            disabled={readOnly}
-            className="w-full h-1.5 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-        <span className="text-xs text-muted-foreground font-mono w-8 text-right flex-shrink-0">
+      <div style={styles.stopRow}>
+        <label style={styles.stopLabel}>Pos</label>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={stop.position}
+          onChange={handlePositionChange}
+          disabled={readOnly}
+          style={styles.rangeSlider}
+        />
+        <span style={styles.rangeValue as CSSProperties}>
           {stop.position}%
         </span>
       </div>
 
       {/* Row 3: Opacity slider */}
-      <div className="flex items-center gap-2 min-w-0">
-        <Label className="text-xs text-muted-foreground w-12 flex-shrink-0">Alpha</Label>
-        <div className="flex-1 min-w-0">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={opacity}
-            onChange={handleOpacityChange}
-            disabled={readOnly}
-            className="w-full h-1.5 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-        <span className="text-xs text-muted-foreground font-mono w-8 text-right flex-shrink-0">
+      <div style={styles.stopRow}>
+        <label style={styles.stopLabel}>Alpha</label>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={opacity}
+          onChange={handleOpacityChange}
+          disabled={readOnly}
+          style={styles.rangeSlider}
+        />
+        <span style={styles.rangeValue as CSSProperties}>
           {opacity}%
         </span>
       </div>
@@ -277,16 +439,16 @@ function GradientEditorInner({ value, onChange, readOnly }: GradientEditorProps)
 
   // Handle radial shape change
   const handleRadialShapeChange = useCallback(
-    (shape: 'circle' | 'ellipse') => {
-      onChange({ ...currentValue, radialShape: shape })
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onChange({ ...currentValue, radialShape: e.target.value as 'circle' | 'ellipse' })
     },
     [currentValue, onChange]
   )
 
   // Handle radial position change
   const handleRadialPositionChange = useCallback(
-    (position: GradientValue['radialPosition']) => {
-      onChange({ ...currentValue, radialPosition: position })
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onChange({ ...currentValue, radialPosition: e.target.value as GradientValue['radialPosition'] })
     },
     [currentValue, onChange]
   )
@@ -334,44 +496,37 @@ function GradientEditorInner({ value, onChange, readOnly }: GradientEditorProps)
   const canDeleteStops = currentValue.stops.length > 2
 
   return (
-    <div className="space-y-4">
+    <div style={styles.container as CSSProperties}>
       {/* Gradient Preview */}
-      <div
-        className="h-12 rounded-md border border-input"
-        style={{ background: previewCSS }}
-      />
+      <div style={{ ...styles.preview, background: previewCSS }} />
 
       {/* Type Selector */}
-      <div className="flex items-center gap-2">
-        <Label className="text-xs text-muted-foreground w-12">Type</Label>
-        <div className="flex gap-1">
-          <Button
+      <div style={styles.row}>
+        <label style={styles.label}>Type</label>
+        <div style={styles.buttonGroup}>
+          <button
             type="button"
-            variant={currentValue.type === 'linear' ? 'default' : 'outline'}
-            size="sm"
             onClick={() => handleTypeChange('linear')}
             disabled={readOnly}
-            className="text-xs h-7 px-3"
+            style={currentValue.type === 'linear' ? styles.buttonActive : styles.button}
           >
             Linear
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            variant={currentValue.type === 'radial' ? 'default' : 'outline'}
-            size="sm"
             onClick={() => handleTypeChange('radial')}
             disabled={readOnly}
-            className="text-xs h-7 px-3"
+            style={currentValue.type === 'radial' ? styles.buttonActive : styles.button}
           >
             Radial
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Linear Options: Angle */}
       {currentValue.type === 'linear' && (
-        <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground w-12">Angle</Label>
+        <div style={styles.row}>
+          <label style={styles.label}>Angle</label>
           <input
             type="range"
             min="0"
@@ -379,9 +534,9 @@ function GradientEditorInner({ value, onChange, readOnly }: GradientEditorProps)
             value={currentValue.angle}
             onChange={handleAngleChange}
             disabled={readOnly}
-            className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            style={styles.slider}
           />
-          <span className="text-xs text-muted-foreground font-mono w-10 text-right">
+          <span style={styles.sliderValue as CSSProperties}>
             {currentValue.angle}deg
           </span>
         </div>
@@ -390,64 +545,52 @@ function GradientEditorInner({ value, onChange, readOnly }: GradientEditorProps)
       {/* Radial Options: Shape & Position */}
       {currentValue.type === 'radial' && (
         <>
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground w-12">Shape</Label>
-            <Select
+          <div style={styles.row}>
+            <label style={styles.label}>Shape</label>
+            <select
               value={currentValue.radialShape || 'circle'}
-              onValueChange={(value) => handleRadialShapeChange(value as 'circle' | 'ellipse')}
+              onChange={handleRadialShapeChange}
               disabled={readOnly}
+              style={styles.select}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="circle">Circle</SelectItem>
-                <SelectItem value="ellipse">Ellipse</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="circle">Circle</option>
+              <option value="ellipse">Ellipse</option>
+            </select>
           </div>
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground w-12">Position</Label>
-            <Select
+          <div style={styles.row}>
+            <label style={styles.label}>Position</label>
+            <select
               value={currentValue.radialPosition || 'center'}
-              onValueChange={(value) =>
-                handleRadialPositionChange(value as GradientValue['radialPosition'])
-              }
+              onChange={handleRadialPositionChange}
               disabled={readOnly}
+              style={styles.select}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="center">Center</SelectItem>
-                <SelectItem value="top">Top</SelectItem>
-                <SelectItem value="bottom">Bottom</SelectItem>
-                <SelectItem value="left">Left</SelectItem>
-                <SelectItem value="right">Right</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="center">Center</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
           </div>
         </>
       )}
 
       {/* Color Stops */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground">Color Stops</Label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={styles.stopsHeader}>
+          <label style={styles.label}>Color Stops</label>
           {!readOnly && (
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
               onClick={handleAddStop}
-              className="h-6 text-xs px-2"
+              style={styles.addButton}
             >
-              <Plus className="w-3 h-3 mr-1" />
+              <Plus style={{ width: '12px', height: '12px' }} />
               Add Stop
-            </Button>
+            </button>
           )}
         </div>
-        <div className="space-y-2">
+        <div style={styles.stopsList as CSSProperties}>
           {currentValue.stops.map((stop, index) => (
             <GradientStopEditor
               key={index}

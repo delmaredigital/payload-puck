@@ -16,6 +16,10 @@ export const DEFAULT_ROOT_PROPS_MAPPINGS: RootPropsMapping[] = [
   { from: 'pageType', to: 'pageType' },
   { from: 'isHomepage', to: 'isHomepage' },
 
+  // Page-tree integration fields
+  { from: 'folder', to: 'folder' },
+  { from: 'pageSegment', to: 'pageSegment' },
+
   // SEO/Meta fields (uses official @payloadcms/plugin-seo convention)
   { from: 'metaTitle', to: 'meta.title' },
   { from: 'metaDescription', to: 'meta.description' },

@@ -13,7 +13,7 @@
  * - Collapsible 3D section (perspective, rotateX, rotateY)
  */
 
-import React, { useCallback, memo, useState } from 'react'
+import React, { useCallback, memo, useState, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import {
   Link,
@@ -27,18 +27,6 @@ import {
 } from 'lucide-react'
 import type { TransformValue, TransformOrigin } from './shared'
 import { DEFAULT_TRANSFORM, transformValueToCSS } from './shared'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { Checkbox } from '../components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -54,6 +42,277 @@ interface TransformFieldProps {
 type TranslateUnit = 'px' | 'rem' | '%'
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  preview: {
+    height: '96px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+    border: '1px solid var(--theme-elevation-150)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  } as CSSProperties,
+  previewBox: {
+    width: '48px',
+    height: '48px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--theme-bg)',
+    fontSize: '12px',
+    fontWeight: 500,
+    transition: 'transform 0.2s',
+  } as CSSProperties,
+  section: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+  } as CSSProperties,
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  sectionTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  sectionLabel: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-700)',
+  } as CSSProperties,
+  linkButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  linkButtonActive: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+  } as CSSProperties,
+  sliderGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  sliderHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  sliderLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  sliderValue: {
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  slider: {
+    width: '100%',
+    height: '6px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  translateRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  select: {
+    height: '28px',
+    width: '64px',
+    padding: '0 8px',
+    fontSize: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  inputLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  input: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  originGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '4px',
+    width: 'fit-content',
+  } as CSSProperties,
+  originButton: {
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  originButtonActive: {
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  originDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--theme-elevation-400)',
+  } as CSSProperties,
+  originDotActive: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--theme-bg)',
+  } as CSSProperties,
+  originRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  } as CSSProperties,
+  originLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    textTransform: 'capitalize',
+  } as CSSProperties,
+  collapsible: {
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '6px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  collapsibleHeader: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px',
+    border: 'none',
+    backgroundColor: 'var(--theme-elevation-50)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  collapsibleTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  collapsibleContent: {
+    padding: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    borderTop: '1px solid var(--theme-elevation-150)',
+  } as CSSProperties,
+  checkboxRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  checkboxLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // Origin Grid Component
 // =============================================================================
 
@@ -63,22 +322,16 @@ interface OriginGridProps {
   disabled?: boolean
 }
 
-const ORIGIN_POSITIONS: Array<{ value: TransformOrigin; row: number; col: number }> = [
-  { value: 'top-left', row: 0, col: 0 },
-  { value: 'top', row: 0, col: 1 },
-  { value: 'top-right', row: 0, col: 2 },
-  { value: 'left', row: 1, col: 0 },
-  { value: 'center', row: 1, col: 1 },
-  { value: 'right', row: 1, col: 2 },
-  { value: 'bottom-left', row: 2, col: 0 },
-  { value: 'bottom', row: 2, col: 1 },
-  { value: 'bottom-right', row: 2, col: 2 },
+const ORIGIN_POSITIONS: TransformOrigin[] = [
+  'top-left', 'top', 'top-right',
+  'left', 'center', 'right',
+  'bottom-left', 'bottom', 'bottom-right',
 ]
 
 function OriginGrid({ value, onChange, disabled }: OriginGridProps) {
   return (
-    <div className="grid grid-cols-3 gap-1 w-fit">
-      {ORIGIN_POSITIONS.map(({ value: origin }) => {
+    <div style={styles.originGrid}>
+      {ORIGIN_POSITIONS.map((origin) => {
         const isActive = value === origin
         return (
           <button
@@ -86,21 +339,13 @@ function OriginGrid({ value, onChange, disabled }: OriginGridProps) {
             type="button"
             onClick={() => onChange(origin)}
             disabled={disabled}
-            className={cn(
-              'w-6 h-6 rounded border transition-colors',
-              isActive
-                ? 'bg-primary border-primary'
-                : 'bg-muted/50 border-border hover:bg-muted hover:border-muted-foreground/50',
-              disabled && 'opacity-50 cursor-not-allowed'
-            )}
-            title={origin}
+            style={{
+              ...(isActive ? styles.originButtonActive : styles.originButton),
+              ...(disabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
+            }}
+            title={origin.replace('-', ' ')}
           >
-            <span
-              className={cn(
-                'block w-2 h-2 rounded-full mx-auto',
-                isActive ? 'bg-primary-foreground' : 'bg-muted-foreground/30'
-              )}
-            />
+            <span style={isActive ? styles.originDotActive : styles.originDot} />
           </button>
         )
       })}
@@ -109,7 +354,7 @@ function OriginGrid({ value, onChange, disabled }: OriginGridProps) {
 }
 
 // =============================================================================
-// Slider Input Component (custom range input)
+// Slider Input Component
 // =============================================================================
 
 interface SliderInputProps {
@@ -134,15 +379,11 @@ function SliderInput({
   unit = '',
 }: SliderInputProps) {
   return (
-    <div className="space-y-1">
+    <div style={styles.sliderGroup as CSSProperties}>
       {label && (
-        <div className="flex items-center justify-between">
-          <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            {label}
-          </Label>
-          <span className="text-xs font-mono text-muted-foreground">
-            {value}{unit}
-          </span>
+        <div style={styles.sliderHeader}>
+          <label style={styles.sliderLabel as CSSProperties}>{label}</label>
+          <span style={styles.sliderValue}>{value}{unit}</span>
         </div>
       )}
       <input
@@ -153,11 +394,10 @@ function SliderInput({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
-        className={cn(
-          'w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer',
-          'accent-primary',
-          disabled && 'opacity-50 cursor-not-allowed'
-        )}
+        style={{
+          ...styles.slider,
+          ...(disabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
+        }}
       />
     </div>
   )
@@ -246,41 +486,36 @@ function TransformFieldInner({
   const previewStyles = transformValueToCSS(currentValue) || {}
 
   return (
-    <div className="puck-field space-y-4">
+    <div className="puck-field" style={styles.container}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div style={styles.header}>
         {label && (
-          <Label className="text-sm font-medium text-foreground">{label}</Label>
+          <label style={styles.label}>{label}</label>
         )}
         {value && !readOnly && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-destructive"
+            style={styles.clearButton}
             title="Reset transform"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
       {/* Live Preview */}
-      <div className="h-24 bg-muted/30 rounded-md border border-border flex items-center justify-center overflow-hidden">
-        <div
-          className="w-12 h-12 bg-primary/80 rounded-md flex items-center justify-center text-primary-foreground text-xs font-medium transition-transform duration-200"
-          style={previewStyles}
-        >
+      <div style={styles.preview}>
+        <div style={{ ...styles.previewBox, ...previewStyles }}>
           Aa
         </div>
       </div>
 
       {/* Rotate */}
-      <div className="space-y-2 p-3 bg-muted/30 rounded-md">
-        <div className="flex items-center gap-2 mb-2">
-          <RotateCw className="h-4 w-4 text-muted-foreground" />
-          <Label className="text-xs font-medium">Rotate</Label>
+      <div style={styles.section as CSSProperties}>
+        <div style={styles.sectionTitle}>
+          <RotateCw style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
+          <label style={styles.sectionLabel}>Rotate</label>
         </div>
         <SliderInput
           value={currentValue.rotate}
@@ -293,35 +528,29 @@ function TransformFieldInner({
       </div>
 
       {/* Scale */}
-      <div className="space-y-3 p-3 bg-muted/30 rounded-md">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Maximize2 className="h-4 w-4 text-muted-foreground" />
-            <Label className="text-xs font-medium">Scale</Label>
+      <div style={styles.section as CSSProperties}>
+        <div style={styles.sectionHeader}>
+          <div style={styles.sectionTitle}>
+            <Maximize2 style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
+            <label style={styles.sectionLabel}>Scale</label>
           </div>
           {!readOnly && (
-            <Button
+            <button
               type="button"
-              variant={currentValue.scaleLocked ? 'default' : 'outline'}
-              size="icon-sm"
               onClick={handleScaleLockToggle}
-              className="h-6 w-6"
-              title={
-                currentValue.scaleLocked
-                  ? 'Click to unlink X and Y scale'
-                  : 'Click to link X and Y scale'
-              }
+              style={currentValue.scaleLocked ? styles.linkButtonActive : styles.linkButton}
+              title={currentValue.scaleLocked ? 'Click to unlink X and Y scale' : 'Click to link X and Y scale'}
             >
               {currentValue.scaleLocked ? (
-                <Link className="h-3 w-3" />
+                <Link style={{ width: '12px', height: '12px' }} />
               ) : (
-                <Unlink className="h-3 w-3" />
+                <Unlink style={{ width: '12px', height: '12px' }} />
               )}
-            </Button>
+            </button>
           )}
         </div>
 
-        <div className={cn('grid gap-3', currentValue.scaleLocked ? 'grid-cols-1' : 'grid-cols-2')}>
+        <div style={currentValue.scaleLocked ? {} : styles.grid}>
           <SliderInput
             label={currentValue.scaleLocked ? 'Scale' : 'Scale X'}
             value={currentValue.scaleX}
@@ -346,9 +575,9 @@ function TransformFieldInner({
       </div>
 
       {/* Skew */}
-      <div className="space-y-3 p-3 bg-muted/30 rounded-md">
-        <Label className="text-xs font-medium">Skew</Label>
-        <div className="grid grid-cols-2 gap-3">
+      <div style={styles.section as CSSProperties}>
+        <label style={styles.sectionLabel}>Skew</label>
+        <div style={styles.grid}>
           <SliderInput
             label="Skew X"
             value={currentValue.skewX}
@@ -371,131 +600,114 @@ function TransformFieldInner({
       </div>
 
       {/* Translate */}
-      <div className="space-y-3 p-3 bg-muted/30 rounded-md">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-medium">Translate</Label>
-          <Select
+      <div style={styles.section as CSSProperties}>
+        <div style={styles.translateRow}>
+          <label style={styles.sectionLabel}>Translate</label>
+          <select
             value={currentValue.translateUnit}
-            onValueChange={(v) => handleChange('translateUnit', v as TranslateUnit)}
+            onChange={(e) => handleChange('translateUnit', e.target.value as TranslateUnit)}
             disabled={readOnly}
+            style={styles.select}
           >
-            <SelectTrigger className="h-7 w-16 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="px">px</SelectItem>
-              <SelectItem value="rem">rem</SelectItem>
-              <SelectItem value="%">%</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="px">px</option>
+            <option value="rem">rem</option>
+            <option value="%">%</option>
+          </select>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              X
-            </Label>
-            <Input
+        <div style={styles.grid}>
+          <div style={styles.inputGroup as CSSProperties}>
+            <label style={styles.inputLabel as CSSProperties}>X</label>
+            <input
               type="number"
               value={currentValue.translateX}
-              onChange={(e) =>
-                handleChange('translateX', parseFloat(e.target.value) || 0)
-              }
+              onChange={(e) => handleChange('translateX', parseFloat(e.target.value) || 0)}
               disabled={readOnly}
-              className="h-8 text-sm font-mono"
+              style={styles.input}
             />
           </div>
-          <div className="space-y-1">
-            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Y
-            </Label>
-            <Input
+          <div style={styles.inputGroup as CSSProperties}>
+            <label style={styles.inputLabel as CSSProperties}>Y</label>
+            <input
               type="number"
               value={currentValue.translateY}
-              onChange={(e) =>
-                handleChange('translateY', parseFloat(e.target.value) || 0)
-              }
+              onChange={(e) => handleChange('translateY', parseFloat(e.target.value) || 0)}
               disabled={readOnly}
-              className="h-8 text-sm font-mono"
+              style={styles.input}
             />
           </div>
         </div>
       </div>
 
       {/* Transform Origin */}
-      <div className="space-y-3 p-3 bg-muted/30 rounded-md">
-        <Label className="text-xs font-medium">Transform Origin</Label>
-        <div className="flex items-center gap-4">
+      <div style={styles.section as CSSProperties}>
+        <label style={styles.sectionLabel}>Transform Origin</label>
+        <div style={styles.originRow}>
           <OriginGrid
             value={currentValue.origin}
             onChange={(v) => handleChange('origin', v)}
             disabled={readOnly}
           />
-          <span className="text-xs text-muted-foreground capitalize">
+          <span style={styles.originLabel}>
             {currentValue.origin.replace('-', ' ')}
           </span>
         </div>
       </div>
 
       {/* 3D Section (Collapsible) */}
-      <div className="border border-border rounded-md overflow-hidden">
+      <div style={styles.collapsible}>
         <button
           type="button"
           onClick={() => setShow3D(!show3D)}
-          className="w-full flex items-center justify-between p-3 bg-muted/30 hover:bg-muted/50 transition-colors"
+          style={styles.collapsibleHeader}
         >
-          <div className="flex items-center gap-2">
-            <Box className="h-4 w-4 text-muted-foreground" />
-            <Label className="text-xs font-medium cursor-pointer">3D Transforms</Label>
+          <div style={styles.collapsibleTitle}>
+            <Box style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
+            <label style={styles.sectionLabel}>3D Transforms</label>
           </div>
           {show3D ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
           )}
         </button>
 
         {show3D && (
-          <div className="p-3 space-y-3 border-t border-border">
+          <div style={styles.collapsibleContent as CSSProperties}>
             {/* Enable 3D checkbox */}
-            <div className="flex items-center gap-2">
-              <Checkbox
+            <div style={styles.checkboxRow}>
+              <input
+                type="checkbox"
                 id="enable3d"
                 checked={currentValue.enable3D}
-                onCheckedChange={(checked) =>
-                  handle3DToggle(checked === true)
-                }
+                onChange={(e) => handle3DToggle(e.target.checked)}
                 disabled={readOnly}
+                style={styles.checkbox}
               />
-              <Label
-                htmlFor="enable3d"
-                className="text-xs text-muted-foreground cursor-pointer"
-              >
+              <label htmlFor="enable3d" style={styles.checkboxLabel}>
                 Enable 3D Transforms
-              </Label>
+              </label>
             </div>
 
             {currentValue.enable3D && (
               <>
                 {/* Perspective */}
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                <div style={styles.inputGroup as CSSProperties}>
+                  <label style={styles.inputLabel as CSSProperties}>
                     Perspective (px)
-                  </Label>
-                  <Input
+                  </label>
+                  <input
                     type="number"
                     min={100}
                     max={2000}
                     value={currentValue.perspective ?? 1000}
-                    onChange={(e) =>
-                      handleChange('perspective', parseInt(e.target.value, 10) || 1000)
-                    }
+                    onChange={(e) => handleChange('perspective', parseInt(e.target.value, 10) || 1000)}
                     disabled={readOnly}
-                    className="h-8 text-sm font-mono"
+                    style={styles.input}
                   />
                 </div>
 
                 {/* Rotate X/Y */}
-                <div className="grid grid-cols-2 gap-3">
+                <div style={styles.grid}>
                   <SliderInput
                     label="Rotate X"
                     value={currentValue.rotateX ?? 0}

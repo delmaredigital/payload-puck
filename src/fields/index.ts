@@ -209,3 +209,11 @@ export function injectRichtextStyles() {
     document.head.appendChild(style)
   }
 }
+
+// =============================================================================
+// Page-Tree Integration Fields
+// =============================================================================
+
+export { FolderPickerField, createFolderPickerField } from './FolderPickerField'
+export { PageSegmentField, createPageSegmentField } from './PageSegmentField'
+export { SlugPreviewField, createSlugPreviewField } from './SlugPreviewField'

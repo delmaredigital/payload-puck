@@ -1,7 +1,7 @@
 'use client'
 
 import type { UIFieldClientComponent } from 'payload'
-import { useDocumentInfo } from '@payloadcms/ui'
+import { useDocumentInfo, useConfig } from '@payloadcms/ui'
 
 /**
  * Props for EditWithPuckButton when used standalone
@@ -18,8 +18,8 @@ export interface EditWithPuckButtonProps {
   collectionSlug?: string
   /**
    * Custom path pattern for the Puck editor
-   * Use {id} as placeholder for the document ID
-   * @default '/pages/{id}/edit'
+   * Use {id} as placeholder for the document ID, {collection} for collection slug
+   * @default Uses admin view: '/admin/puck-editor/{collection}/{id}'
    */
   editorPathPattern?: string
   /**
@@ -59,8 +59,8 @@ function PuckIcon({ size = 18 }: { size?: number }) {
 /**
  * Edit with Puck button for use in Payload admin document edit views
  *
- * Links to a Puck editor page outside of Payload admin. Configure the
- * `editorPathPattern` to match your editor route.
+ * Links to the Puck editor admin view. The editor is integrated directly
+ * into Payload's admin UI.
  *
  * @example
  * ```tsx
@@ -74,7 +74,6 @@ function PuckIcon({ size = 18 }: { size?: number }) {
  *       Field: '@delmaredigital/payload-puck/admin/client#EditWithPuckButton',
  *     },
  *     custom: {
- *       editorPathPattern: '/pages/{id}/edit', // Your editor route
  *       label: 'Visual Editor',
  *     },
  *   },
@@ -82,17 +81,30 @@ function PuckIcon({ size = 18 }: { size?: number }) {
  * ```
  */
 export const EditWithPuckButton: UIFieldClientComponent = (props) => {
-  // Get document context from Payload
-  const { id } = useDocumentInfo()
+  // Get document and config context from Payload
+  const { id, collectionSlug } = useDocumentInfo()
+  const { config } = useConfig()
 
   // Extract custom props passed via field config
   const customProps = (props as any)?.field?.custom as EditWithPuckButtonProps | undefined
   const label = customProps?.label || 'Edit with Puck'
   const iconOnly = customProps?.iconOnly || false
+  const collection = customProps?.collectionSlug || collectionSlug || 'pages'
 
-  // Build editor URL from pattern (default: /pages/{id}/edit)
-  const pattern = customProps?.editorPathPattern || '/pages/{id}/edit'
-  const editorPath = pattern.replace('{id}', String(id))
+  // Get admin route from config
+  const adminRoute = config.routes?.admin || '/admin'
+
+  // Build editor URL - defaults to admin view
+  let editorPath: string
+  if (customProps?.editorPathPattern) {
+    // Custom pattern provided (for backwards compatibility)
+    editorPath = customProps.editorPathPattern
+      .replace('{id}', String(id))
+      .replace('{collection}', collection)
+  } else {
+    // Default: use admin view
+    editorPath = `${adminRoute}/puck-editor/${collection}/${id}`
+  }
 
   if (!id) {
     return null
@@ -107,19 +119,19 @@ export const EditWithPuckButton: UIFieldClientComponent = (props) => {
           alignItems: 'center',
           gap: '8px',
           padding: iconOnly ? '8px' : '10px 16px',
-          backgroundColor: '#2563eb',
-          color: '#fff',
+          backgroundColor: 'var(--theme-success-500, #22c55e)',
+          color: 'white',
           borderRadius: '6px',
           textDecoration: 'none',
           fontSize: '14px',
           fontWeight: 500,
-          transition: 'background-color 0.2s',
+          transition: 'background-color 0.15s, opacity 0.15s',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#1d4ed8'
+          e.currentTarget.style.opacity = '0.9'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#2563eb'
+          e.currentTarget.style.opacity = '1'
         }}
         title={iconOnly ? label : undefined}
       >
@@ -132,14 +144,27 @@ export const EditWithPuckButton: UIFieldClientComponent = (props) => {
 
 /**
  * Standalone version of the button that doesn't rely on Payload context
+ *
+ * @example
+ * ```tsx
+ * <EditWithPuckLink
+ *   id="123"
+ *   collectionSlug="pages"
+ *   adminRoute="/admin"
+ * />
+ * ```
  */
 export function EditWithPuckLink({
   id,
-  editorPathPattern = '/pages/{id}/edit',
+  collectionSlug = 'pages',
+  editorPathPattern,
   label = 'Edit with Puck',
   iconOnly = false,
-}: EditWithPuckButtonProps & { id: string }) {
-  const path = editorPathPattern.replace('{id}', id)
+}: EditWithPuckButtonProps & { id: string; adminRoute?: string }) {
+  // Build path - prefer admin view by default
+  const path = editorPathPattern
+    ? editorPathPattern.replace('{id}', id).replace('{collection}', collectionSlug)
+    : `/admin/puck-editor/${collectionSlug}/${id}`
 
   return (
     <a
@@ -149,19 +174,19 @@ export function EditWithPuckLink({
         alignItems: 'center',
         gap: '8px',
         padding: iconOnly ? '8px' : '10px 16px',
-        backgroundColor: '#2563eb',
-        color: '#fff',
+        backgroundColor: 'var(--theme-success-500, #22c55e)',
+        color: 'white',
         borderRadius: '6px',
         textDecoration: 'none',
         fontSize: '14px',
         fontWeight: 500,
-        transition: 'background-color 0.2s',
+        transition: 'opacity 0.15s',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = '#1d4ed8'
+        e.currentTarget.style.opacity = '0.9'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = '#2563eb'
+        e.currentTarget.style.opacity = '1'
       }}
       title={iconOnly ? label : undefined}
     >

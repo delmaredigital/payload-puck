@@ -9,14 +9,10 @@
  * - Unit selector (px, rem)
  */
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { Link, Unlink } from 'lucide-react'
 import type { PaddingValue } from './shared'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -43,6 +39,135 @@ const DEFAULT_VALUE: PaddingValue = {
   left: 0,
   unit: 'px',
   linked: true,
+}
+
+// =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  linkButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  linkButtonActive: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+    padding: '8px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+  } as CSSProperties,
+  inputRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  inputLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+    width: '24px',
+    textAlign: 'right',
+    flexShrink: 0,
+  } as CSSProperties,
+  input: {
+    height: '28px',
+    width: '100%',
+    padding: '0 4px',
+    textAlign: 'center',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '8px',
+  } as CSSProperties,
+  unitGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  unitLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  unitButtons: {
+    display: 'flex',
+    gap: '4px',
+  } as CSSProperties,
+  unitButton: {
+    height: '28px',
+    padding: '0 10px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  unitButtonActive: {
+    height: '28px',
+    padding: '0 10px',
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  summary: {
+    fontSize: '12px',
+    fontFamily: 'monospace',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
 }
 
 // =============================================================================
@@ -121,54 +246,49 @@ function PaddingFieldInner({
     side: 'top' | 'right' | 'bottom' | 'left',
     sideLabel: string
   ) => (
-    <div className="flex items-center gap-2">
-      <Label className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 text-right flex-shrink-0">
+    <div style={styles.inputRow}>
+      <label style={styles.inputLabel as CSSProperties}>
         {sideLabel.charAt(0)}
-      </Label>
-      <Input
+      </label>
+      <input
         type="number"
         min={0}
         value={currentValue[side]}
         onChange={(e) => handleSideChange(side, parseInt(e.target.value, 10) || 0)}
         disabled={readOnly}
-        className="h-7 text-center text-sm font-mono w-full px-1 py-0"
+        style={styles.input as CSSProperties}
       />
     </div>
   )
 
   return (
-    <div className="puck-field flex flex-col gap-3">
+    <div className="puck-field" style={styles.container}>
       {/* Header with label and link toggle */}
-      <div className="flex items-center justify-between">
+      <div style={styles.header}>
         {label && (
-          <Label className="text-sm font-medium text-foreground">
+          <label style={styles.label}>
             {label}
-          </Label>
+          </label>
         )}
         {/* Link/Unlink toggle button */}
         {!readOnly && (
-          <Button
+          <button
             type="button"
-            variant={isLinked ? 'default' : 'outline'}
-            size="icon"
             onClick={handleLinkToggle}
-            className={cn(
-              "h-7 w-7",
-              isLinked ? "" : "text-muted-foreground"
-            )}
+            style={isLinked ? styles.linkButtonActive : styles.linkButton}
             title={isLinked ? 'Click to unlink (set sides individually)' : 'Click to link (all sides same value)'}
           >
             {isLinked ? (
-              <Link className="h-4 w-4" />
+              <Link style={{ width: '16px', height: '16px' }} />
             ) : (
-              <Unlink className="h-4 w-4" />
+              <Unlink style={{ width: '16px', height: '16px' }} />
             )}
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Compact 2x2 grid layout */}
-      <div className="bg-muted/50 rounded-md grid grid-cols-2 gap-2 p-2">
+      <div style={styles.grid}>
         {renderSideInput('top', 'Top')}
         {renderSideInput('right', 'Right')}
         {renderSideInput('bottom', 'Bottom')}
@@ -177,32 +297,27 @@ function PaddingFieldInner({
 
       {/* Unit selector and summary */}
       {showUnits && !readOnly && (
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground">Unit:</Label>
-            <div className="flex gap-1">
+        <div style={styles.footer}>
+          <div style={styles.unitGroup}>
+            <label style={styles.unitLabel}>Unit:</label>
+            <div style={styles.unitButtons}>
               {(['px', 'rem'] as SpacingUnit[]).map((unit) => {
                 const isActive = currentValue.unit === unit
                 return (
-                  <Button
+                  <button
                     key={unit}
                     type="button"
-                    variant={isActive ? 'default' : 'outline'}
-                    size="sm"
                     onClick={() => handleUnitChange(unit)}
-                    className={cn(
-                      "text-xs font-mono h-7 px-2.5",
-                      !isActive && "text-muted-foreground"
-                    )}
+                    style={isActive ? styles.unitButtonActive : styles.unitButton}
                   >
                     {unit}
-                  </Button>
+                  </button>
                 )
               })}
             </div>
           </div>
           {/* Current value summary */}
-          <span className="text-xs text-muted-foreground font-mono">
+          <span style={styles.summary}>
             {isLinked
               ? `${currentValue.top}${currentValue.unit}`
               : `${currentValue.top} ${currentValue.right} ${currentValue.bottom} ${currentValue.left}${currentValue.unit}`

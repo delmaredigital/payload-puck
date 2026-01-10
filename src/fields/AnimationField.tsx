@@ -12,7 +12,7 @@
  * - Stagger support for child elements
  */
 
-import React, { useCallback, memo, useState } from 'react'
+import React, { useCallback, memo, useState, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { X, ChevronDown, ChevronRight } from 'lucide-react'
 import type {
@@ -28,19 +28,6 @@ import {
   getRelevantIntensityControls,
   getDefaultEasingForAnimation,
 } from './shared'
-import { Button } from '../components/ui/button'
-import { Label } from '../components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select'
-import { Checkbox } from '../components/ui/checkbox'
-import { cn } from '../lib/utils'
 
 // =============================================================================
 // Types
@@ -81,6 +68,199 @@ const EASING_OPTIONS: Array<{ value: AdvancedEasingFunction; label: string; grou
 ]
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  label: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sectionLabel: {
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  select: {
+    width: '100%',
+    height: '36px',
+    padding: '0 8px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  selectSmall: {
+    width: '100%',
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  controlsPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    borderRadius: '6px',
+  } as CSSProperties,
+  collapsibleContainer: {
+    border: '1px solid var(--theme-elevation-100)',
+    borderRadius: '6px',
+    overflow: 'hidden',
+  } as CSSProperties,
+  collapsibleHeader: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '8px 12px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    border: 'none',
+    cursor: 'pointer',
+  } as CSSProperties,
+  collapsibleTitle: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  collapsibleContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+  } as CSSProperties,
+  sliderRow: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+  sliderHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as CSSProperties,
+  sliderValue: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+  } as CSSProperties,
+  slider: {
+    width: '100%',
+    height: '6px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  sliderDisabled: {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+  } as CSSProperties,
+  originGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '4px',
+    width: '96px',
+  } as CSSProperties,
+  originButton: {
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-50)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  originButtonActive: {
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CSSProperties,
+  originDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--theme-elevation-400)',
+  } as CSSProperties,
+  originDotActive: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--theme-bg)',
+  } as CSSProperties,
+  originDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  checkboxRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as CSSProperties,
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    accentColor: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  checkboxLabel: {
+    fontSize: '14px',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  helpText: {
+    fontSize: '10px',
+    color: 'var(--theme-elevation-500)',
+    marginTop: '-8px',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // Collapsible Section Component
 // =============================================================================
 
@@ -94,20 +274,20 @@ function CollapsibleSection({ title, defaultOpen = false, children }: Collapsibl
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border border-border/50 rounded-md overflow-hidden">
+    <div style={styles.collapsibleContainer}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-muted/30 hover:bg-muted/50 transition-colors"
+        style={styles.collapsibleHeader}
       >
-        <span className="text-xs font-medium text-muted-foreground">{title}</span>
+        <span style={styles.collapsibleTitle}>{title}</span>
         {isOpen ? (
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown style={{ width: '14px', height: '14px', color: 'var(--theme-elevation-500)' }} />
         ) : (
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronRight style={{ width: '14px', height: '14px', color: 'var(--theme-elevation-500)' }} />
         )}
       </button>
-      {isOpen && <div className="p-3 space-y-3">{children}</div>}
+      {isOpen && <div style={styles.collapsibleContent as CSSProperties}>{children}</div>}
     </div>
   )
 }
@@ -130,30 +310,25 @@ function OriginGrid({ value, onChange, disabled }: OriginGridProps) {
   ]
 
   return (
-    <div className="grid grid-cols-3 gap-1 w-24">
-      {origins.map((origin) => (
-        <button
-          key={origin}
-          type="button"
-          onClick={() => onChange(origin)}
-          disabled={disabled}
-          className={cn(
-            'w-7 h-7 rounded border transition-colors',
-            value === origin
-              ? 'bg-primary border-primary'
-              : 'bg-muted/50 border-border hover:bg-muted hover:border-border/80',
-            disabled && 'opacity-50 cursor-not-allowed'
-          )}
-          title={origin.replace('-', ' ')}
-        >
-          <span
-            className={cn(
-              'block w-2 h-2 rounded-full mx-auto',
-              value === origin ? 'bg-primary-foreground' : 'bg-muted-foreground/40'
-            )}
-          />
-        </button>
-      ))}
+    <div style={styles.originGrid}>
+      {origins.map((origin) => {
+        const isActive = value === origin
+        return (
+          <button
+            key={origin}
+            type="button"
+            onClick={() => onChange(origin)}
+            disabled={disabled}
+            style={{
+              ...(isActive ? styles.originButtonActive : styles.originButton),
+              ...(disabled ? styles.originDisabled : {}),
+            }}
+            title={origin.replace('-', ' ')}
+          >
+            <span style={isActive ? styles.originDotActive : styles.originDot} />
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -175,12 +350,10 @@ interface SliderRowProps {
 
 function SliderRow({ label, value, min, max, step = 1, unit = '', onChange, disabled }: SliderRowProps) {
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          {label}
-        </Label>
-        <span className="text-xs text-muted-foreground">{value}{unit}</span>
+    <div style={styles.sliderRow as CSSProperties}>
+      <div style={styles.sliderHeader}>
+        <label style={styles.sectionLabel as CSSProperties}>{label}</label>
+        <span style={styles.sliderValue}>{value}{unit}</span>
       </div>
       <input
         type="range"
@@ -190,7 +363,10 @@ function SliderRow({ label, value, min, max, step = 1, unit = '', onChange, disa
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
-        className="w-full h-1.5 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        style={{
+          ...styles.slider,
+          ...(disabled ? styles.sliderDisabled : {}),
+        }}
       />
     </div>
   )
@@ -272,67 +448,48 @@ function AnimationFieldInner({
   }
 
   return (
-    <div className="puck-field space-y-3">
+    <div className="puck-field" style={styles.container}>
       {/* Header with label and clear */}
-      <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-foreground">{label}</Label>
+      <div style={styles.header}>
+        <label style={styles.label}>{label}</label>
         {value && !readOnly && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-destructive"
+            style={styles.clearButton}
             title="Reset to default"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
       {/* Animation Type Select (grouped by category) */}
-      <div className="space-y-1">
-        <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          Animation
-        </Label>
-        <Select
+      <div style={styles.inputGroup as CSSProperties}>
+        <label style={styles.sectionLabel as CSSProperties}>Animation</label>
+        <select
           value={currentValue.entrance || 'none'}
-          onValueChange={(v) => handleEntranceChange(v as EntranceAnimation)}
+          onChange={(e) => handleEntranceChange(e.target.value as EntranceAnimation)}
           disabled={readOnly}
+          style={styles.select}
         >
-          <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder="Select animation">
-              {formatAnimationLabel(currentValue.entrance || 'none')}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {ANIMATION_CATEGORIES.map(({ category, label: catLabel, animations }, idx) => (
-              <SelectGroup key={category}>
-                <SelectLabel
-                  className={cn(
-                    'text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70',
-                    'px-2 py-1.5 bg-muted/50',
-                    idx > 0 && 'mt-1 border-t border-border/50'
-                  )}
-                >
-                  {catLabel}
-                </SelectLabel>
-                {animations.map((anim) => (
-                  <SelectItem key={anim} value={anim}>
-                    {formatAnimationLabel(anim)}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
+          {ANIMATION_CATEGORIES.map(({ category, label: catLabel, animations }) => (
+            <optgroup key={category} label={catLabel}>
+              {animations.map((anim) => (
+                <option key={anim} value={anim}>
+                  {formatAnimationLabel(anim)}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
       </div>
 
       {/* Only show controls if animation is not 'none' */}
       {currentValue.entrance && currentValue.entrance !== 'none' && (
         <>
           {/* Timing Controls */}
-          <div className="space-y-3 p-3 bg-muted/30 rounded-md">
+          <div style={styles.controlsPanel as CSSProperties}>
             <SliderRow
               label="Duration"
               value={currentValue.entranceDuration ?? 500}
@@ -411,7 +568,7 @@ function AnimationFieldInner({
 
           {/* Transform Origin */}
           <CollapsibleSection title="Transform Origin">
-            <div className="flex items-center justify-center">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <OriginGrid
                 value={currentValue.origin ?? 'center'}
                 onChange={(v) => updateField('origin', v)}
@@ -422,53 +579,42 @@ function AnimationFieldInner({
 
           {/* Easing */}
           <CollapsibleSection title="Easing">
-            <Select
+            <select
               value={currentValue.easing || 'ease'}
-              onValueChange={(v) => updateField('easing', v as AdvancedEasingFunction)}
+              onChange={(e) => updateField('easing', e.target.value as AdvancedEasingFunction)}
               disabled={readOnly}
+              style={styles.selectSmall}
             >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select easing" />
-              </SelectTrigger>
-              <SelectContent>
-                {['Standard', 'Spring', 'Back', 'Elastic'].map((group, idx) => (
-                  <SelectGroup key={group}>
-                    <SelectLabel
-                      className={cn(
-                        'text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70',
-                        'px-2 py-1.5 bg-muted/50',
-                        idx > 0 && 'mt-1 border-t border-border/50'
-                      )}
-                    >
-                      {group}
-                    </SelectLabel>
-                    {EASING_OPTIONS.filter(e => e.group === group).map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-[10px] text-muted-foreground mt-2">
+              {['Standard', 'Spring', 'Back', 'Elastic'].map((group) => (
+                <optgroup key={group} label={group}>
+                  {EASING_OPTIONS.filter(e => e.group === group).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <p style={styles.helpText}>
               Spring and bounce easings create overshoot effects
             </p>
           </CollapsibleSection>
 
           {/* Scroll Trigger */}
           <CollapsibleSection title="Scroll Trigger" defaultOpen>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' } as CSSProperties}>
+              <div style={styles.checkboxRow}>
+                <input
+                  type="checkbox"
                   id="trigger-on-scroll"
                   checked={currentValue.triggerOnScroll ?? true}
-                  onCheckedChange={(checked) => updateField('triggerOnScroll', !!checked)}
+                  onChange={(e) => updateField('triggerOnScroll', e.target.checked)}
                   disabled={readOnly}
+                  style={styles.checkbox}
                 />
-                <Label htmlFor="trigger-on-scroll" className="text-sm cursor-pointer">
+                <label htmlFor="trigger-on-scroll" style={styles.checkboxLabel}>
                   Trigger on scroll
-                </Label>
+                </label>
               </div>
 
               {currentValue.triggerOnScroll && (
@@ -483,20 +629,22 @@ function AnimationFieldInner({
                     onChange={(v) => updateField('triggerThreshold', v / 100)}
                     disabled={readOnly}
                   />
-                  <p className="text-[10px] text-muted-foreground -mt-2">
+                  <p style={styles.helpText}>
                     Element visibility % before animation triggers
                   </p>
 
-                  <div className="flex items-center gap-2">
-                    <Checkbox
+                  <div style={styles.checkboxRow}>
+                    <input
+                      type="checkbox"
                       id="animate-once"
                       checked={currentValue.triggerOnce ?? true}
-                      onCheckedChange={(checked) => updateField('triggerOnce', !!checked)}
+                      onChange={(e) => updateField('triggerOnce', e.target.checked)}
                       disabled={readOnly}
+                      style={styles.checkbox}
                     />
-                    <Label htmlFor="animate-once" className="text-sm cursor-pointer">
+                    <label htmlFor="animate-once" style={styles.checkboxLabel}>
                       Animate only once
-                    </Label>
+                    </label>
                   </div>
                 </>
               )}
@@ -506,17 +654,19 @@ function AnimationFieldInner({
           {/* Stagger Controls (only for container components) */}
           {showStagger && (
             <CollapsibleSection title="Stagger Children">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Checkbox
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' } as CSSProperties}>
+                <div style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
                     id="stagger-enabled"
                     checked={currentValue.stagger?.enabled ?? false}
-                    onCheckedChange={(checked) => updateStagger({ enabled: !!checked })}
+                    onChange={(e) => updateStagger({ enabled: e.target.checked })}
                     disabled={readOnly}
+                    style={styles.checkbox}
                   />
-                  <Label htmlFor="stagger-enabled" className="text-sm cursor-pointer">
+                  <label htmlFor="stagger-enabled" style={styles.checkboxLabel}>
                     Enable stagger
-                  </Label>
+                  </label>
                 </div>
 
                 {currentValue.stagger?.enabled && (
@@ -543,25 +693,19 @@ function AnimationFieldInner({
                       disabled={readOnly}
                     />
 
-                    <div className="space-y-1">
-                      <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                        Direction
-                      </Label>
-                      <Select
+                    <div style={styles.inputGroup as CSSProperties}>
+                      <label style={styles.sectionLabel as CSSProperties}>Direction</label>
+                      <select
                         value={currentValue.stagger?.direction ?? 'forward'}
-                        onValueChange={(v) => updateStagger({ direction: v as StaggerDirection })}
+                        onChange={(e) => updateStagger({ direction: e.target.value as StaggerDirection })}
                         disabled={readOnly}
+                        style={styles.selectSmall}
                       >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="forward">Forward</SelectItem>
-                          <SelectItem value="reverse">Reverse</SelectItem>
-                          <SelectItem value="center">From Center</SelectItem>
-                          <SelectItem value="edges">From Edges</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="forward">Forward</option>
+                        <option value="reverse">Reverse</option>
+                        <option value="center">From Center</option>
+                        <option value="edges">From Edges</option>
+                      </select>
                     </div>
                   </>
                 )}

@@ -153,3 +153,12 @@ export const editorConfig = {
 
 // Re-export merge utility for convenience
 export { mergeConfigs } from './merge'
+
+// Re-export presets for extending configs
+export {
+  fullConfig,
+  minimalConfig,
+  defaultRoot,
+  pageTreeRoot,
+  extendConfig,
+} from './presets.js'

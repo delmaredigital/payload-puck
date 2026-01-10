@@ -86,14 +86,15 @@ export function LayoutWrapper({ children, layout, className, overrides }: Layout
 
   // Build outer container background styles
   // Page override takes precedence, then falls back to layout wrapper background
+  const wrapperStyles = layout.styles?.wrapper
   const outerBackgroundStyles: CSSProperties = overrides?.background
     ? backgroundValueToCSS(overrides.background)
     : {
-        ...(layout.styles?.wrapper?.background !== undefined
-          ? { background: layout.styles.wrapper.background }
+        ...(wrapperStyles?.background !== undefined
+          ? { background: wrapperStyles.background }
           : {}),
-        ...(layout.styles?.wrapper?.backgroundAttachment !== undefined
-          ? { backgroundAttachment: layout.styles.wrapper.backgroundAttachment }
+        ...(wrapperStyles?.backgroundAttachment !== undefined
+          ? { backgroundAttachment: wrapperStyles.backgroundAttachment }
           : {}),
       }
 

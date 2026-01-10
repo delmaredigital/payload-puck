@@ -12,12 +12,11 @@
  * Uses Puck's usePuck hook to access and modify component slot data.
  */
 
-import React, { useState, useEffect, useCallback, memo } from 'react'
+import React, { useState, useEffect, useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@measured/puck'
 import { createUsePuck } from '@measured/puck'
 import type { Data } from '@measured/puck'
 import {
-  LayoutTemplate,
   Loader2,
   Save,
   Download,
@@ -26,10 +25,6 @@ import {
   ChevronUp,
   X,
 } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { cn } from '../lib/utils'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()
@@ -65,20 +60,141 @@ interface SaveFormState {
 }
 
 // =============================================================================
+// Styles
+// =============================================================================
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  } as CSSProperties,
+  label: {
+    display: 'block',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  selectRow: {
+    display: 'flex',
+    gap: '8px',
+  } as CSSProperties,
+  select: {
+    flex: 1,
+    height: '36px',
+    padding: '0 12px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '6px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  clearButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '36px',
+    height: '36px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '6px',
+    backgroundColor: 'transparent',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonRow: {
+    display: 'flex',
+    gap: '8px',
+  } as CSSProperties,
+  button: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    flex: 1,
+    height: '32px',
+    padding: '0 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-bg)',
+    color: 'var(--theme-elevation-700)',
+    cursor: 'pointer',
+  } as CSSProperties,
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  } as CSSProperties,
+  saveForm: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '6px',
+    backgroundColor: 'var(--theme-elevation-50)',
+  } as CSSProperties,
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  } as CSSProperties,
+  inputLabel: {
+    fontSize: '12px',
+    color: 'var(--theme-elevation-700)',
+  } as CSSProperties,
+  input: {
+    height: '32px',
+    padding: '0 8px',
+    fontSize: '14px',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-input-bg)',
+    color: 'var(--theme-elevation-800)',
+  } as CSSProperties,
+  errorBox: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '8px',
+    padding: '8px',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    borderRadius: '6px',
+    color: 'var(--theme-error-500)',
+    fontSize: '12px',
+  } as CSSProperties,
+  submitButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    width: '100%',
+    height: '32px',
+    padding: '0 12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    border: '1px solid var(--theme-elevation-800)',
+    borderRadius: '4px',
+    backgroundColor: 'var(--theme-elevation-800)',
+    color: 'var(--theme-bg)',
+    cursor: 'pointer',
+  } as CSSProperties,
+}
+
+// =============================================================================
 // Helper Functions
 // =============================================================================
 
 /**
  * Get the slot content for the currently selected component.
- * In Puck v0.20+ with the slots API, slot content is stored directly
- * in the component's props.content array.
  */
 function getSlotContent(
   data: Data,
   componentId: string,
   selectedItem: { type: string; props: Record<string, unknown> } | null
 ): unknown[] {
-  // With Puck v0.20+ slots API, content is stored directly in the component's props
   if (selectedItem?.props?.content) {
     const content = selectedItem.props.content
     if (Array.isArray(content) && content.length > 0) {
@@ -86,7 +202,6 @@ function getSlotContent(
     }
   }
 
-  // Also search in data.content for the component
   if (data.content && Array.isArray(data.content)) {
     for (const item of data.content) {
       const component = item as { type: string; props: { id?: string; content?: unknown[] } }
@@ -105,14 +220,12 @@ function getSlotContent(
 
 /**
  * Find and update a component's props in the Puck data tree.
- * Recursively searches through content and zones.
  */
 function updateComponentInData(
   data: Data,
   componentId: string,
   propsToMerge: Record<string, unknown>
 ): Data {
-  // Helper to update components in an array
   const updateInArray = (
     items: Array<{ type: string; props: Record<string, unknown> }>
   ): Array<{ type: string; props: Record<string, unknown> }> => {
@@ -126,7 +239,6 @@ function updateComponentInData(
           },
         }
       }
-      // Recursively check nested content (slots)
       if (item.props?.content && Array.isArray(item.props.content)) {
         return {
           ...item,
@@ -140,12 +252,10 @@ function updateComponentInData(
     })
   }
 
-  // Update content array
   const updatedContent = data.content
     ? updateInArray(data.content as Array<{ type: string; props: Record<string, unknown> }>)
     : []
 
-  // Update zones
   const updatedZones: Record<string, Array<{ type: string; props: Record<string, unknown> }>> = {}
   if (data.zones) {
     for (const [zoneName, zoneContent] of Object.entries(data.zones)) {
@@ -234,23 +344,19 @@ function TemplateFieldInner({
     fetchTemplates()
   }, [fetchTemplates])
 
-  // Handle template selection - load content into slot
+  // Handle template selection
   const handleTemplateSelect = useCallback(
     async (templateId: string) => {
       if (!componentId || !selectedItem) return
 
-      // Find the selected template (compare as strings to handle UUID vs SERIAL ID types)
       const template = templates.find((t) => String(t.id) === String(templateId))
       if (!template) return
 
       setLoadingTemplate(true)
       try {
-        // Get the component's selector (index and zone) for atomic replace
         const selector = getSelectorForId(componentId)
 
         if (selector) {
-          // Use atomic 'replace' action - much more efficient than setData
-          // This only updates this specific component instead of the entire data tree
           dispatch({
             type: 'replace',
             destinationIndex: selector.index,
@@ -265,7 +371,6 @@ function TemplateFieldInner({
             },
           })
         } else {
-          // Fallback to setData if selector not found (shouldn't happen normally)
           const updatedData = updateComponentInData(
             appState.data,
             componentId,
@@ -277,7 +382,6 @@ function TemplateFieldInner({
           })
         }
 
-        // Also call onChange to ensure field state is in sync
         onChange(templateId)
       } catch (err) {
         console.error('Error loading template:', err)
@@ -331,14 +435,12 @@ function TemplateFieldInner({
     setSaveForm((prev) => ({ ...prev, saving: true, error: null }))
 
     try {
-      // Get current slot content (using slots API - content is in props.content)
       const content = getSlotContent(appState.data, componentId, selectedItem)
 
       if (content.length === 0) {
         throw new Error('No content to save. Add components to the template first.')
       }
 
-      // Save to Payload
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
@@ -362,7 +464,6 @@ function TemplateFieldInner({
       const data = await response.json()
       const doc = data.doc || data
 
-      // Create the new template object
       const newTemplate: TemplateItem = {
         id: doc.id as string,
         name: doc.name as string,
@@ -372,13 +473,9 @@ function TemplateFieldInner({
         updatedAt: doc.updatedAt as string | undefined,
       }
 
-      // Add to local templates list
       setTemplates((prev) => [newTemplate, ...prev])
-
-      // Close form
       handleCloseSaveForm()
 
-      // Use a small delay to ensure state has updated before selecting
       setTimeout(() => {
         onChange(newTemplate.id)
       }, 50)
@@ -391,9 +488,6 @@ function TemplateFieldInner({
       }))
     }
   }, [componentId, appState.data, selectedItem, apiEndpoint, saveForm, onChange, handleCloseSaveForm])
-
-  // Get selected template name for display (compare as strings for type safety)
-  const selectedTemplate = templates.find((t) => String(t.id) === String(value))
 
   // Group templates by category
   const categorizedTemplates = templates.reduce<Record<string, TemplateItem[]>>(
@@ -409,24 +503,18 @@ function TemplateFieldInner({
   )
 
   return (
-    <div className="puck-field space-y-3">
+    <div className="puck-field" style={styles.container}>
       {label && (
-        <Label className="block text-sm font-medium text-foreground">
-          {label}
-        </Label>
+        <label style={styles.label}>{label}</label>
       )}
 
-      {/* Template Selector - Native select to avoid portal conflicts */}
-      <div className="flex gap-2">
+      {/* Template Selector */}
+      <div style={styles.selectRow}>
         <select
           value={value || ''}
           onChange={(e) => e.target.value && handleTemplateSelect(e.target.value)}
           disabled={readOnly || loading || loadingTemplate}
-          className={cn(
-            'flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm',
-            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-            'disabled:cursor-not-allowed disabled:opacity-50'
-          )}
+          style={styles.select}
         >
           <option value="">
             {loading ? 'Loading...' : loadingTemplate ? 'Loading template...' : 'Select a template'}
@@ -443,63 +531,67 @@ function TemplateFieldInner({
         </select>
 
         {value && !readOnly && (
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             onClick={handleClearTemplate}
+            style={styles.clearButton}
             title="Clear selection"
-            className="text-muted-foreground hover:text-foreground"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ width: '16px', height: '16px' }} />
+          </button>
         )}
       </div>
 
       {/* Action Buttons */}
       {!readOnly && (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+        <div style={styles.buttonRow}>
+          <button
+            type="button"
             onClick={handleToggleSaveForm}
-            className="flex-1 gap-1.5"
             disabled={loading || saveForm.saving}
+            style={{
+              ...styles.button,
+              ...(loading || saveForm.saving ? styles.buttonDisabled : {}),
+            }}
           >
             {saveForm.expanded ? (
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp style={{ width: '16px', height: '16px' }} />
             ) : (
-              <Save className="h-4 w-4" />
+              <Save style={{ width: '16px', height: '16px' }} />
             )}
             {saveForm.expanded ? 'Cancel' : 'Save as Template'}
-          </Button>
+          </button>
 
           {value && (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => handleTemplateSelect(value)}
-              className="gap-1.5"
               disabled={loadingTemplate}
+              style={{
+                ...styles.button,
+                flex: 'none',
+                ...(loadingTemplate ? styles.buttonDisabled : {}),
+              }}
             >
               {loadingTemplate ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
               ) : (
-                <Download className="h-4 w-4" />
+                <Download style={{ width: '16px', height: '16px' }} />
               )}
               Reload
-            </Button>
+            </button>
           )}
         </div>
       )}
 
       {/* Inline Save Form */}
       {saveForm.expanded && (
-        <div className="space-y-3 p-3 border border-border rounded-md bg-muted/30">
-          <div className="space-y-1.5">
-            <Label htmlFor="template-name" className="text-xs">
+        <div style={styles.saveForm as CSSProperties}>
+          <div style={styles.inputGroup as CSSProperties}>
+            <label htmlFor="template-name" style={styles.inputLabel}>
               Template Name *
-            </Label>
-            <Input
+            </label>
+            <input
               id="template-name"
               placeholder="e.g., Hero Section with CTA"
               value={saveForm.name}
@@ -507,15 +599,15 @@ function TemplateFieldInner({
                 setSaveForm((prev) => ({ ...prev, name: e.target.value }))
               }
               disabled={saveForm.saving}
-              className="h-8 text-sm"
+              style={styles.input}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="template-description" className="text-xs">
+          <div style={styles.inputGroup as CSSProperties}>
+            <label htmlFor="template-description" style={styles.inputLabel}>
               Description
-            </Label>
-            <Input
+            </label>
+            <input
               id="template-description"
               placeholder="Optional description..."
               value={saveForm.description}
@@ -523,15 +615,15 @@ function TemplateFieldInner({
                 setSaveForm((prev) => ({ ...prev, description: e.target.value }))
               }
               disabled={saveForm.saving}
-              className="h-8 text-sm"
+              style={styles.input}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="template-category" className="text-xs">
+          <div style={styles.inputGroup as CSSProperties}>
+            <label htmlFor="template-category" style={styles.inputLabel}>
               Category
-            </Label>
-            <Input
+            </label>
+            <input
               id="template-category"
               placeholder="e.g., Hero, Footer, CTA"
               value={saveForm.category}
@@ -539,42 +631,45 @@ function TemplateFieldInner({
                 setSaveForm((prev) => ({ ...prev, category: e.target.value }))
               }
               disabled={saveForm.saving}
-              className="h-8 text-sm"
+              style={styles.input}
             />
           </div>
 
           {saveForm.error && (
-            <div className="p-2 bg-destructive/10 border border-destructive/30 rounded-md text-destructive text-xs flex items-start gap-2">
-              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+            <div style={styles.errorBox}>
+              <AlertCircle style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }} />
               <span>{saveForm.error}</span>
             </div>
           )}
 
-          <Button
+          <button
+            type="button"
             onClick={handleSaveTemplate}
             disabled={saveForm.saving}
-            size="sm"
-            className="w-full gap-1.5"
+            style={{
+              ...styles.submitButton,
+              ...(saveForm.saving ? styles.buttonDisabled : {}),
+            }}
           >
             {saveForm.saving ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="h-4 w-4" />
+                <Save style={{ width: '16px', height: '16px' }} />
                 Save Template
               </>
             )}
-          </Button>
+          </button>
         </div>
       )}
 
       {/* Error Display */}
       {error && (
-        <div className="p-2 bg-destructive/10 border border-destructive/30 rounded-md text-destructive text-sm flex items-start gap-2">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+        <div style={styles.errorBox}>
+          <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }} />
           <span>{error}</span>
         </div>
       )}
@@ -591,16 +686,6 @@ export const TemplateField = memo(TemplateFieldInner)
 
 /**
  * Creates a Puck field configuration for template selection
- *
- * @example
- * ```ts
- * const TemplateConfig: ComponentConfig = {
- *   fields: {
- *     templateId: createTemplateField({ label: 'Template' }),
- *     content: { type: 'slot' },
- *   },
- * }
- * ```
  */
 export function createTemplateField(config: {
   label?: string
