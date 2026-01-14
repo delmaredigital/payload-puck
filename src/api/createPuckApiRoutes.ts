@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import type { Where } from 'payload'
-import type { Data as PuckData } from '@measured/puck'
+import type { Data as PuckData } from '@puckeditor/core'
 import type {
   PuckApiRoutesConfig,
   PuckApiRouteHandlers,

@@ -8,7 +8,7 @@
  */
 
 import type React from 'react'
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   marginValueToCSS,

@@ -15,7 +15,7 @@
  */
 
 import { useId } from 'react'
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   dimensionsValueToCSS,
@@ -61,8 +61,11 @@ const DEFAULT_DIMENSIONS: DimensionsValue = {
   maxWidth: { value: 100, unit: '%', enabled: true },
 }
 
+export type GridSemanticElement = 'div' | 'ul' | 'ol'
+
 export interface GridProps {
   content: unknown
+  semanticElement: GridSemanticElement
   numColumns: number
   gap: number
   // Background
@@ -79,6 +82,7 @@ export interface GridProps {
 
 const defaultProps: GridProps = {
   content: [],
+  semanticElement: 'div',
   numColumns: 3,
   gap: 24,
   background: null,
@@ -100,6 +104,16 @@ export const GridConfig: ComponentConfig = {
     },
     // Responsive visibility control
     visibility: createResponsiveVisibilityField({ label: 'Visibility' }),
+    // Semantic element selection
+    semanticElement: {
+      type: 'select',
+      label: 'HTML Element',
+      options: [
+        { label: 'Div', value: 'div' },
+        { label: 'Unordered List', value: 'ul' },
+        { label: 'Ordered List', value: 'ol' },
+      ],
+    },
     numColumns: {
       type: 'number',
       label: 'Number of Columns',
@@ -137,6 +151,7 @@ export const GridConfig: ComponentConfig = {
   defaultProps,
   render: ({
     content: Content,
+    semanticElement = 'div',
     numColumns,
     gap,
     background,
@@ -147,6 +162,9 @@ export const GridConfig: ComponentConfig = {
     animation,
     visibility,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
+
     // Generate unique IDs for CSS targeting
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const uniqueId = useId().replace(/:/g, '')
@@ -233,7 +251,7 @@ export const GridConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <div className={wrapperClass} style={wrapperStyles}>
+        <Wrapper className={wrapperClass} style={wrapperStyles}>
           <Content
             className={contentClasses}
             style={gridStyles}
@@ -245,7 +263,7 @@ export const GridConfig: ComponentConfig = {
               }
             }
           `}</style>
-        </div>
+        </Wrapper>
       </AnimatedWrapper>
     )
   },

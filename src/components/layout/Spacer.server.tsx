@@ -11,7 +11,7 @@
  * - visibility: Show/hide at different breakpoints
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import { cn, visibilityValueToCSS, type VisibilityValue } from '../../fields/shared'
 
 // Simple ID generator for server-side rendering

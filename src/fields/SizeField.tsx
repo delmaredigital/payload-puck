@@ -8,29 +8,20 @@
  */
 
 import React, { useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { X } from 'lucide-react'
 
-// =============================================================================
-// Types
-// =============================================================================
+// Re-export types and utilities from shared.ts for backward compatibility
+// These are defined in shared.ts to be server-safe
+export {
+  type SizeMode,
+  type SizeUnit,
+  type SizeValue,
+  sizeValueToCSS,
+  getSizeClasses,
+} from './shared'
 
-export type SizeMode = 'sm' | 'default' | 'lg' | 'custom'
-export type SizeUnit = 'px' | 'rem'
-
-export interface SizeValue {
-  mode: SizeMode
-  /** Height in units (only used when mode === 'custom') */
-  height?: number
-  /** Horizontal padding in units (only used when mode === 'custom') */
-  paddingX?: number
-  /** Vertical padding in units (only used when mode === 'custom') */
-  paddingY?: number
-  /** Font size in units (only used when mode === 'custom') */
-  fontSize?: number
-  /** Unit for all values */
-  unit?: SizeUnit
-}
+import type { SizeValue, SizeMode, SizeUnit } from './shared'
 
 interface SizeFieldProps {
   value: SizeValue | null
@@ -128,6 +119,7 @@ const styles = {
     padding: '12px',
     backgroundColor: 'var(--theme-elevation-50)',
     borderRadius: '6px',
+    overflow: 'hidden',
   } as CSSProperties,
   unitRow: {
     display: 'flex',
@@ -176,6 +168,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
+    minWidth: 0,
   } as CSSProperties,
   inputLabel: {
     fontSize: '10px',
@@ -184,6 +177,8 @@ const styles = {
     color: 'var(--theme-elevation-500)',
   } as CSSProperties,
   input: {
+    width: '100%',
+    minWidth: 0,
     height: '32px',
     padding: '0 8px',
     fontSize: '14px',
@@ -192,6 +187,7 @@ const styles = {
     borderRadius: '4px',
     backgroundColor: 'var(--theme-input-bg)',
     color: 'var(--theme-elevation-800)',
+    boxSizing: 'border-box',
   } as CSSProperties,
   summary: {
     fontSize: '12px',
@@ -383,45 +379,6 @@ function SizeFieldInner({
 }
 
 export const SizeField = memo(SizeFieldInner)
-
-// =============================================================================
-// CSS Helper
-// =============================================================================
-
-/**
- * Convert SizeValue to CSS properties object
- */
-export function sizeValueToCSS(size: SizeValue | null | undefined): React.CSSProperties | undefined {
-  if (!size || size.mode !== 'custom') return undefined
-
-  const unit = size.unit || 'px'
-  const style: React.CSSProperties = {}
-
-  if (size.height != null) {
-    style.height = `${size.height}${unit}`
-  }
-
-  if (size.paddingX != null || size.paddingY != null) {
-    const py = size.paddingY ?? 0
-    const px = size.paddingX ?? 0
-    style.padding = `${py}${unit} ${px}${unit}`
-  }
-
-  if (size.fontSize != null) {
-    style.fontSize = `${size.fontSize}${unit}`
-  }
-
-  return Object.keys(style).length > 0 ? style : undefined
-}
-
-/**
- * Get Tailwind classes for preset size modes
- */
-export function getSizeClasses(size: SizeValue | null | undefined, sizeMap: Record<string, string>): string {
-  if (!size) return sizeMap.default || ''
-  if (size.mode === 'custom') return ''
-  return sizeMap[size.mode] || sizeMap.default || ''
-}
 
 // =============================================================================
 // Field Configuration Factory

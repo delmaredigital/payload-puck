@@ -10,9 +10,9 @@
  */
 
 import React, { memo, useCallback, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
-import { createUsePuck } from '@measured/puck'
-import type { Data } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
+import { createUsePuck } from '@puckeditor/core'
+import type { Data } from '@puckeditor/core'
 import { RefreshCw } from 'lucide-react'
 
 // Create usePuck hook for accessing editor state

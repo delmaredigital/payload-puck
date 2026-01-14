@@ -1,4 +1,4 @@
-import type { Config as PuckConfig } from '@measured/puck'
+import type { Config as PuckConfig } from '@puckeditor/core'
 
 /**
  * Detects whether page-tree integration should be enabled.

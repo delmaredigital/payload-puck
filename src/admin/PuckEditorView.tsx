@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import type { Config as PuckConfig, Data, Plugin as PuckPlugin } from '@measured/puck'
+import type { Config as PuckConfig, Data, Plugin as PuckPlugin } from '@puckeditor/core'
 
 /**
  * Props for the PuckEditorView component

@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { X } from 'lucide-react'
 import type { ColorValue } from './shared'
 import { useTheme } from '../theme'
@@ -81,7 +81,8 @@ const styles = {
   row: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    flexWrap: 'wrap',
+    gap: '8px',
   } as CSSProperties,
   colorInput: {
     width: '40px',
@@ -92,7 +93,8 @@ const styles = {
     cursor: 'pointer',
   } as CSSProperties,
   hexInput: {
-    flex: 1,
+    flex: '1 1 80px',
+    minWidth: 0,
     height: '40px',
     padding: '0 12px',
     fontSize: '14px',

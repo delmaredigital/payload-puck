@@ -236,14 +236,28 @@ export function createPuckApiRoutesWithId(
       }
 
       // Call payload.update with draft parameter for Payload's versions.drafts system
-      // When draft=true, saves without publishing
-      // When draft=false or status='published', publishes the document
-      const updatedPage = await payload.update({
+      // When _status is set to 'published', the document is published regardless of draft param
+      // When draft=true and no _status set, saves without publishing
+      // When draft=false or omitted, updates the main collection
+      const updateOptions: {
+        collection: string
+        id: string
+        data: Record<string, unknown>
+        draft?: boolean
+      } = {
         collection,
         id,
         data: updateData,
-        draft: draft === true,
-      })
+      }
+
+      // Only pass draft: true when explicitly saving as draft (not publishing)
+      // When publishing (_status: 'published'), we omit the draft option entirely
+      // to let Payload handle it correctly
+      if (draft === true && status !== 'published') {
+        updateOptions.draft = true
+      }
+
+      const updatedPage = await payload.update(updateOptions)
 
       return NextResponse.json({ doc: updatedPage })
     } catch (error) {

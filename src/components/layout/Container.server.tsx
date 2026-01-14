@@ -17,7 +17,7 @@
  * - visibility: Show/hide at different breakpoints
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   dimensionsValueToCSS,
   borderValueToCSS,
@@ -42,8 +42,11 @@ function generateUniqueId(): string {
   return `c${(++idCounter).toString(36)}${Math.random().toString(36).slice(2, 6)}`
 }
 
+export type ContainerSemanticElement = 'div' | 'article' | 'aside' | 'section'
+
 export interface ContainerProps {
   content: unknown
+  semanticElement: ContainerSemanticElement
   visibility: VisibilityValue | null
   dimensions: ResponsiveValue<DimensionsValue> | DimensionsValue | null
   background: BackgroundValue | null
@@ -55,6 +58,7 @@ export interface ContainerProps {
 
 const defaultProps: ContainerProps = {
   content: [],
+  semanticElement: 'div',
   visibility: null,
   dimensions: null,
   background: null,
@@ -72,6 +76,7 @@ export const ContainerConfig: ComponentConfig = {
   defaultProps,
   render: ({
     content: Content,
+    semanticElement = 'div',
     visibility,
     dimensions,
     background,
@@ -80,6 +85,9 @@ export const ContainerConfig: ComponentConfig = {
     margin,
     animation,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
+
     // Generate unique ID for CSS targeting (server-safe)
     const uniqueId = generateUniqueId()
     const containerClass = `puck-container-${uniqueId}`
@@ -189,9 +197,9 @@ export const ContainerConfig: ComponentConfig = {
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
         {hasStyles ? (
-          <div className={containerClass} style={containerStyles}>
+          <Wrapper className={containerClass} style={containerStyles}>
             {renderContent()}
-          </div>
+          </Wrapper>
         ) : (
           <ContentSlot className={containerClass} />
         )}

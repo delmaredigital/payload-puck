@@ -17,7 +17,7 @@
  */
 
 import { useId } from 'react'
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   dimensionsValueToCSS,
@@ -73,9 +73,12 @@ const DEFAULT_CONTENT_PADDING: PaddingValue = {
   linked: false,
 }
 
+export type SemanticElement = 'section' | 'article' | 'aside' | 'nav' | 'div' | 'header' | 'footer' | 'main'
+
 export interface SectionProps {
   id: string
   content: unknown
+  semanticElement: SemanticElement
   // Section layer (outer, full-width)
   sectionBackground: BackgroundValue | null
   sectionBorder: BorderValue | null
@@ -94,6 +97,7 @@ export interface SectionProps {
 const defaultProps: SectionProps = {
   id: '',
   content: [],
+  semanticElement: 'section',
   // Section layer defaults
   sectionBackground: null,
   sectionBorder: null,
@@ -115,6 +119,21 @@ export const SectionConfig: ComponentConfig = {
     _reset: createResetField({ defaultProps }),
     // Visibility first
     visibility: createResponsiveVisibilityField({ label: 'Visibility' }),
+    // Semantic element selection
+    semanticElement: {
+      type: 'select',
+      label: 'HTML Element',
+      options: [
+        { label: 'Section', value: 'section' },
+        { label: 'Article', value: 'article' },
+        { label: 'Aside', value: 'aside' },
+        { label: 'Nav', value: 'nav' },
+        { label: 'Header', value: 'header' },
+        { label: 'Footer', value: 'footer' },
+        { label: 'Main', value: 'main' },
+        { label: 'Div', value: 'div' },
+      ],
+    },
     // Section ID for anchors
     id: {
       type: 'text',
@@ -156,6 +175,7 @@ export const SectionConfig: ComponentConfig = {
   render: ({
     id,
     content: Content,
+    semanticElement = 'section',
     sectionBackground,
     sectionBorder,
     sectionPadding,
@@ -167,6 +187,8 @@ export const SectionConfig: ComponentConfig = {
     animation,
     visibility,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
     // Generate unique IDs for CSS targeting
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const uniqueId = useId().replace(/:/g, '')
@@ -297,7 +319,7 @@ export const SectionConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <section
+        <Wrapper
           id={id || undefined}
           className={sectionClasses}
           style={sectionStyles}
@@ -309,7 +331,7 @@ export const SectionConfig: ComponentConfig = {
           ) : (
             <Content className={contentClasses} />
           )}
-        </section>
+        </Wrapper>
       </AnimatedWrapper>
     )
   },

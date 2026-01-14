@@ -16,7 +16,7 @@
  * - visibility: Show/hide at different breakpoints
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   dimensionsValueToCSS,
@@ -59,9 +59,12 @@ const DEFAULT_CONTENT_PADDING: PaddingValue = {
   linked: false,
 }
 
+export type SemanticElement = 'section' | 'article' | 'aside' | 'nav' | 'div' | 'header' | 'footer' | 'main'
+
 export interface SectionProps {
   id: string
   content: unknown
+  semanticElement: SemanticElement
   // Section layer (outer, full-width)
   sectionBackground: BackgroundValue | null
   sectionBorder: BorderValue | null
@@ -80,6 +83,7 @@ export interface SectionProps {
 const defaultProps: SectionProps = {
   id: '',
   content: [],
+  semanticElement: 'section',
   // Section layer defaults
   sectionBackground: null,
   sectionBorder: null,
@@ -104,6 +108,7 @@ export const SectionConfig: ComponentConfig = {
   render: ({
     id,
     content: Content,
+    semanticElement = 'section',
     sectionBackground,
     sectionBorder,
     sectionPadding,
@@ -115,6 +120,8 @@ export const SectionConfig: ComponentConfig = {
     animation,
     visibility,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
     // Generate unique IDs for CSS targeting (server-safe)
     const uniqueId = generateUniqueId()
     const sectionClass = `puck-section-${uniqueId}`
@@ -247,7 +254,7 @@ export const SectionConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <section
+        <Wrapper
           id={id || undefined}
           className={sectionClasses}
           style={sectionStyles}
@@ -259,7 +266,7 @@ export const SectionConfig: ComponentConfig = {
           ) : (
             <ContentSlot className={contentClasses} />
           )}
-        </section>
+        </Wrapper>
       </AnimatedWrapper>
     )
   },

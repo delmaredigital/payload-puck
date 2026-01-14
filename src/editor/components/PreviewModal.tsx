@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, memo, useEffect, type MouseEvent, type CSSProperties } from 'react'
-import type { Data as PuckData } from '@measured/puck'
+import type { Data as PuckData } from '@puckeditor/core'
 import {
   X,
   ExternalLink,
@@ -47,6 +47,14 @@ export interface PreviewModalProps {
    * Whether a save is in progress
    */
   isSaving?: boolean
+  /**
+   * Stylesheet URLs to inject into the preview
+   */
+  editorStylesheets?: string[]
+  /**
+   * Raw CSS to inject into the preview
+   */
+  editorCss?: string
 }
 
 // Styles
@@ -271,11 +279,52 @@ export const PreviewModal = memo(function PreviewModal({
   hasUnsavedChanges = false,
   onSave,
   isSaving = false,
+  editorStylesheets,
+  editorCss,
 }: PreviewModalProps) {
   // Navigation confirmation state
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
   const [isNavigating, setIsNavigating] = useState(false)
   const [viewButtonHovered, setViewButtonHovered] = useState(false)
+
+  // Inject stylesheets into document head when modal is open
+  useEffect(() => {
+    if (!isOpen) return
+
+    const injectedElements: HTMLElement[] = []
+
+    // Inject external stylesheets
+    if (editorStylesheets && editorStylesheets.length > 0) {
+      editorStylesheets.forEach((href, index) => {
+        const linkId = `puck-preview-stylesheet-${index}`
+        if (!document.getElementById(linkId)) {
+          const link = document.createElement('link')
+          link.id = linkId
+          link.rel = 'stylesheet'
+          link.href = href
+          document.head.appendChild(link)
+          injectedElements.push(link)
+        }
+      })
+    }
+
+    // Inject custom CSS
+    if (editorCss) {
+      const styleId = 'puck-preview-custom-css'
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style')
+        style.id = styleId
+        style.textContent = editorCss
+        document.head.appendChild(style)
+        injectedElements.push(style)
+      }
+    }
+
+    // Cleanup: remove injected elements when modal closes
+    return () => {
+      injectedElements.forEach((el) => el.remove())
+    }
+  }, [isOpen, editorStylesheets, editorCss])
 
   // Handle escape key
   useEffect(() => {

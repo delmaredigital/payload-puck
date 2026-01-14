@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect, useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { Image, X, Search, Loader2, Upload, AlertCircle, Link } from 'lucide-react'
 
 // =============================================================================
@@ -215,6 +215,7 @@ const styles = {
   } as CSSProperties,
   tabBar: {
     display: 'flex',
+    flexWrap: 'wrap',
     borderBottom: '1px solid var(--theme-elevation-200)',
     padding: '0 20px',
     flexShrink: 0,
@@ -262,8 +263,8 @@ const styles = {
   } as CSSProperties,
   mediaGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '16px',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+    gap: '12px',
   } as CSSProperties,
   mediaItem: {
     position: 'relative',

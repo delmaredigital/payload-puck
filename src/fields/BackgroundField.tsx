@@ -11,7 +11,7 @@
  */
 
 import React, { useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { X } from 'lucide-react'
 import type {
   BackgroundValue,
@@ -125,14 +125,16 @@ const styles = {
   } as CSSProperties,
   tabContainer: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '4px',
     padding: '4px',
     backgroundColor: 'var(--theme-elevation-50)',
     borderRadius: '8px',
   } as CSSProperties,
   tabButton: {
-    flex: 1,
-    padding: '6px 12px',
+    flex: '1 1 auto',
+    minWidth: 0,
+    padding: '6px 8px',
     fontSize: '12px',
     fontWeight: 500,
     border: 'none',
@@ -140,10 +142,12 @@ const styles = {
     backgroundColor: 'transparent',
     color: 'var(--theme-elevation-500)',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   } as CSSProperties,
   tabButtonActive: {
-    flex: 1,
-    padding: '6px 12px',
+    flex: '1 1 auto',
+    minWidth: 0,
+    padding: '6px 8px',
     fontSize: '12px',
     fontWeight: 500,
     border: 'none',
@@ -151,6 +155,7 @@ const styles = {
     backgroundColor: 'var(--theme-elevation-800)',
     color: 'var(--theme-bg)',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   } as CSSProperties,
   tabButtonDisabled: {
     opacity: 0.5,

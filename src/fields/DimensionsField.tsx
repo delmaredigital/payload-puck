@@ -13,7 +13,7 @@
  */
 
 import React, { useCallback, memo, useState, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import {
   X,
   AlignStartHorizontal,
@@ -165,24 +165,30 @@ const styles = {
     gap: '4px',
   } as CSSProperties,
   presetButton: {
+    flex: '1 1 auto',
+    minWidth: '50px',
     height: '28px',
-    padding: '0 12px',
+    padding: '0 8px',
     fontSize: '12px',
     border: '1px solid var(--theme-elevation-150)',
     borderRadius: '4px',
     backgroundColor: 'var(--theme-bg)',
     color: 'var(--theme-elevation-700)',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   } as CSSProperties,
   presetButtonActive: {
+    flex: '1 1 auto',
+    minWidth: '50px',
     height: '28px',
-    padding: '0 12px',
+    padding: '0 8px',
     fontSize: '12px',
     border: '1px solid var(--theme-elevation-800)',
     borderRadius: '4px',
     backgroundColor: 'var(--theme-elevation-800)',
     color: 'var(--theme-bg)',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   } as CSSProperties,
   inputGroup: {
     display: 'flex',

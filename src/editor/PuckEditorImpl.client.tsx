@@ -1,17 +1,20 @@
 'use client'
 
-import { useState, useCallback, useMemo, useRef, type ReactNode } from 'react'
+import { useState, useCallback, useMemo, useRef, type ReactNode, createElement } from 'react'
 import { useRouter } from 'next/navigation'
-import { Puck, type Config as PuckConfig, type Data, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@measured/puck'
-import '@measured/puck/puck.css'
-import headingAnalyzer from '@measured/puck-plugin-heading-analyzer'
-import '@measured/puck-plugin-heading-analyzer/dist/index.css'
+import { Puck, type Config as PuckConfig, type Data, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@puckeditor/core'
+import '@puckeditor/core/puck.css'
+import headingAnalyzer from '@puckeditor/plugin-heading-analyzer'
+import '@puckeditor/plugin-heading-analyzer/dist/index.css'
 
+import { Maximize2 } from 'lucide-react'
 import { HeaderActions } from './components/HeaderActions'
 import { IframeWrapper, type LayoutStyle } from './components/IframeWrapper'
 import { PreviewModal } from './components/PreviewModal'
 import { useUnsavedChanges } from './hooks/useUnsavedChanges'
+import { createVersionHistoryPlugin } from './plugins/versionHistoryPlugin'
 import { ThemeProvider, type ThemeConfig } from '../theme'
+import { usePuckConfig } from '../views/PuckConfigContext'
 import type { LayoutDefinition } from '../layouts'
 
 /**
@@ -35,6 +38,12 @@ const DEFAULT_VIEWPORTS = [
     height: 'auto' as const,
     label: 'Desktop',
     icon: 'Monitor' as const,
+  },
+  {
+    width: '100%' as const,
+    height: 'auto' as const,
+    label: 'Full Width',
+    icon: createElement(Maximize2, { size: 16 }),
   },
 ]
 
@@ -151,6 +160,17 @@ export interface PuckEditorImplProps {
    * When provided, components will use themed styles
    */
   theme?: ThemeConfig
+
+  /**
+   * Stylesheet URLs to inject into the editor iframe.
+   * Merged with stylesheets from PuckConfigProvider context.
+   */
+  editorStylesheets?: string[]
+  /**
+   * Raw CSS to inject into the editor iframe.
+   * Merged with CSS from PuckConfigProvider context.
+   */
+  editorCss?: string
 }
 
 /**
@@ -189,6 +209,8 @@ export function PuckEditorImpl({
   onChange: onChangeProp,
   initialStatus,
   theme,
+  editorStylesheets: editorStylesheetsProp,
+  editorCss: editorCssProp,
 }: PuckEditorImplProps) {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
@@ -219,6 +241,32 @@ export function PuckEditorImpl({
 
   // Use a ref to track latest data without causing re-renders
   const latestDataRef = useRef<PuckDataWithMeta>(dataWithSlug)
+
+  // Get editor stylesheets from PuckConfigProvider context (as fallback)
+  const { editorStylesheets: contextStylesheets, editorCss: contextCss } = usePuckConfig()
+
+  // Props take precedence over context
+  const baseStylesheets = editorStylesheetsProp || contextStylesheets
+  const baseCss = editorCssProp || contextCss
+
+  // Get current layout to merge layout-specific stylesheets
+  const currentLayoutValue = dataWithSlug.root?.props?.pageLayout || 'default'
+  const currentLayout = useMemo(() => {
+    return layouts?.find((l) => l.value === currentLayoutValue)
+  }, [layouts, currentLayoutValue])
+
+  // Merge base stylesheets (props/context) + layout-specific settings
+  const mergedEditorStylesheets = useMemo(() => {
+    const fromBase = baseStylesheets || []
+    const fromLayout = currentLayout?.editorStylesheets || []
+    return [...fromBase, ...fromLayout]
+  }, [baseStylesheets, currentLayout?.editorStylesheets])
+
+  // Merge base CSS (props/context) + layout-specific settings
+  const mergedEditorCss = useMemo(() => {
+    const parts = [baseCss, currentLayout?.editorCss].filter(Boolean) as string[]
+    return parts.length > 0 ? parts.join('\n') : undefined
+  }, [baseCss, currentLayout?.editorCss])
 
   // Handle save (as draft)
   const handleSave = useCallback(
@@ -310,6 +358,42 @@ export function PuckEditorImpl({
       }
     },
     [apiEndpoint, pageId, pageTitle, pageSlug, markClean, onSaveSuccess, onSaveError]
+  )
+
+  // Handle unpublish (revert to draft)
+  const handleUnpublish = useCallback(
+    async () => {
+      if (!confirm('This will unpublish the page and return it to draft status. Continue?')) {
+        return
+      }
+
+      setIsSaving(true)
+      try {
+        const response = await fetch(`${apiEndpoint}/${pageId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'draft',
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          const errorMessage = errorData.error || errorData.message || 'Failed to unpublish page'
+          throw new Error(errorMessage)
+        }
+
+        setLastSaved(new Date())
+        setSaveError(null)
+        setDocumentStatus('draft')
+      } catch (error) {
+        console.error('Error unpublishing page:', error)
+        setSaveError(error instanceof Error ? error.message : 'Unknown error')
+      } finally {
+        setIsSaving(false)
+      }
+    },
+    [apiEndpoint, pageId]
   )
 
   // Handle data change
@@ -404,6 +488,7 @@ export function PuckEditorImpl({
           onPreview={handlePreview}
           onSave={handleSave}
           onPublish={handlePublish}
+          onUnpublish={handleUnpublish}
           onOpenPreview={handleOpenPreview}
           isSaving={isSaving}
           hasUnsavedChanges={hasUnsavedChanges}
@@ -416,13 +501,21 @@ export function PuckEditorImpl({
           apiEndpoint={apiEndpoint}
           saveError={saveError}
           onDismissError={() => setSaveError(null)}
+          showVersionHistory={false}
         >
           {children}
         </HeaderActions>
       ),
       // Always wrap iframe for richtext styles injection and theme-aware background
       iframe: ({ children, document }: { children: ReactNode; document?: Document }) => (
-        <IframeWrapper document={document} layouts={layouts} layoutStyles={layoutStyles} layoutKey={layoutKey}>
+        <IframeWrapper
+          document={document}
+          layouts={layouts}
+          layoutStyles={layoutStyles}
+          layoutKey={layoutKey}
+          editorStylesheets={mergedEditorStylesheets}
+          editorCss={mergedEditorCss}
+        >
           {children}
         </IframeWrapper>
       ),
@@ -434,6 +527,7 @@ export function PuckEditorImpl({
       handlePreview,
       handleSave,
       handlePublish,
+      handleUnpublish,
       handleOpenPreview,
       isSaving,
       hasUnsavedChanges,
@@ -449,16 +543,33 @@ export function PuckEditorImpl({
       layoutStyles,
       layoutKey,
       customOverrides,
+      mergedEditorStylesheets,
+      mergedEditorCss,
     ]
   )
 
   // Default plugins - headingAnalyzer is always included unless plugins is explicitly false
   const defaultPlugins: PuckPlugin[] = [headingAnalyzer]
+
+  // Version history plugin for the plugin rail
+  const versionHistoryPlugin = useMemo(() => {
+    if (!pageId) return null
+    return createVersionHistoryPlugin({
+      pageId,
+      apiEndpoint,
+      onRestoreSuccess: markClean,
+    })
+  }, [pageId, apiEndpoint, markClean])
+
   const resolvedPlugins = useMemo(() => {
     if (plugins === false) return undefined
-    if (!plugins || plugins.length === 0) return defaultPlugins
-    return [...defaultPlugins, ...plugins]
-  }, [plugins])
+    const base = !plugins || plugins.length === 0 ? defaultPlugins : [...defaultPlugins, ...plugins]
+    // Add version history plugin if available
+    if (versionHistoryPlugin) {
+      return [...base, versionHistoryPlugin]
+    }
+    return base
+  }, [plugins, versionHistoryPlugin])
 
   const editorContent = (
     <>
@@ -484,6 +595,8 @@ export function PuckEditorImpl({
         hasUnsavedChanges={hasUnsavedChanges}
         onSave={handleSaveFromPreview}
         isSaving={isSaving}
+        editorStylesheets={mergedEditorStylesheets}
+        editorCss={mergedEditorCss}
       />
     </>
   )

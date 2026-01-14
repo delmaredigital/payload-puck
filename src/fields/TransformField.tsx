@@ -14,7 +14,7 @@
  */
 
 import React, { useCallback, memo, useState, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import {
   Link,
   Unlink,
@@ -182,6 +182,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '8px',
   } as CSSProperties,
   select: {
     height: '28px',

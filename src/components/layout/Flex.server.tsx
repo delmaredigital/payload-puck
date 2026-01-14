@@ -14,7 +14,7 @@
  * - visibility: Show/hide at different breakpoints
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   dimensionsValueToCSS,
@@ -60,8 +60,11 @@ const flexWrapMap: Record<string, string> = {
   'wrap-reverse': 'flex-wrap-reverse',
 }
 
+export type FlexSemanticElement = 'div' | 'nav' | 'ul' | 'ol' | 'aside' | 'section'
+
 export interface FlexProps {
   content: unknown
+  semanticElement: FlexSemanticElement
   direction: 'row' | 'column'
   justifyContent: JustifyContent | null
   alignItems: AlignItems | null
@@ -81,6 +84,7 @@ export interface FlexProps {
 
 const defaultProps: FlexProps = {
   content: [],
+  semanticElement: 'div',
   direction: 'row',
   justifyContent: null,
   alignItems: null,
@@ -103,6 +107,7 @@ export const FlexConfig: ComponentConfig = {
   defaultProps,
   render: ({
     content: Content,
+    semanticElement = 'div',
     direction,
     justifyContent,
     alignItems,
@@ -116,6 +121,9 @@ export const FlexConfig: ComponentConfig = {
     animation,
     visibility,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
+
     // Generate unique IDs for CSS targeting (server-safe)
     const uniqueId = generateUniqueId()
     const wrapperClass = `puck-flex-${uniqueId}`
@@ -203,9 +211,9 @@ export const FlexConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <div className={wrapperClass} style={wrapperStyles}>
+        <Wrapper className={wrapperClass} style={wrapperStyles}>
           <ContentSlot className={contentClasses} style={contentStyles} />
-        </div>
+        </Wrapper>
       </AnimatedWrapper>
     )
   },

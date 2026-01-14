@@ -8,7 +8,7 @@
  * Supports custom margin for spacing control.
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import {
@@ -270,11 +270,11 @@ export const AccordionConfig: ComponentConfig = {
           ],
         },
       },
-      defaultItemProps: {
-        title: 'Accordion Item',
+      defaultItemProps: (index: number) => ({
+        title: `Accordion Item ${index + 1}`,
         content: '',
-        defaultOpen: false,
-      },
+        defaultOpen: index === 0,
+      }),
       getItemSummary: (item: AccordionItemData) => item.title || 'Untitled',
     },
     allowMultiple: {

@@ -6,7 +6,7 @@
  * Safe for use in server components.
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   marginValueToCSS,
@@ -14,14 +14,16 @@ import {
   colorValueToCSS,
   borderValueToCSS,
   transformValueToCSS,
+  sizeValueToCSS,
+  getSizeClasses,
   type PaddingValue,
   type ColorValue,
   type BorderValue,
   type AnimationValue,
   type TransformValue,
+  type SizeValue,
 } from '../../fields/shared'
 import { AnimatedWrapper } from '../AnimatedWrapper'
-import { sizeValueToCSS, getSizeClasses, type SizeValue } from '../../fields/SizeField'
 import type { Alignment } from '../../fields/AlignmentField'
 import { DEFAULT_BUTTON_VARIANTS, DEFAULT_FOCUS_RING } from '../../theme/defaults'
 import { getVariantClasses } from '../../theme/utils'

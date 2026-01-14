@@ -8,7 +8,7 @@
  */
 
 import React, { useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import {
   AlignLeft,
   AlignCenter,
@@ -66,6 +66,7 @@ const styles = {
   } as CSSProperties,
   buttonGroup: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '4px',
   } as CSSProperties,
   button: {

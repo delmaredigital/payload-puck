@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import type { Config as PuckConfig, Data, Plugin as PuckPlugin, Overrides as PuckOverrides } from '@measured/puck'
+import type { Config as PuckConfig, Data, Plugin as PuckPlugin, Overrides as PuckOverrides } from '@puckeditor/core'
 import type { ReactNode } from 'react'
 import type { LayoutStyle } from './components/IframeWrapper'
 import type { ThemeConfig } from '../theme'
@@ -138,6 +138,38 @@ export interface PuckEditorProps {
    * Only used when hasPageTree is true.
    */
   pageSegment?: string
+
+  // Editor iframe styling props
+
+  /**
+   * Stylesheet URLs to inject into the editor iframe.
+   * Use this to provide frontend CSS (Tailwind, CSS variables, etc.)
+   * that header/footer components need for proper styling.
+   * Takes precedence over stylesheets from PuckConfigProvider.
+   *
+   * @example
+   * ```tsx
+   * <PuckEditor
+   *   editorStylesheets={['/editor-styles.css']}
+   *   // ...
+   * />
+   * ```
+   */
+  editorStylesheets?: string[]
+  /**
+   * Raw CSS to inject into the editor iframe.
+   * Useful for CSS variables or style overrides.
+   * Takes precedence over CSS from PuckConfigProvider.
+   *
+   * @example
+   * ```tsx
+   * <PuckEditor
+   *   editorCss=":root { --primary: blue; }"
+   *   // ...
+   * />
+   * ```
+   */
+  editorCss?: string
 }
 
 /**
@@ -214,17 +246,26 @@ export function PuckEditor({
   hasPageTree = false,
   folder,
   pageSegment,
+  // Editor iframe styling props
+  editorStylesheets: editorStylesheetsProp,
+  editorCss: editorCssProp,
 }: PuckEditorProps) {
   // Get config from context as fallback
   const {
     config: configFromContext,
     layouts: layoutsFromContext,
     theme: themeFromContext,
+    editorStylesheets: editorStylesheetsFromContext,
+    editorCss: editorCssFromContext,
   } = usePuckConfig()
 
   // Use prop config if provided, otherwise fall back to context
   const baseConfig = configProp || configFromContext
   const theme = themeProp || themeFromContext
+
+  // Props take precedence over context for editor stylesheets
+  const editorStylesheets = editorStylesheetsProp || editorStylesheetsFromContext
+  const editorCss = editorCssProp || editorCssFromContext
 
   // Merge layouts from props and context
   // Props may have metadata (value, label, editorBackground) but no React components
@@ -380,6 +421,8 @@ export function PuckEditor({
       onChange={onChange}
       initialStatus={initialStatus}
       theme={theme}
+      editorStylesheets={editorStylesheets}
+      editorCss={editorCss}
     />
   )
 }

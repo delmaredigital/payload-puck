@@ -5,7 +5,7 @@
  * These ensure consistency across all components.
  */
 
-import type { Field } from '@measured/puck'
+import type { Field } from '@puckeditor/core'
 import type React from 'react'
 
 // =============================================================================
@@ -2194,4 +2194,63 @@ export const layoutComponentsDisallow = [
   'Grid',
   'Section',
 ]
+
+// =============================================================================
+// Size Field Types and Utilities (Server-safe)
+// =============================================================================
+
+export type SizeMode = 'sm' | 'default' | 'lg' | 'custom'
+export type SizeUnit = 'px' | 'rem'
+
+export interface SizeValue {
+  mode: SizeMode
+  /** Height in units (only used when mode === 'custom') */
+  height?: number
+  /** Horizontal padding in units (only used when mode === 'custom') */
+  paddingX?: number
+  /** Vertical padding in units (only used when mode === 'custom') */
+  paddingY?: number
+  /** Font size in units (only used when mode === 'custom') */
+  fontSize?: number
+  /** Unit for all values */
+  unit?: SizeUnit
+}
+
+/**
+ * Convert SizeValue to CSS properties (only for custom mode)
+ * Server-safe utility for Button and other components
+ */
+export function sizeValueToCSS(size: SizeValue | null | undefined): React.CSSProperties | undefined {
+  if (!size || size.mode !== 'custom') return undefined
+
+  const unit = size.unit || 'px'
+  const style: React.CSSProperties = {}
+
+  if (size.height != null) {
+    style.height = `${size.height}${unit}`
+  }
+
+  if (size.paddingX != null || size.paddingY != null) {
+    const py = size.paddingY ?? 0
+    const px = size.paddingX ?? 0
+    style.padding = `${py}${unit} ${px}${unit}`
+  }
+
+  if (size.fontSize != null) {
+    style.fontSize = `${size.fontSize}${unit}`
+  }
+
+  return Object.keys(style).length > 0 ? style : undefined
+}
+
+/**
+ * Get Tailwind size classes for preset modes
+ * Returns empty string for custom mode (CSS properties handle that)
+ * Server-safe utility for Button and other components
+ */
+export function getSizeClasses(size: SizeValue | null | undefined, sizeMap: Record<string, string>): string {
+  if (!size) return sizeMap.default || ''
+  if (size.mode === 'custom') return ''
+  return sizeMap[size.mode] || sizeMap.default || ''
+}
 

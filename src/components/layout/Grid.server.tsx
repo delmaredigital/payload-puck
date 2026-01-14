@@ -15,7 +15,7 @@
  * - visibility: Show/hide at different breakpoints
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   dimensionsValueToCSS,
@@ -41,8 +41,11 @@ function generateUniqueId(): string {
   return `g${(++idCounter).toString(36)}${Math.random().toString(36).slice(2, 6)}`
 }
 
+export type GridSemanticElement = 'div' | 'ul' | 'ol'
+
 export interface GridProps {
   content: unknown
+  semanticElement: GridSemanticElement
   numColumns: number
   gap: number
   // Background
@@ -59,6 +62,7 @@ export interface GridProps {
 
 const defaultProps: GridProps = {
   content: [],
+  semanticElement: 'div',
   numColumns: 3,
   gap: 24,
   background: null,
@@ -78,6 +82,7 @@ export const GridConfig: ComponentConfig = {
   defaultProps,
   render: ({
     content: Content,
+    semanticElement = 'div',
     numColumns,
     gap,
     background,
@@ -88,6 +93,9 @@ export const GridConfig: ComponentConfig = {
     animation,
     visibility,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
+
     // Generate unique IDs for CSS targeting (server-safe)
     const uniqueId = generateUniqueId()
     const wrapperClass = `puck-grid-${uniqueId}`
@@ -176,7 +184,7 @@ export const GridConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <div className={wrapperClass} style={wrapperStyles}>
+        <Wrapper className={wrapperClass} style={wrapperStyles}>
           <ContentSlot className={contentClasses} style={gridStyles} />
           <style>{`
             @media (min-width: 768px) {
@@ -185,7 +193,7 @@ export const GridConfig: ComponentConfig = {
               }
             }
           `}</style>
-        </div>
+        </Wrapper>
       </AnimatedWrapper>
     )
   },

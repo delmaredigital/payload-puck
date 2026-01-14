@@ -5,7 +5,7 @@
  * with the PageRenderer component.
  */
 
-import type { Config as PuckConfig, ComponentConfig } from '@measured/puck'
+import type { Config as PuckConfig, ComponentConfig } from '@puckeditor/core'
 import type { ReactNode } from 'react'
 import { DEFAULT_LAYOUTS, layoutsToOptions, type LayoutDefinition } from '../layouts'
 

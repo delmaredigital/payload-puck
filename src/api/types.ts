@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-import type { Data as PuckData } from '@measured/puck'
+import type { Data as PuckData } from '@puckeditor/core'
 
 // =============================================================================
 // Authentication Types

@@ -9,7 +9,7 @@
  */
 
 import { useId } from 'react'
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import { cn, visibilityValueToCSS, type VisibilityValue } from '../../fields/shared'
 import { createResetField } from '../../fields/ResetField'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'

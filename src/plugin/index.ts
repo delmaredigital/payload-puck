@@ -12,6 +12,7 @@ import {
   createVersionsHandler,
   createRestoreHandler,
 } from '../endpoints/index.js'
+import { createStylesHandler, PUCK_STYLES_ENDPOINT } from '../endpoints/styles.js'
 
 /**
  * Get all field names from a collection's fields array (including nested group fields and tabs)
@@ -133,6 +134,8 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     adminViewPath = '/puck-editor',
     enableEndpoints = true,
     pageTreeIntegration, // No default - undefined means auto-detect
+    editorStylesheet,
+    editorStylesheetUrls = [],
   } = options
 
   const { addEditButton = true } = pluginAdminConfig
@@ -265,9 +268,27 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     // Register API endpoints if enabled
     const puckCollections = [pagesCollection]
     const endpointOptions = { collections: puckCollections }
+
+    // Build styles endpoint URL list for PuckConfigProvider
+    const editorStylesheets: string[] = [
+      ...(editorStylesheet ? [PUCK_STYLES_ENDPOINT] : []),
+      ...editorStylesheetUrls,
+    ]
+
     const endpoints = enableEndpoints
       ? [
           ...(incomingConfig.endpoints || []),
+          // Styles endpoint MUST be first - exact match before parameterized routes
+          ...(editorStylesheet
+            ? [
+                {
+                  path: '/puck/styles',
+                  method: 'get' as const,
+                  handler: createStylesHandler(editorStylesheet),
+                },
+              ]
+            : []),
+          // Collection endpoints (parameterized routes)
           {
             path: '/puck/:collection',
             method: 'get' as const,
@@ -319,6 +340,8 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
           layouts: options.layouts,
           // Page-tree integration config (null if not enabled)
           pageTree: pageTreeConfig,
+          // Editor stylesheets for iframe
+          editorStylesheets: editorStylesheets.length > 0 ? editorStylesheets : undefined,
         },
       },
       onInit: async (payload) => {
@@ -350,6 +373,9 @@ export {
 
 // Export the edit button generator for hybrid collections
 export { generatePuckEditField }
+
+// Export styles endpoint constant
+export { PUCK_STYLES_ENDPOINT } from '../endpoints/styles.js'
 
 // Re-export types
 export type { PuckPluginOptions, PuckAdminConfig } from '../types'

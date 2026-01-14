@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import {
   Smartphone,
   Tablet,
@@ -98,6 +98,7 @@ const styles = {
   } as CSSProperties,
   tabsContainer: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '4px',
     padding: '4px',
     backgroundColor: 'var(--theme-elevation-50)',
@@ -116,7 +117,8 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     transition: 'all 0.15s',
-    flex: 1,
+    flex: '1 1 auto',
+    minWidth: '52px',
     backgroundColor: 'var(--theme-elevation-100)',
     color: 'var(--theme-elevation-500)',
   } as CSSProperties,
@@ -133,7 +135,8 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     transition: 'all 0.15s',
-    flex: 1,
+    flex: '1 1 auto',
+    minWidth: '52px',
     backgroundColor: 'var(--theme-elevation-800)',
     color: 'var(--theme-bg)',
   } as CSSProperties,

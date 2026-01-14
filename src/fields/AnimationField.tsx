@@ -13,7 +13,7 @@
  */
 
 import React, { useCallback, memo, useState, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { X, ChevronDown, ChevronRight } from 'lucide-react'
 import type {
   AnimationValue,

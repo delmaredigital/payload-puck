@@ -10,7 +10,7 @@
  * Use this config for the Puck visual editor.
  */
 
-import type { Config as PuckConfig, ComponentConfig } from '@measured/puck'
+import type { Config as PuckConfig, ComponentConfig } from '@puckeditor/core'
 import type { ReactNode } from 'react'
 import { createBackgroundField } from '../fields/BackgroundField'
 import { lockedSlugField, lockedHomepageField } from '../fields/LockedField'

@@ -55,6 +55,9 @@ export { HeaderActions, type HeaderActionsProps } from './components/HeaderActio
 export { IframeWrapper, type IframeWrapperProps, type LayoutStyle } from './components/IframeWrapper.js'
 export { LoadingState, type LoadingStateProps } from './components/LoadingState.js'
 export { PreviewModal, type PreviewModalProps } from './components/PreviewModal.js'
+/**
+ * @deprecated Use createVersionHistoryPlugin instead. VersionHistory has moved to the plugin rail.
+ */
 export { VersionHistory, type VersionHistoryProps, type PageVersion } from './components/VersionHistory.js'
 
 // Utilities
@@ -66,3 +69,9 @@ export { useUnsavedChanges, type UseUnsavedChangesReturn } from './hooks/useUnsa
 
 // Plugins
 export { headingAnalyzer } from './plugins/index.js'
+export {
+  createVersionHistoryPlugin,
+  type VersionHistoryPluginOptions,
+  VersionHistoryPanel,
+  type VersionHistoryPanelProps,
+} from './plugins/index.js'

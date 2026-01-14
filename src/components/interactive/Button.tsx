@@ -4,7 +4,7 @@
  * CTA button with customizable styling and link support.
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   buttonVariantField,
   cn,

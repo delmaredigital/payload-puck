@@ -16,7 +16,7 @@
  */
 
 import React, { useCallback, memo, useState, useRef, useEffect, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
@@ -249,7 +249,7 @@ const styles = {
   } as CSSProperties,
   fontSizeGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(55px, 1fr))',
     gap: '4px',
     padding: '0 8px 8px',
   } as CSSProperties,
@@ -656,7 +656,9 @@ function ToolbarDropdown({
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [alignRight, setAlignRight] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const close = useCallback(() => setIsOpen(false), [])
 
@@ -673,6 +675,27 @@ function ToolbarDropdown({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Calculate dropdown position when it opens
+  useEffect(() => {
+    if (isOpen && menuRef.current && dropdownRef.current) {
+      const menu = menuRef.current
+      const trigger = dropdownRef.current
+      const triggerRect = trigger.getBoundingClientRect()
+      const menuWidth = menu.offsetWidth
+      const viewportWidth = window.innerWidth
+
+      // Check if dropdown would overflow right edge of viewport
+      const wouldOverflowRight = triggerRect.left + menuWidth > viewportWidth - 16
+      setAlignRight(wouldOverflowRight)
+    }
+  }, [isOpen])
+
+  const dropdownStyle: CSSProperties = {
+    ...styles.dropdown,
+    left: alignRight ? 'auto' : 0,
+    right: alignRight ? 0 : 'auto',
+  }
 
   return (
     <div ref={dropdownRef} style={{ position: 'relative', flexShrink: 0 }}>
@@ -691,7 +714,7 @@ function ToolbarDropdown({
         {trigger}
       </button>
       {isOpen && (
-        <div style={styles.dropdown}>
+        <div ref={menuRef} style={dropdownStyle}>
           {typeof children === 'function' ? children(close) : children}
         </div>
       )}
@@ -925,6 +948,7 @@ function LinkPopover({
   onRemoveLink: () => void
 }) {
   const [url, setUrl] = useState('')
+  const [alignRight, setAlignRight] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -939,10 +963,28 @@ function LinkPopover({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen, onClose])
 
+  // Calculate position when opened
+  useEffect(() => {
+    if (isOpen && popoverRef.current) {
+      const popover = popoverRef.current
+      const rect = popover.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      // Check if would overflow right
+      const wouldOverflowRight = rect.right > viewportWidth - 16
+      setAlignRight(wouldOverflowRight)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
+  const popoverStyle: CSSProperties = {
+    ...styles.linkPopover,
+    left: alignRight ? 'auto' : 0,
+    right: alignRight ? 0 : 'auto',
+  }
+
   return (
-    <div ref={popoverRef} style={styles.linkPopover}>
+    <div ref={popoverRef} style={popoverStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--theme-elevation-700)' }}>URL</label>
         <input
@@ -1218,7 +1260,7 @@ function TiptapFieldInner({ value, onChange, label, readOnly }: TiptapFieldProps
                   <DropdownSeparator />
                   <div style={{ padding: '8px' }}>
                     <DropdownLabel>Custom Size</DropdownLabel>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                       <input
                         type="number"
                         placeholder="16"

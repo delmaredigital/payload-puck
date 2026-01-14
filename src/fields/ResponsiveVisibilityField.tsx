@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import {
   Smartphone,
   Tablet,
@@ -73,6 +73,7 @@ const styles = {
   } as CSSProperties,
   toggleGrid: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '4px',
   } as CSSProperties,
   toggleButton: {
@@ -82,10 +83,10 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '2px',
-    padding: '8px',
+    padding: '6px 4px',
     borderRadius: '6px',
-    flex: 1,
-    minWidth: '52px',
+    flex: '1 1 auto',
+    minWidth: '44px',
     cursor: 'pointer',
     transition: 'all 0.15s',
     border: '1px solid',

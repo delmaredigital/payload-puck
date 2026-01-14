@@ -12,7 +12,7 @@
  */
 
 import React, { useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import {
   X,
   ArrowUp,
@@ -156,6 +156,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    flexWrap: 'wrap',
     gap: '8px',
   } as CSSProperties,
   sideButton: {

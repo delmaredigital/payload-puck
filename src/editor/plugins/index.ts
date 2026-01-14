@@ -3,10 +3,23 @@
  *
  * @example
  * ```tsx
- * import { PuckEditor, headingAnalyzer } from '@delmaredigital/payload-puck/editor'
+ * import { PuckEditor, headingAnalyzer, createVersionHistoryPlugin } from '@delmaredigital/payload-puck/editor'
  *
- * <PuckEditor plugins={[headingAnalyzer]} />
+ * const versionPlugin = createVersionHistoryPlugin({ pageId: 'page-123' })
+ * <PuckEditor plugins={[headingAnalyzer, versionPlugin]} />
  * ```
  */
 
-export { default as headingAnalyzer } from '@measured/puck-plugin-heading-analyzer'
+export { default as headingAnalyzer } from '@puckeditor/plugin-heading-analyzer'
+
+// Version History plugin for plugin rail
+export {
+  createVersionHistoryPlugin,
+  type VersionHistoryPluginOptions,
+} from './versionHistoryPlugin.js'
+
+export {
+  VersionHistoryPanel,
+  type VersionHistoryPanelProps,
+  type PageVersion,
+} from './VersionHistoryPanel.js'

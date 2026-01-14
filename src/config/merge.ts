@@ -1,4 +1,4 @@
-import type { Config as PuckConfig } from '@measured/puck'
+import type { Config as PuckConfig } from '@puckeditor/core'
 import type { MergeConfigOptions } from '../types'
 
 /**

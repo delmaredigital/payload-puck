@@ -1,5 +1,5 @@
 import type { Access, CollectionConfig, Config as PayloadConfig, Field } from 'payload'
-import type { Config as PuckConfig, Data as PuckData } from '@measured/puck'
+import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 import type { ThemeConfig } from '../theme/types'
 import type { LayoutDefinition, LayoutConfig } from '../layouts/types'
 
@@ -148,6 +148,24 @@ export interface PuckPluginOptions {
    * ```
    */
   pageTreeIntegration?: boolean | PageTreeIntegrationOptions
+
+  /**
+   * Path to CSS file for editor iframe styling.
+   * The plugin compiles this file with PostCSS/Tailwind and serves it at /api/puck/styles.
+   * This allows the editor preview to display your frontend styles (CSS variables, Tailwind utilities).
+   *
+   * @example 'src/app/(frontend)/globals.css'
+   * @example 'src/styles/globals.css'
+   */
+  editorStylesheet?: string
+
+  /**
+   * Additional stylesheet URLs to load in the editor iframe.
+   * Use this for external stylesheets like Google Fonts that can't be compiled.
+   *
+   * @example ['https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700']
+   */
+  editorStylesheetUrls?: string[]
 }
 
 /**
@@ -378,7 +396,7 @@ export interface TiptapFieldProps {
 // Re-exports from Puck
 // =============================================================================
 
-export type { Config as PuckConfig, Data as PuckData } from '@measured/puck'
+export type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 export type { ThemeConfig } from '../theme/types'
 
 // =============================================================================

@@ -24,7 +24,7 @@
  */
 
 import { createContext, useContext, type ReactNode } from 'react'
-import type { Config as PuckConfig } from '@measured/puck'
+import type { Config as PuckConfig } from '@puckeditor/core'
 import type { LayoutDefinition } from '../layouts/index.js'
 import type { ThemeConfig } from '../theme/index.js'
 
@@ -41,6 +41,33 @@ export interface PuckConfigContextValue {
    * Theme configuration for component styling
    */
   theme?: ThemeConfig
+  /**
+   * Stylesheet URLs to inject into the editor iframe.
+   * Use this to provide your frontend CSS (Tailwind, CSS variables, etc.)
+   * that header/footer components need for proper styling.
+   *
+   * @example
+   * ```tsx
+   * <PuckConfigProvider
+   *   config={editorConfig}
+   *   editorStylesheets={['/editor-styles.css']}
+   * >
+   * ```
+   */
+  editorStylesheets?: string[]
+  /**
+   * Raw CSS to inject into the editor iframe.
+   * Useful for CSS variables or small style overrides.
+   *
+   * @example
+   * ```tsx
+   * <PuckConfigProvider
+   *   config={editorConfig}
+   *   editorCss=":root { --primary: blue; }"
+   * >
+   * ```
+   */
+  editorCss?: string
 }
 
 const PuckConfigContext = createContext<PuckConfigContextValue>({
@@ -61,6 +88,33 @@ export interface PuckConfigProviderProps {
    */
   theme?: ThemeConfig
   /**
+   * Stylesheet URLs to inject into the editor iframe.
+   * Use this to provide your frontend CSS (Tailwind, CSS variables, etc.)
+   * that header/footer components need for proper styling.
+   *
+   * @example
+   * ```tsx
+   * <PuckConfigProvider
+   *   config={editorConfig}
+   *   editorStylesheets={['/editor-styles.css']}
+   * >
+   * ```
+   */
+  editorStylesheets?: string[]
+  /**
+   * Raw CSS to inject into the editor iframe.
+   * Useful for CSS variables or small style overrides.
+   *
+   * @example
+   * ```tsx
+   * <PuckConfigProvider
+   *   config={editorConfig}
+   *   editorCss=":root { --primary: blue; }"
+   * >
+   * ```
+   */
+  editorCss?: string
+  /**
    * Children to render
    */
   children: ReactNode
@@ -73,10 +127,12 @@ export function PuckConfigProvider({
   config,
   layouts,
   theme,
+  editorStylesheets,
+  editorCss,
   children,
 }: PuckConfigProviderProps) {
   return (
-    <PuckConfigContext.Provider value={{ config, layouts, theme }}>
+    <PuckConfigContext.Provider value={{ config, layouts, theme, editorStylesheets, editorCss }}>
       {children}
     </PuckConfigContext.Provider>
   )

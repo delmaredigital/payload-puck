@@ -1,8 +1,8 @@
 'use client'
 
-import { Puck, type Config as PuckConfig, type Data as PuckData } from '@measured/puck'
+import { Puck, type Config as PuckConfig, type Data as PuckData } from '@puckeditor/core'
 import { useCallback, useState } from 'react'
-import '@measured/puck/puck.css'
+import '@puckeditor/core/puck.css'
 
 export interface PuckEditorProps {
   /**

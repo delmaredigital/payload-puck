@@ -23,7 +23,7 @@
  * ```
  */
 
-import type { Config as PuckConfig, ComponentConfig } from '@measured/puck'
+import type { Config as PuckConfig, ComponentConfig } from '@puckeditor/core'
 import type { ReactNode } from 'react'
 
 // Import component configs

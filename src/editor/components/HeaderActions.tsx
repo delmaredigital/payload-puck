@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useCallback, type ReactNode, type CSSProperties } from 'react'
-import { createUsePuck, type Data } from '@measured/puck'
+import { createUsePuck, type Data } from '@puckeditor/core'
 import {
   ArrowLeft,
   Save,
@@ -42,6 +42,10 @@ export interface HeaderActionsProps {
    * Handler for publish button click (optional, uses default Puck publish if not provided)
    */
   onPublish?: (data: Data) => void
+  /**
+   * Handler for unpublish button click (reverts to draft)
+   */
+  onUnpublish?: () => void
   /**
    * Whether a save operation is in progress
    */
@@ -98,8 +102,9 @@ export interface HeaderActionsProps {
    */
   onOpenPreview?: () => void
   /**
-   * Whether to show the version history button
+   * Whether to show the version history button in the header
    * @default true
+   * @deprecated Version history has moved to the plugin rail. This prop will be removed in a future version.
    */
   showVersionHistory?: boolean
   /**
@@ -200,6 +205,16 @@ const styles = {
     fontSize: '10px',
     color: 'var(--theme-elevation-400)',
     fontFamily: 'monospace',
+  } as CSSProperties,
+  linkButton: {
+    background: 'none',
+    border: 'none',
+    padding: '4px 8px',
+    fontSize: '12px',
+    color: 'var(--theme-elevation-500)',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    textUnderlineOffset: '2px',
   } as CSSProperties,
   errorButton: {
     display: 'flex',
@@ -315,6 +330,7 @@ export const HeaderActions = memo(function HeaderActions({
   onPreview,
   onSave,
   onPublish,
+  onUnpublish,
   isSaving,
   hasUnsavedChanges,
   lastSaved,
@@ -565,6 +581,21 @@ export const HeaderActions = memo(function HeaderActions({
             <Upload style={styles.icon} />
           )}
           Publish
+        </button>
+      )}
+
+      {/* Unpublish link (only shown when document is published) */}
+      {onUnpublish && documentStatus === 'published' && (
+        <button
+          type="button"
+          onClick={onUnpublish}
+          disabled={isSaving}
+          style={{
+            ...styles.linkButton,
+            ...(isSaving ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
+          }}
+        >
+          Unpublish
         </button>
       )}
 

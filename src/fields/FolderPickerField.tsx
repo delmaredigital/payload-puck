@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { Folder, FolderOpen, FolderPlus, ChevronRight, ChevronDown, Check, X } from 'lucide-react'
 
 // =============================================================================

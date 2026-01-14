@@ -6,7 +6,7 @@
  * Safe for use in server components.
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   dividerStyleMap,
   cn,

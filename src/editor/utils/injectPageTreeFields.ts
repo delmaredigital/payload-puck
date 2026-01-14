@@ -1,4 +1,4 @@
-import type { Config as PuckConfig } from '@measured/puck'
+import type { Config as PuckConfig } from '@puckeditor/core'
 import { createFolderPickerField } from '../../fields/FolderPickerField.js'
 import { createPageSegmentField } from '../../fields/PageSegmentField.js'
 import { createSlugPreviewField } from '../../fields/SlugPreviewField.js'

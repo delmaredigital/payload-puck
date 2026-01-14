@@ -65,6 +65,21 @@ export type { JustifyContent, AlignItems } from './FlexAlignmentField'
 export { VerticalAlignmentField, createVerticalAlignmentField } from './VerticalAlignmentField'
 export type { VerticalAlignment } from './VerticalAlignmentField'
 
+export {
+  ContentAlignmentField,
+  createContentAlignmentField,
+  alignmentToFlexCSS,
+  alignmentToGridCSS,
+  alignmentToPlaceSelfCSS,
+  alignmentToTailwind,
+} from './ContentAlignmentField'
+export type {
+  ContentAlignmentValue,
+  HorizontalAlign,
+  VerticalAlign,
+  PositionLabel,
+} from './ContentAlignmentField'
+
 export { SizeField, createSizeField, sizeValueToCSS, getSizeClasses } from './SizeField'
 export type { SizeValue, SizeMode, SizeUnit } from './SizeField'
 

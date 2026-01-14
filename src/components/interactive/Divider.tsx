@@ -4,7 +4,7 @@
  * Horizontal line separator with customizable style.
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   dividerStyleField,
   dividerStyleMap,

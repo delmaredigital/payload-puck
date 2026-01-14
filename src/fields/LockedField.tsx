@@ -14,7 +14,7 @@
  */
 
 import React, { useState } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { Lock, Unlock } from 'lucide-react'
 
 // =============================================================================

@@ -15,7 +15,7 @@
  */
 
 import { useId } from 'react'
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   dimensionsValueToCSS,
   borderValueToCSS,
@@ -60,8 +60,11 @@ const DEFAULT_DIMENSIONS: DimensionsValue = {
   maxWidth: { value: 100, unit: '%', enabled: true },
 }
 
+export type ContainerSemanticElement = 'div' | 'article' | 'aside' | 'section'
+
 export interface ContainerProps {
   content: unknown
+  semanticElement: ContainerSemanticElement
   visibility: VisibilityValue | null
   dimensions: ResponsiveValue<DimensionsValue> | DimensionsValue | null
   background: BackgroundValue | null
@@ -73,6 +76,7 @@ export interface ContainerProps {
 
 const defaultProps: ContainerProps = {
   content: [],
+  semanticElement: 'div',
   visibility: null,
   dimensions: null,
   background: null,
@@ -91,6 +95,17 @@ export const ContainerConfig: ComponentConfig = {
     },
     // Visibility first
     visibility: createResponsiveVisibilityField({ label: 'Visibility' }),
+    // Semantic element selection
+    semanticElement: {
+      type: 'select',
+      label: 'HTML Element',
+      options: [
+        { label: 'Div', value: 'div' },
+        { label: 'Article', value: 'article' },
+        { label: 'Aside', value: 'aside' },
+        { label: 'Section', value: 'section' },
+      ],
+    },
     // Dimensions
     dimensions: createResponsiveField({
       label: 'Dimensions',
@@ -117,6 +132,7 @@ export const ContainerConfig: ComponentConfig = {
   defaultProps,
   render: ({
     content: Content,
+    semanticElement = 'div',
     visibility,
     dimensions,
     background,
@@ -125,6 +141,9 @@ export const ContainerConfig: ComponentConfig = {
     margin,
     animation,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
+
     // Generate unique ID for CSS targeting
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const uniqueId = useId().replace(/:/g, '')
@@ -232,9 +251,9 @@ export const ContainerConfig: ComponentConfig = {
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
         {hasStyles ? (
-          <div className={containerClass} style={containerStyles}>
+          <Wrapper className={containerClass} style={containerStyles}>
             {renderContent()}
-          </div>
+          </Wrapper>
         ) : (
           <Content className={containerClass} />
         )}

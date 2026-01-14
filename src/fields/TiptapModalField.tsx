@@ -8,7 +8,7 @@
  */
 
 import React, { useState, memo } from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { TiptapField } from './TiptapField'
 import { TiptapModal } from './TiptapModal'
 import { Maximize2 } from 'lucide-react'

@@ -28,17 +28,19 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
 
 | Dependency | Version | Purpose |
 |------------|---------|---------|
-| `@measured/puck` | >= 0.20.0 | Visual editor core |
-| `payload` | >= 3.0.0 | CMS backend |
-| `@payloadcms/next` | >= 3.0.0 | Payload Next.js integration |
-| `next` | >= 14.0.0 | React framework |
-| `react` | >= 18.0.0 | UI library |
+| `@puckeditor/core` | >= 0.21.0 | Visual editor core |
+| `payload` | >= 3.69.0 | CMS backend |
+| `@payloadcms/next` | >= 3.69.0 | Payload Next.js integration |
+| `next` | >= 15.4.8 | React framework |
+| `react` | >= 19.2.1 | UI library |
 | `@tailwindcss/typography` | >= 0.5.0 | RichText component styling |
+
+> **Note:** Puck 0.21+ moved from `@measured/puck` to `@puckeditor/core`. This plugin requires the new package scope.
 
 ### Install
 
 ```bash
-pnpm add @delmaredigital/payload-puck @measured/puck
+pnpm add @delmaredigital/payload-puck @puckeditor/core
 ```
 
 ---
@@ -112,16 +114,23 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
 // Fetch page by slug (or homepage if no slug)
+// Only returns published pages - unpublished pages will 404
 async function getPage(slug?: string[]) {
   const payload = await getPayload({ config })
   const slugPath = slug?.join('/') || ''
 
   // Try to find by slug, or find homepage
+  // Filter for published pages only (_status: 'published')
   const { docs } = await payload.find({
     collection: 'pages',
-    where: slugPath
-      ? { slug: { equals: slugPath } }
-      : { isHomepage: { equals: true } },
+    where: {
+      and: [
+        { _status: { equals: 'published' } },
+        slugPath
+          ? { slug: { equals: slugPath } }
+          : { isHomepage: { equals: true } },
+      ],
+    },
     limit: 1,
   })
 
@@ -285,6 +294,11 @@ The editor uses Payload's native draft system. The plugin automatically enables 
 }
 ```
 
+The editor header provides:
+- **Save** - Saves as draft without publishing
+- **Publish** - Publishes the page (sets `_status: 'published'`)
+- **Unpublish** - Reverts a published page to draft status (appears only when published)
+
 ---
 
 ## Components
@@ -306,7 +320,7 @@ The editor uses Payload's native draft system. The plugin automatically enables 
 |-----------|-------------|
 | **Heading** | H1-H6 headings with size and alignment |
 | **Text** | Paragraph text with styling options |
-| **RichText** | TipTap-powered WYSIWYG editor |
+| **RichText** | TipTap WYSIWYG with font sizes, colors with opacity, modal editing |
 
 ### Media & Interactive
 
@@ -316,7 +330,20 @@ The editor uses Payload's native draft system. The plugin automatically enables 
 | **Button** | Styled button/link with variants |
 | **Card** | Content card with optional image |
 | **Divider** | Horizontal rule with styles |
-| **Accordion** | Expandable content sections |
+| **Accordion** | Expandable content sections (first item opens by default) |
+
+### Semantic HTML Elements
+
+Layout components (Section, Flex, Container, Grid) support semantic HTML output for better SEO and accessibility:
+
+| Component | Available Elements |
+|-----------|-------------------|
+| **Section** | `section`, `article`, `aside`, `nav`, `header`, `footer`, `main`, `div` |
+| **Flex** | `div`, `nav`, `ul`, `ol`, `aside`, `section` |
+| **Container** | `div`, `article`, `aside`, `section` |
+| **Grid** | `div`, `ul`, `ol` |
+
+Select the appropriate HTML element in the component's sidebar to output semantic markup.
 
 ### Responsive Controls
 
@@ -324,6 +351,7 @@ Layout components support per-breakpoint customization:
 - **Dimensions** - Width, max-width, height constraints
 - **Padding/Margin** - Spacing per breakpoint
 - **Visibility** - Show/hide at specific breakpoints
+- **Viewport Preview** - Mobile, Tablet, Desktop, and Full Width options
 
 ---
 
@@ -342,7 +370,9 @@ All fields are imported from `@delmaredigital/payload-puck/fields`.
 | **PaddingField / MarginField** | Visual spacing editors |
 | **BorderField** | Border width, style, color, radius |
 | **DimensionsField** | Width/height with constraints |
-| **AlignmentField** | Text alignment options |
+| **AlignmentField** | Text alignment (left, center, right) |
+| **ContentAlignmentField** | Visual 3x3 grid selector for positioning (d-pad style) |
+| **SizeField** | Preset sizes (sm, default, lg) with custom mode |
 | **AnimationField** | Entrance animations |
 | **ResponsiveVisibilityField** | Show/hide per breakpoint |
 | **FolderPickerField** | Hierarchical folder selection (page-tree) |
@@ -375,8 +405,45 @@ import {
   dimensionsValueToCSS,
   animationValueToCSS,
   visibilityValueToCSS,
+  alignmentToFlexCSS,
+  alignmentToGridCSS,
+  sizeValueToCSS,
+  getSizeClasses,
 } from '@delmaredigital/payload-puck/fields'
 ```
+
+### ContentAlignmentField Example
+
+The ContentAlignmentField provides a visual 3x3 grid selector for content positioning:
+
+```typescript
+import {
+  createContentAlignmentField,
+  alignmentToFlexCSS,
+  alignmentToGridCSS,
+} from '@delmaredigital/payload-puck/fields'
+
+const BannerConfig = {
+  fields: {
+    contentPosition: createContentAlignmentField({ label: 'Content Position' }),
+  },
+  render: ({ contentPosition }) => (
+    <div style={{
+      display: 'flex',
+      minHeight: '400px',
+      ...alignmentToFlexCSS(contentPosition), // Converts to justify-content + align-items
+    }}>
+      <div>Positioned content</div>
+    </div>
+  ),
+}
+```
+
+Helper functions:
+- `alignmentToFlexCSS()` - For Flexbox containers (`justify-content` + `align-items`)
+- `alignmentToGridCSS()` - For Grid containers (`justify-content` + `align-content`)
+- `alignmentToPlaceSelfCSS()` - For individual grid items (`place-self`)
+- `alignmentToTailwind()` - Returns Tailwind classes (`justify-* items-*`)
 
 ---
 
@@ -417,7 +484,7 @@ export const puckConfig: Config = {
 Build custom components with pre-built fields:
 
 ```typescript
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   createMediaField,
   createBackgroundField,
@@ -539,8 +606,11 @@ This is the recommended pattern for Payload apps. The provider wraps only the ad
 | `createBorderField()` | Border styling |
 | `createDimensionsField()` | Width/height constraints |
 | `createAnimationField()` | Entrance animations |
-| `createAlignmentField()` | Text alignment |
+| `createAlignmentField()` | Text alignment (left, center, right) |
+| `createContentAlignmentField()` | Visual 3x3 grid positioning selector |
+| `createSizeField()` | Size presets with custom mode |
 | `createTiptapField()` | Inline rich text editor |
+| `createResponsiveVisibilityField()` | Show/hide per breakpoint |
 
 ### CSS Helper Functions
 
@@ -554,12 +624,17 @@ import {
   borderValueToCSS,
   dimensionsValueToCSS,
   colorValueToCSS,
+  alignmentToFlexCSS,
+  alignmentToGridCSS,
+  sizeValueToCSS,
 } from '@delmaredigital/payload-puck/fields'
 
 const style = {
   background: backgroundValueToCSS(props.background),
   padding: paddingValueToCSS(props.padding),
   ...dimensionsValueToCSS(props.dimensions),
+  ...alignmentToFlexCSS(props.contentAlignment),
+  ...sizeValueToCSS(props.size),
 }
 ```
 
@@ -785,6 +860,8 @@ import { LegacyBlockRenderer } from '@/components/LegacyBlockRenderer'
 | `adminViewPath` | `'/puck-editor'` | Path for the editor (full path: `/admin/puck-editor/:collection/:id`) |
 | `pageTreeIntegration` | auto-detect | Integration with `@delmaredigital/payload-page-tree` |
 | `layouts` | `undefined` | Layout definitions for page templates |
+| `editorStylesheet` | `undefined` | Path to CSS file for editor iframe styling (e.g., `'src/app/globals.css'`) |
+| `editorStylesheetUrls` | `[]` | Additional stylesheet URLs for the editor (e.g., Google Fonts) |
 
 ```typescript
 createPuckPlugin({
@@ -811,6 +888,52 @@ createPuckPlugin({
   },
 })
 ```
+
+### Editor Stylesheet (Iframe Styling)
+
+The Puck editor renders page content in an iframe. By default, this iframe doesn't have access to your frontend's CSS (Tailwind utilities, CSS variables, fonts). The `editorStylesheet` option solves this by compiling and serving your CSS.
+
+**How it works:**
+1. You specify your CSS file path in the plugin config
+2. The plugin creates an endpoint at `/api/puck/styles`
+3. On first request, the CSS is compiled with PostCSS/Tailwind and cached
+4. The iframe loads this compiled CSS
+
+```typescript
+createPuckPlugin({
+  pagesCollection: 'pages',
+  // Your frontend's main CSS file
+  editorStylesheet: 'src/app/(frontend)/globals.css',
+  // External stylesheets (Google Fonts, etc.)
+  editorStylesheetUrls: [
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  ],
+})
+```
+
+Then update your `PuckConfigProvider` to use the compiled stylesheet:
+
+```typescript
+<PuckConfigProvider
+  config={editorConfig}
+  layouts={siteLayouts}
+  editorStylesheets={[
+    '/api/puck/styles',  // Plugin-created endpoint
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  ]}
+>
+  {children}
+</PuckConfigProvider>
+```
+
+**Requirements:**
+- `postcss` must be installed in your project
+- For Tailwind v4: `@tailwindcss/postcss`
+- For Tailwind v3: `tailwindcss`
+
+The CSS is compiled at runtime (cached after first request) using your project's PostCSS/Tailwind installation.
+
+---
 
 ### Custom API Routes (Advanced)
 

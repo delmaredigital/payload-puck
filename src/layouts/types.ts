@@ -95,6 +95,36 @@ export interface LayoutDefinition extends LayoutOption {
    * @default true
    */
   stickyFooter?: boolean
+  /**
+   * Additional stylesheet URLs to inject into the editor iframe for this layout.
+   * Merged with stylesheets from PuckConfigProvider.
+   * Use this for layout-specific styles that differ from the global editor styles.
+   *
+   * @example
+   * ```tsx
+   * {
+   *   value: 'landing',
+   *   label: 'Landing',
+   *   editorStylesheets: ['/landing-styles.css'],
+   * }
+   * ```
+   */
+  editorStylesheets?: string[]
+  /**
+   * Additional CSS to inject into the editor iframe for this layout.
+   * Merged with CSS from PuckConfigProvider.
+   * Use this for layout-specific CSS variables or style overrides.
+   *
+   * @example
+   * ```tsx
+   * {
+   *   value: 'dark-theme',
+   *   label: 'Dark Theme',
+   *   editorCss: ':root { --background: #1a1a1a; }',
+   * }
+   * ```
+   */
+  editorCss?: string
 }
 
 /**

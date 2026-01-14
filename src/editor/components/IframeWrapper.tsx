@@ -1,7 +1,7 @@
 'use client'
 
-import { memo, useEffect, useMemo, type ReactNode, type ComponentType } from 'react'
-import { createUsePuck } from '@measured/puck'
+import { memo, useEffect, useMemo, useState, type ReactNode, type ComponentType } from 'react'
+import { createUsePuck } from '@puckeditor/core'
 import type { LayoutDefinition } from '../../layouts'
 import { backgroundValueToCSS, type BackgroundValue } from '../../fields/shared'
 
@@ -68,6 +68,19 @@ export interface IframeWrapperProps {
    * @default 'default'
    */
   defaultLayout?: string
+  /**
+   * Stylesheet URLs to inject into the iframe.
+   * These are merged from PuckConfigProvider and layout-specific settings.
+   * Use this to provide frontend CSS (Tailwind, CSS variables, etc.) that
+   * header/footer components need for proper styling.
+   */
+  editorStylesheets?: string[]
+  /**
+   * Raw CSS to inject into the iframe.
+   * Merged from PuckConfigProvider and layout-specific settings.
+   * Useful for CSS variables or style overrides.
+   */
+  editorCss?: string
 }
 
 /**
@@ -109,8 +122,13 @@ export const IframeWrapper = memo(function IframeWrapper({
   layoutStyles,
   layoutKey = 'pageLayout',
   defaultLayout = 'default',
+  editorStylesheets,
+  editorCss,
 }: IframeWrapperProps) {
   const appState = usePuck((s) => s.appState)
+
+  // Track stylesheet loading state to force re-render when styles are ready
+  const [stylesLoaded, setStylesLoaded] = useState(false)
 
   // Check if we're in interactive mode (links should be clickable)
   const isInteractive = appState.ui.previewMode === 'interactive'
@@ -183,6 +201,64 @@ export const IframeWrapper = memo(function IframeWrapper({
       html.classList.remove('dark')
       html.classList.add('light')
       body.style.color = '#1f2937' // gray-800
+    }
+
+    // Inject external stylesheets (Tailwind CSS, CSS variables, etc.)
+    // These provide the styles needed for header/footer components
+    if (editorStylesheets && editorStylesheets.length > 0) {
+      let pendingLoads = 0
+      let loadedCount = 0
+
+      const checkAllLoaded = () => {
+        loadedCount++
+        if (loadedCount >= pendingLoads) {
+          // All stylesheets loaded - trigger re-render
+          setStylesLoaded(true)
+        }
+      }
+
+      editorStylesheets.forEach((href, index) => {
+        const linkId = `puck-editor-stylesheet-${index}`
+        const existingLink = iframeDoc.getElementById(linkId) as HTMLLinkElement | null
+
+        if (!existingLink) {
+          pendingLoads++
+          const link = iframeDoc.createElement('link')
+          link.id = linkId
+          link.rel = 'stylesheet'
+          link.href = href
+          // Track when stylesheet loads
+          link.onload = checkAllLoaded
+          link.onerror = checkAllLoaded // Count errors too to avoid hanging
+          iframeDoc.head.appendChild(link)
+        } else if (!stylesLoaded) {
+          // Link exists - check if it's already loaded
+          // If the stylesheet is already in the document, it should be loaded
+          pendingLoads++
+          // Use a small timeout to check if styles are applied
+          setTimeout(checkAllLoaded, 50)
+        }
+      })
+
+      // If no new stylesheets to load, mark as loaded
+      if (pendingLoads === 0 && !stylesLoaded) {
+        setStylesLoaded(true)
+      }
+    } else if (!stylesLoaded) {
+      // No stylesheets to load
+      setStylesLoaded(true)
+    }
+
+    // Inject custom CSS (CSS variables, overrides, etc.)
+    if (editorCss) {
+      const CUSTOM_CSS_ID = 'puck-editor-custom-css'
+      let style = iframeDoc.getElementById(CUSTOM_CSS_ID) as HTMLStyleElement | null
+      if (!style) {
+        style = iframeDoc.createElement('style')
+        style.id = CUSTOM_CSS_ID
+        iframeDoc.head.appendChild(style)
+      }
+      style.textContent = editorCss
     }
 
     // Inject richtext-output styles into the iframe for proper heading/list rendering
@@ -301,7 +377,7 @@ export const IframeWrapper = memo(function IframeWrapper({
       `
       iframeDoc.head.appendChild(style)
     }
-  }, [iframeDoc, layoutConfig, pageBackground])
+  }, [iframeDoc, layoutConfig, pageBackground, editorStylesheets, editorCss, stylesLoaded])
 
   // Get header/footer components from layout config
   const LayoutHeader = layoutConfig.header

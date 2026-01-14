@@ -60,6 +60,7 @@ const styles = {
   row: {
     display: 'flex',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: '8px',
   } as CSSProperties,
   label: {
@@ -70,6 +71,7 @@ const styles = {
   } as CSSProperties,
   buttonGroup: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '4px',
   } as CSSProperties,
   button: {
@@ -151,6 +153,7 @@ const styles = {
   stopRow: {
     display: 'flex',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: '8px',
   } as CSSProperties,
   colorPicker: {

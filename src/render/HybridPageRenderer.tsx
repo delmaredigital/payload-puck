@@ -27,7 +27,7 @@
  * ```
  */
 
-import type { Config as PuckConfig, Data as PuckData } from '@measured/puck'
+import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 import { PageRenderer, type PageRendererProps } from './PageRenderer'
 import type { ReactNode } from 'react'
 

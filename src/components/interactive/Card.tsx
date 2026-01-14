@@ -4,7 +4,7 @@
  * Content card with image, heading, and text.
  */
 
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   shadowField,
   shadowMap,

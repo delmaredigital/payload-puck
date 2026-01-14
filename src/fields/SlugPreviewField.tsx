@@ -8,7 +8,7 @@
  */
 
 import React from 'react'
-import type { CustomField } from '@measured/puck'
+import type { CustomField } from '@puckeditor/core'
 import { Link, Lock } from 'lucide-react'
 
 // =============================================================================

@@ -16,7 +16,7 @@
  */
 
 import { useId } from 'react'
-import type { ComponentConfig } from '@measured/puck'
+import type { ComponentConfig } from '@puckeditor/core'
 import {
   cn,
   dimensionsValueToCSS,
@@ -83,8 +83,11 @@ const DEFAULT_DIMENSIONS: DimensionsValue = {
   maxWidth: { value: 100, unit: '%', enabled: true },
 }
 
+export type FlexSemanticElement = 'div' | 'nav' | 'ul' | 'ol' | 'aside' | 'section'
+
 export interface FlexProps {
   content: unknown
+  semanticElement: FlexSemanticElement
   direction: 'row' | 'column'
   justifyContent: JustifyContent | null
   alignItems: AlignItems | null
@@ -104,6 +107,7 @@ export interface FlexProps {
 
 const defaultProps: FlexProps = {
   content: [],
+  semanticElement: 'div',
   direction: 'row',
   justifyContent: null,
   alignItems: null,
@@ -128,6 +132,19 @@ export const FlexConfig: ComponentConfig = {
     },
     // Responsive visibility control
     visibility: createResponsiveVisibilityField({ label: 'Visibility' }),
+    // Semantic element selection
+    semanticElement: {
+      type: 'select',
+      label: 'HTML Element',
+      options: [
+        { label: 'Div', value: 'div' },
+        { label: 'Nav', value: 'nav' },
+        { label: 'Unordered List', value: 'ul' },
+        { label: 'Ordered List', value: 'ol' },
+        { label: 'Aside', value: 'aside' },
+        { label: 'Section', value: 'section' },
+      ],
+    },
     direction: {
       type: 'radio',
       label: 'Direction',
@@ -177,6 +194,7 @@ export const FlexConfig: ComponentConfig = {
   defaultProps,
   render: ({
     content: Content,
+    semanticElement = 'div',
     direction,
     justifyContent,
     alignItems,
@@ -190,6 +208,9 @@ export const FlexConfig: ComponentConfig = {
     animation,
     visibility,
   }) => {
+    // Dynamic element based on semanticElement prop
+    const Wrapper = semanticElement as React.ElementType
+
     // Generate unique IDs for CSS targeting
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const uniqueId = useId().replace(/:/g, '')
@@ -275,9 +296,9 @@ export const FlexConfig: ComponentConfig = {
     return (
       <AnimatedWrapper animation={animation}>
         {allMediaQueryCSS && <style>{allMediaQueryCSS}</style>}
-        <div className={wrapperClass} style={wrapperStyles}>
+        <Wrapper className={wrapperClass} style={wrapperStyles}>
           <Content className={contentClasses} style={contentStyles} />
-        </div>
+        </Wrapper>
       </AnimatedWrapper>
     )
   },
