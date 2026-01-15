@@ -1,12 +1,15 @@
 'use client'
 
 /**
- * RichText Component - Puck Editor Configuration with Modal Editing
+ * RichText Component - Puck Editor Configuration
  *
- * Uses a modal-based approach for TipTap editing. The sidebar shows a
- * preview and "Edit Content" button that opens a full-screen modal.
- * This works within Puck's architecture where canvas events are captured.
+ * Uses Puck's native richtext field with custom extensions for:
+ * - Text colors with opacity (RGBA)
+ * - Highlight with multicolor support
+ * - Font sizes (presets + custom)
+ * - Superscript and subscript
  *
+ * Supports contentEditable for inline canvas editing.
  * Requires @tailwindcss/typography - uses the `prose` class for styling.
  */
 
@@ -23,10 +26,10 @@ import { createMarginField } from '../../fields/MarginField'
 import { createPaddingField } from '../../fields/PaddingField'
 import { createDimensionsField } from '../../fields/DimensionsField'
 import { createResetField } from '../../fields/ResetField'
-import { createTiptapModalField } from '../../fields/TiptapModalField'
+import { createRichTextField } from '../../fields/richtext'
 
 export interface RichTextEditorProps {
-  content: string
+  content: React.ReactNode // Puck richtext returns React elements for contentEditable
   dimensions: DimensionsValue | null
   margin: PaddingValue | null
   customPadding: PaddingValue | null
@@ -44,9 +47,8 @@ const defaultProps: RichTextEditorProps = {
 // Render Component for Editor Config
 // =============================================================================
 
-// Note: RichTextEditorConfig is only used in the Puck editor (editorConfig).
-// The frontend uses RichTextConfig from RichText.server.tsx (baseConfig).
-// Content is edited via modal from the sidebar, canvas shows preview.
+// Uses Puck's native richtext field which supports inline contentEditable editing.
+// Content is rendered directly as {content} - Puck handles the rest.
 
 function RichTextRender({
   content,
@@ -76,10 +78,12 @@ function RichTextRender({
     return Object.keys(s).length > 0 ? s : undefined
   }, [dimensions, margin, customPadding])
 
-  // Render static preview (editing happens via modal in sidebar)
+  // Render content directly - Puck's richtext field handles both:
+  // - Editor: Returns React elements for contentEditable inline editing
+  // - Frontend <Render>: Returns HTML string which React renders
   return (
     <section className="relative overflow-hidden" style={style}>
-      <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+      <div className="prose dark:prose-invert max-w-none">{content}</div>
     </section>
   )
 }
@@ -92,7 +96,10 @@ export const RichTextEditorConfig: ComponentConfig = {
   label: 'Rich Text',
   fields: {
     _reset: createResetField({ defaultProps }),
-    content: createTiptapModalField({ label: 'Content' }),
+    content: createRichTextField({
+      label: 'Content',
+      contentEditable: true, // Enable inline canvas editing
+    }),
     dimensions: createDimensionsField({ label: 'Dimensions' }),
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),

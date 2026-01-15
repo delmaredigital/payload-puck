@@ -6,6 +6,9 @@ import { Puck, type Config as PuckConfig, type Data, type Plugin as PuckPlugin, 
 import '@puckeditor/core/puck.css'
 import headingAnalyzer from '@puckeditor/plugin-heading-analyzer'
 import '@puckeditor/plugin-heading-analyzer/dist/index.css'
+import { createAiPlugin } from '@puckeditor/plugin-ai'
+import '@puckeditor/plugin-ai/styles.css'
+import './ai-plugin-overrides.css'
 
 import { Maximize2 } from 'lucide-react'
 import { HeaderActions } from './components/HeaderActions'
@@ -16,6 +19,8 @@ import { createVersionHistoryPlugin } from './plugins/versionHistoryPlugin'
 import { ThemeProvider, type ThemeConfig } from '../theme'
 import { usePuckConfig } from '../views/PuckConfigContext'
 import type { LayoutDefinition } from '../layouts'
+import type { AiExamplePrompt } from '../ai/types.js'
+import { useAiPrompts } from '../ai/hooks/useAiPrompts.js'
 
 /**
  * Default viewports for responsive preview
@@ -171,6 +176,45 @@ export interface PuckEditorImplProps {
    * Merged with CSS from PuckConfigProvider context.
    */
   editorCss?: string
+
+  // AI integration props
+
+  /**
+   * Enable AI features in the editor.
+   * When true, adds the AI chat plugin.
+   * @default false
+   */
+  enableAi?: boolean
+
+  /**
+   * AI plugin configuration options.
+   * Only used when enableAi is true.
+   */
+  aiOptions?: {
+    host?: string
+    examplePrompts?: AiExamplePrompt[]
+  }
+
+  /**
+   * Whether the puck-ai-prompts collection is enabled.
+   * When true, adds the prompt editor plugin to the plugin rail.
+   * @default false
+   */
+  hasPromptsCollection?: boolean
+
+  /**
+   * Whether the puck-ai-context collection is enabled.
+   * When true, adds the context editor plugin to the plugin rail.
+   * @default false
+   */
+  hasContextCollection?: boolean
+
+  /**
+   * Enable experimental full screen canvas mode.
+   * When enabled, the canvas takes up the full viewport with a floating viewport switcher.
+   * @default false
+   */
+  experimentalFullScreenCanvas?: boolean
 }
 
 /**
@@ -211,6 +255,11 @@ export function PuckEditorImpl({
   theme,
   editorStylesheets: editorStylesheetsProp,
   editorCss: editorCssProp,
+  enableAi = false,
+  aiOptions,
+  hasPromptsCollection = false,
+  hasContextCollection = false,
+  experimentalFullScreenCanvas = false,
 }: PuckEditorImplProps) {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
@@ -330,7 +379,7 @@ export function PuckEditorImpl({
             // Page-tree integration: include folder and pageSegment if present
             folder: typedData.root?.props?.folder,
             pageSegment: typedData.root?.props?.pageSegment,
-            status: 'published',
+            _status: 'published',
           }),
         })
 
@@ -373,7 +422,7 @@ export function PuckEditorImpl({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            status: 'draft',
+            _status: 'draft',
           }),
         })
 
@@ -561,15 +610,123 @@ export function PuckEditorImpl({
     })
   }, [pageId, apiEndpoint, markClean])
 
+  // Fetch AI prompts client-side when prompts collection is enabled
+  // This allows prompts to update in real-time when edited via the prompt editor panel
+  const { prompts: clientPrompts, loading: promptsLoading } = useAiPrompts(
+    '/api/puck/ai-prompts',
+    enableAi && hasPromptsCollection
+  )
+
+  // Use refs to store the latest prompts so onClick handlers can access current values
+  // without causing the plugin to be recreated (which would cause Puck to remount panels)
+  const clientPromptsRef = useRef(clientPrompts)
+  clientPromptsRef.current = clientPrompts
+  const staticPromptsRef = useRef(aiOptions?.examplePrompts)
+  staticPromptsRef.current = aiOptions?.examplePrompts
+
+  // AI plugin - statically imported, only instantiated when enabled
+  // IMPORTANT: We intentionally exclude clientPrompts and aiOptions.examplePrompts from deps
+  // to prevent plugin recreation. The onClick handlers use refs to access current prompts.
+  const aiPlugin = useMemo(() => {
+    if (!enableAi) return null
+    // Don't create plugin until prompts are loaded (when using prompts collection)
+    if (hasPromptsCollection && promptsLoading) return null
+
+    // Use client-fetched prompts when prompts collection is enabled,
+    // otherwise fall back to static props from config
+    // NOTE: We read from refs in onClick to get current values without causing re-renders
+    const getPrompts = () => hasPromptsCollection
+      ? (clientPromptsRef.current || [])
+      : (staticPromptsRef.current || [])
+
+    // Get initial prompts for labels (labels are stable, only prompts text might change)
+    const initialPrompts = getPrompts()
+
+    // Convert our { label, prompt } format to plugin's { label, onClick } format
+    // The plugin expects onClick to send the message via window.__PUCK_AI.sendMessage
+    const convertedPrompts = initialPrompts.map((item, index) => ({
+      label: item.label,
+      onClick: () => {
+        // Access current prompts via ref to get latest values
+        const currentPrompts = getPrompts()
+        const currentPrompt = currentPrompts[index]?.prompt || item.prompt
+        // Use Puck AI's global API to send the prompt as a user message
+        // sendMessage accepts { text: string } as a simpler format
+        if (typeof window !== 'undefined' && (window as any).__PUCK_AI?.sendMessage) {
+          ;(window as any).__PUCK_AI.sendMessage({ text: currentPrompt })
+        }
+      },
+    }))
+
+    return createAiPlugin({
+      host: aiOptions?.host || '/api/puck/ai',
+      chat: {
+        examplePrompts: convertedPrompts.length > 0 ? convertedPrompts : undefined,
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omit prompt arrays to prevent recreation
+  }, [enableAi, hasPromptsCollection, promptsLoading, aiOptions?.host])
+
+  // Prompt editor plugin - for managing AI prompts in the plugin rail
+  const promptEditorPlugin = useMemo(() => {
+    if (!enableAi || !hasPromptsCollection) return null
+
+    try {
+      // Dynamic require to avoid errors if module not available
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { createPromptEditorPlugin } = require('../ai/plugins/promptEditorPlugin')
+      return createPromptEditorPlugin({
+        apiEndpoint: '/api/puck/ai-prompts',
+      })
+    } catch (e) {
+      console.warn('[PuckEditor] Failed to load prompt editor plugin:', e)
+      return null
+    }
+  }, [enableAi, hasPromptsCollection])
+
+  // Context editor plugin - for managing AI context in the plugin rail
+  const contextEditorPlugin = useMemo(() => {
+    if (!enableAi || !hasContextCollection) return null
+
+    try {
+      // Dynamic require to avoid errors if module not available
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { createContextEditorPlugin } = require('../ai/plugins/contextEditorPlugin')
+      return createContextEditorPlugin({
+        apiEndpoint: '/api/puck/ai-context',
+      })
+    } catch (e) {
+      console.warn('[PuckEditor] Failed to load context editor plugin:', e)
+      return null
+    }
+  }, [enableAi, hasContextCollection])
+
   const resolvedPlugins = useMemo(() => {
     if (plugins === false) return undefined
     const base = !plugins || plugins.length === 0 ? defaultPlugins : [...defaultPlugins, ...plugins]
+
     // Add version history plugin if available
     if (versionHistoryPlugin) {
-      return [...base, versionHistoryPlugin]
+      base.push(versionHistoryPlugin)
     }
+
+    // Add AI plugin if enabled
+    if (aiPlugin) {
+      base.push(aiPlugin)
+    }
+
+    // Add prompt editor plugin if enabled
+    if (promptEditorPlugin) {
+      base.push(promptEditorPlugin)
+    }
+
+    // Add context editor plugin if enabled
+    if (contextEditorPlugin) {
+      base.push(contextEditorPlugin)
+    }
+
     return base
-  }, [plugins, versionHistoryPlugin])
+  }, [plugins, versionHistoryPlugin, aiPlugin, promptEditorPlugin, contextEditorPlugin])
 
   const editorContent = (
     <>
@@ -583,6 +740,7 @@ export function PuckEditorImpl({
           plugins={resolvedPlugins}
           viewports={enableViewports ? DEFAULT_VIEWPORTS : undefined}
           overrides={overrides}
+          _experimentalFullScreenCanvas={experimentalFullScreenCanvas}
         />
       </div>
       <PreviewModal

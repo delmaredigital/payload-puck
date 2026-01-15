@@ -5,6 +5,147 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-01-15
+
+This release significantly enhances AI-assisted page generation and introduces a rewritten RichText field implementation.
+
+> **Note:** AI integration is still in early stages and under active development. Expect changes as we refine the integration.
+
+### Breaking Changes
+
+#### RichText Field API Change
+
+The TipTap field exports have been replaced with a new RichText field API using Puck's native richtext with custom extensions.
+
+**Removed exports:**
+- `TiptapField`, `createTiptapField`
+- `TiptapModal`
+- `TiptapModalField`, `createTiptapModalField`
+
+**Migration:**
+```typescript
+// Before
+import { createTiptapField } from '@delmaredigital/payload-puck/fields'
+
+const content = createTiptapField({ label: 'Content' })
+
+// After
+import { createRichTextField } from '@delmaredigital/payload-puck/fields'
+
+const content = createRichTextField({ label: 'Content' })
+```
+
+**New preset options:**
+```typescript
+import {
+  createRichTextField,      // Full customization
+  fullRichTextField,        // All features enabled
+  minimalRichTextField,     // Basic formatting only
+  sidebarRichTextField,     // Optimized for Puck sidebar
+} from '@delmaredigital/payload-puck/fields'
+```
+
+### Added
+
+#### AI Integration Enhancements
+
+##### Comprehensive Component Instructions
+
+The AI now receives detailed instructions for all built-in components, teaching it:
+- Correct field names (e.g., Button uses `text` not `label`, `link` not `href`)
+- Component composition patterns (Section → Flex → Heading + Text + Button)
+- Page structure best practices (Hero → Features → FAQ → CTA flow)
+- Semantic HTML element selection
+
+This dramatically improves generation quality—the AI now creates complete multi-section pages instead of minimal layouts.
+
+**New exports:**
+```typescript
+import {
+  comprehensiveComponentAiConfig,  // Full component instructions
+  pagePatternSystemContext,        // System context with page patterns
+} from '@delmaredigital/payload-puck/ai'
+```
+
+##### Dynamic Business Context Collection
+
+Business context can now be managed through Payload admin instead of hardcoded in config:
+
+```typescript
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    contextCollection: true,  // Creates puck-ai-context collection
+  },
+})
+```
+
+The `puck-ai-context` collection includes:
+- **name** - Context entry name (e.g., "Brand Guidelines")
+- **content** - Markdown content for the AI
+- **category** - Categorization (brand, tone, product, industry, technical, patterns, other)
+- **enabled** - Toggle to include/exclude from AI prompts
+- **order** - Sort order in the prompt
+
+##### Context Editor Plugin
+
+When `contextCollection: true`, a new "AI Context" panel appears in the Puck plugin rail:
+
+- View all context entries with enable/disable toggles
+- Create new entries with name, category, and markdown content
+- Edit existing entries inline
+- Delete entries with confirmation
+
+```typescript
+import { createContextEditorPlugin } from '@delmaredigital/payload-puck/ai'
+
+const contextPlugin = createContextEditorPlugin({
+  apiEndpoint: '/api/puck/ai-context',
+  canCreate: true,
+  canEdit: true,
+  canDelete: true,
+})
+```
+
+##### Context Hook
+
+New React hook for managing AI context client-side:
+
+```typescript
+import { useAiContext } from '@delmaredigital/payload-puck/ai'
+
+const { context, loading, error, create, update, remove, refetch } = useAiContext({
+  apiEndpoint: '/api/puck/ai-context',
+  includeDisabled: false,
+})
+```
+
+#### Experimental Full Screen Canvas
+
+New prop to enable Puck's experimental full-screen canvas mode:
+
+```typescript
+<PuckEditor experimentalFullScreenCanvas={true} />
+```
+
+#### New RichText Field Implementation
+
+The RichText field has been rewritten using Puck's native richtext with custom TipTap extensions:
+
+- **Font Sizes** - 9 presets with custom input support
+- **Text Colors** - Theme-aware color picker with opacity
+- **Highlights** - Background color highlighting
+- **Inline Editing** - Edit directly on the canvas (no modal)
+
+### Changed
+
+- AI endpoint now combines static context (from config) + dynamic context (from collection) + page pattern system context
+- `PuckEditor` uses `comprehensiveComponentAiConfig` by default when AI is enabled
+- Context fetching is non-blocking—if collection doesn't exist or fetch fails, AI continues with static context only
+- RichText component now uses Puck's native richtext internally instead of custom TipTap implementation
+
+---
+
 ## [0.5.0] - 2026-01-14
 
 ### Breaking Changes

@@ -42,6 +42,16 @@ function generateUniqueId(): string {
   return `s${(++idCounter).toString(36)}${Math.random().toString(36).slice(2, 6)}`
 }
 
+// Default section padding - standard vertical spacing for sections
+const DEFAULT_SECTION_PADDING: PaddingValue = {
+  top: 48,
+  right: 0,
+  bottom: 48,
+  left: 0,
+  unit: 'px',
+  linked: false,
+}
+
 // Default content dimensions - 1200px max-width centered
 const DEFAULT_CONTENT_DIMENSIONS: DimensionsValue = {
   mode: 'contained',
@@ -84,10 +94,10 @@ const defaultProps: SectionProps = {
   id: '',
   content: [],
   semanticElement: 'section',
-  // Section layer defaults
+  // Section layer defaults - padding gives sections proper spacing
   sectionBackground: null,
   sectionBorder: null,
-  sectionPadding: null,
+  sectionPadding: { xs: DEFAULT_SECTION_PADDING },
   sectionMargin: null,
   // Content layer defaults - 1200px max-width so two-layer design is immediately visible
   contentDimensions: { xs: DEFAULT_CONTENT_DIMENSIONS },

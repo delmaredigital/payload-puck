@@ -6,5 +6,5 @@
 
 export { HeadingConfig } from './Heading'
 export { TextConfig } from './Text'
-export { RichTextConfig } from './RichText'
 export { RichTextEditorConfig } from './RichText.editor'
+export { RichTextConfig } from './RichText.server'

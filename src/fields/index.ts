@@ -13,10 +13,32 @@ export type { MediaReference } from './MediaField'
 
 export { ColorPickerField, createColorPickerField, colorToRgba } from './ColorPickerField'
 
-export { TiptapField, createTiptapField } from './TiptapField'
-
-export { TiptapModal } from './TiptapModal'
-export { TiptapModalField, createTiptapModalField } from './TiptapModalField'
+// =============================================================================
+// RichText Field
+// Uses Puck's native richtext with custom TipTap extensions for colors, sizes, etc.
+// =============================================================================
+export {
+  createRichTextField,
+  fullRichTextField,
+  minimalRichTextField,
+  sidebarRichTextField,
+  type CreateRichTextFieldOptions,
+  // Extensions for advanced customization
+  FontSize,
+  // Controls for custom menu building
+  ColorPickerControl,
+  ColorPickerPanel,
+  FontSizeControl,
+  HighlightControl,
+  // Utilities
+  normalizeHex,
+  hexToRgba,
+  parseColor,
+  FONT_SIZES,
+  FONT_SIZE_UNITS,
+  controlStyles,
+  type FontSizeUnit,
+} from './richtext'
 
 export { PaddingField, createPaddingField } from './PaddingField'
 
@@ -141,88 +163,24 @@ export type { TransformValue, TransformOrigin } from './shared'
 export { transformValueToCSS, DEFAULT_TRANSFORM } from './shared'
 
 // =============================================================================
-// CSS Utilities for Consumers
+// Legacy CSS Utilities (Deprecated)
 // =============================================================================
 
 /**
- * CSS styles for rendering rich text content on the frontend.
- * Include this in your app's global styles or inject via <style> tag.
- *
- * Usage in Next.js app/layout.tsx:
- * ```tsx
- * import { RICHTEXT_OUTPUT_CSS } from '@delmaredigital/payload-puck/fields'
- *
- * export default function RootLayout({ children }) {
- *   return (
- *     <html>
- *       <head>
- *         <style dangerouslySetInnerHTML={{ __html: RICHTEXT_OUTPUT_CSS }} />
- *       </head>
- *       <body>{children}</body>
- *     </html>
- *   )
- * }
- * ```
+ * @deprecated No longer needed. RichText component now uses Tailwind Typography's
+ * `prose` class for styling. Install @tailwindcss/typography instead.
  */
-export const RICHTEXT_OUTPUT_CSS = `
-.richtext-output { font-size: 1.125rem; line-height: 1.75; color: inherit; }
-.richtext-output h1 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; font-size: 2.25rem; line-height: 1.2; }
-.richtext-output h2 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; font-size: 1.875rem; line-height: 1.25; }
-.richtext-output h3 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; font-size: 1.5rem; line-height: 1.3; }
-.richtext-output h4 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; font-size: 1.25rem; line-height: 1.35; }
-.richtext-output h5, .richtext-output h6 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; }
-.richtext-output h1:first-child, .richtext-output h2:first-child, .richtext-output h3:first-child,
-.richtext-output h4:first-child, .richtext-output h5:first-child, .richtext-output h6:first-child { margin-top: 0; }
-.richtext-output p { margin-bottom: 1.25rem; }
-.richtext-output p:last-child { margin-bottom: 0; }
-.richtext-output ul { margin-bottom: 1.25rem; padding-left: 2rem; list-style-type: disc !important; }
-.richtext-output ol { margin-bottom: 1.25rem; padding-left: 2rem; list-style-type: decimal !important; }
-.richtext-output li { margin-bottom: 0.5rem; }
-.richtext-output li::marker { color: currentColor; }
-.richtext-output ul ul, .richtext-output ol ul { list-style-type: circle !important; margin-top: 0.5rem; margin-bottom: 0; }
-.richtext-output ol ol, .richtext-output ul ol { list-style-type: lower-alpha !important; margin-top: 0.5rem; margin-bottom: 0; }
-.richtext-output blockquote { margin: 1.5rem 0; padding-left: 1.5rem; border-left: 4px solid #e5e7eb; font-style: italic; }
-.richtext-output a { color: #2563eb; text-decoration: underline; }
-.richtext-output a:hover { opacity: 0.8; }
-.richtext-output code { background-color: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875rem; }
-.richtext-output mark { background-color: #fef08a; padding: 0.125rem 0.25rem; border-radius: 0.125rem; }
-.richtext-output s, .richtext-output strike { text-decoration: line-through; }
-.richtext-output sup { vertical-align: super; font-size: 0.75em; }
-.richtext-output sub { vertical-align: sub; font-size: 0.75em; }
-.richtext-output hr { border: none; border-top: 2px solid #e5e7eb; margin: 2rem 0; }
-@media (max-width: 768px) {
-  .richtext-output { font-size: 1rem; }
-  .richtext-output h1 { font-size: 1.875rem; }
-  .richtext-output h2 { font-size: 1.5rem; }
-  .richtext-output h3 { font-size: 1.25rem; }
-}
-`
+export const RICHTEXT_OUTPUT_CSS = ''
 
 /**
- * Injects rich text output styles into the document head.
- * Call this on the client-side to ensure styles are loaded.
- *
- * Usage:
- * ```tsx
- * 'use client'
- * import { injectRichtextStyles } from '@delmaredigital/payload-puck/fields'
- * import { useEffect } from 'react'
- *
- * export function RichtextStyleProvider() {
- *   useEffect(() => { injectRichtextStyles() }, [])
- *   return null
- * }
- * ```
+ * @deprecated No longer needed. RichText component now uses Tailwind Typography's
+ * `prose` class for styling. Install @tailwindcss/typography instead.
  */
 export function injectRichtextStyles() {
-  if (typeof document === 'undefined') return
-  const styleId = 'richtext-output-injected-styles'
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style')
-    style.id = styleId
-    style.textContent = RICHTEXT_OUTPUT_CSS
-    document.head.appendChild(style)
-  }
+  console.warn(
+    'injectRichtextStyles() is deprecated. RichText now uses Tailwind Typography. ' +
+      'Install @tailwindcss/typography and use the `prose` class instead.'
+  )
 }
 
 // =============================================================================

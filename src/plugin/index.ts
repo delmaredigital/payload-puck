@@ -2,6 +2,8 @@ import type { CollectionConfig, Config as PayloadConfig, Field, Plugin } from 'p
 import type { PuckPluginOptions, PuckAdminConfig, PageTreeIntegrationOptions } from '../types'
 import { generatePagesCollection } from './collections/Pages'
 import { TemplatesCollection } from '../collections/Templates'
+import { AiPromptsCollection } from '../ai/collections/AiPrompts.js'
+import { AiContextCollection } from '../ai/collections/AiContext.js'
 import { getPuckFields } from './fields'
 import {
   createListHandler,
@@ -13,6 +15,19 @@ import {
   createRestoreHandler,
 } from '../endpoints/index.js'
 import { createStylesHandler, PUCK_STYLES_ENDPOINT } from '../endpoints/styles.js'
+import { createAiEndpointHandler } from '../endpoints/ai.js'
+import {
+  createPromptsListHandler,
+  createPromptsCreateHandler,
+  createPromptsUpdateHandler,
+  createPromptsDeleteHandler,
+} from '../endpoints/prompts.js'
+import {
+  createContextListHandler,
+  createContextCreateHandler,
+  createContextUpdateHandler,
+  createContextDeleteHandler,
+} from '../endpoints/context.js'
 
 /**
  * Get all field names from a collection's fields array (including nested group fields and tabs)
@@ -136,6 +151,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     pageTreeIntegration, // No default - undefined means auto-detect
     editorStylesheet,
     editorStylesheetUrls = [],
+    ai: aiConfig,
   } = options
 
   const { addEditButton = true } = pluginAdminConfig
@@ -180,6 +196,26 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     )
     if (!templatesCollectionExists) {
       collections = [...collections, TemplatesCollection]
+    }
+
+    // Add AI Prompts collection if AI is enabled with promptsCollection
+    if (aiConfig?.enabled && aiConfig?.promptsCollection) {
+      const aiPromptsExists = collections.some(
+        (c) => c.slug === 'puck-ai-prompts'
+      )
+      if (!aiPromptsExists) {
+        collections = [...collections, AiPromptsCollection]
+      }
+    }
+
+    // Add AI Context collection if AI is enabled with contextCollection
+    if (aiConfig?.enabled && aiConfig?.contextCollection) {
+      const aiContextExists = collections.some(
+        (c) => c.slug === 'puck-ai-context'
+      )
+      if (!aiContextExists) {
+        collections = [...collections, AiContextCollection]
+      }
     }
 
     if (autoGenerateCollection) {
@@ -288,6 +324,66 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
                 },
               ]
             : []),
+          // AI endpoint (exact match, before parameterized routes)
+          ...(aiConfig?.enabled
+            ? [
+                {
+                  path: '/puck/ai',
+                  method: 'post' as const,
+                  handler: createAiEndpointHandler({ context: aiConfig.context, tools: aiConfig.tools }),
+                },
+              ]
+            : []),
+          // AI Prompts CRUD endpoints (exact match, before parameterized routes)
+          ...(aiConfig?.enabled && aiConfig?.promptsCollection
+            ? [
+                {
+                  path: '/puck/ai-prompts',
+                  method: 'get' as const,
+                  handler: createPromptsListHandler(),
+                },
+                {
+                  path: '/puck/ai-prompts',
+                  method: 'post' as const,
+                  handler: createPromptsCreateHandler(),
+                },
+                {
+                  path: '/puck/ai-prompts/:id',
+                  method: 'patch' as const,
+                  handler: createPromptsUpdateHandler(),
+                },
+                {
+                  path: '/puck/ai-prompts/:id',
+                  method: 'delete' as const,
+                  handler: createPromptsDeleteHandler(),
+                },
+              ]
+            : []),
+          // AI Context CRUD endpoints (exact match, before parameterized routes)
+          ...(aiConfig?.enabled && aiConfig?.contextCollection
+            ? [
+                {
+                  path: '/puck/ai-context',
+                  method: 'get' as const,
+                  handler: createContextListHandler(),
+                },
+                {
+                  path: '/puck/ai-context',
+                  method: 'post' as const,
+                  handler: createContextCreateHandler(),
+                },
+                {
+                  path: '/puck/ai-context/:id',
+                  method: 'patch' as const,
+                  handler: createContextUpdateHandler(),
+                },
+                {
+                  path: '/puck/ai-context/:id',
+                  method: 'delete' as const,
+                  handler: createContextDeleteHandler(),
+                },
+              ]
+            : []),
           // Collection endpoints (parameterized routes)
           {
             path: '/puck/:collection',
@@ -342,6 +438,16 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
           pageTree: pageTreeConfig,
           // Editor stylesheets for iframe
           editorStylesheets: editorStylesheets.length > 0 ? editorStylesheets : undefined,
+          // AI configuration
+          ai: aiConfig?.enabled
+            ? {
+                enabled: true,
+                context: aiConfig.context,
+                examplePrompts: aiConfig.examplePrompts,
+                promptsCollection: aiConfig.promptsCollection,
+                contextCollection: aiConfig.contextCollection,
+              }
+            : undefined,
         },
       },
       onInit: async (payload) => {

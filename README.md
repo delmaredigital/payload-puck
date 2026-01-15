@@ -17,6 +17,7 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
 - [Layouts](#layouts)
 - [Page-Tree Integration](#page-tree-integration)
 - [Hybrid Integration](#hybrid-integration)
+- [AI Integration](#ai-integration)
 - [Advanced Configuration](#advanced-configuration)
 - [License](#license)
 
@@ -320,7 +321,7 @@ The editor header provides:
 |-----------|-------------|
 | **Heading** | H1-H6 headings with size and alignment |
 | **Text** | Paragraph text with styling options |
-| **RichText** | TipTap WYSIWYG with font sizes, colors with opacity, modal editing |
+| **RichText** | Puck's native richtext editor with enhancements: font sizes, text colors with opacity, highlights, superscript/subscript, and inline editing on canvas |
 
 ### Media & Interactive
 
@@ -364,7 +365,7 @@ All fields are imported from `@delmaredigital/payload-puck/fields`.
 | Field | Description |
 |-------|-------------|
 | **MediaField** | Payload media library integration |
-| **TiptapField** | Rich text editor with formatting |
+| **RichTextField** | Puck's native richtext with enhancements (colors, font sizes, highlights) |
 | **ColorPickerField** | Color picker with opacity and presets |
 | **BackgroundField** | Solid colors, gradients, images |
 | **PaddingField / MarginField** | Visual spacing editors |
@@ -609,7 +610,7 @@ This is the recommended pattern for Payload apps. The provider wraps only the ad
 | `createAlignmentField()` | Text alignment (left, center, right) |
 | `createContentAlignmentField()` | Visual 3x3 grid positioning selector |
 | `createSizeField()` | Size presets with custom mode |
-| `createTiptapField()` | Inline rich text editor |
+| `createRichTextField()` | Puck's native richtext with colors, font sizes, highlights |
 | `createResponsiveVisibilityField()` | Show/hide per breakpoint |
 
 ### CSS Helper Functions
@@ -847,6 +848,196 @@ import { LegacyBlockRenderer } from '@/components/LegacyBlockRenderer'
 
 ---
 
+## AI Integration
+
+> **Early Preview:** While Puck's AI features are powerful, this plugin's implementation is still in early stages and under active development. Expect changes as we refine the integration.
+
+The plugin integrates with [Puck AI](https://puckeditor.com/docs/integrating-puck/ai) to enable AI-assisted page generation. Users can describe what they want in natural language, and the AI builds complete page layouts using your components.
+
+### Requirements
+
+- `PUCK_API_KEY` environment variable (from [Puck Cloud](https://puckeditor.com))
+- AI features require `@puckeditor/plugin-ai` and `@puckeditor/cloud-client` (bundled with the plugin)
+
+### Quick Start
+
+Enable AI in your plugin configuration:
+
+```typescript
+createPuckPlugin({
+  pagesCollection: 'pages',
+  ai: {
+    enabled: true,
+    context: 'We are Acme Corp, a B2B SaaS company. Use professional language.',
+  },
+})
+```
+
+This automatically:
+- Registers the AI chat endpoint at `/api/puck/ai`
+- Adds the AI chat plugin to the editor
+- Applies comprehensive component instructions for better generation quality
+
+### Dynamic Business Context
+
+Instead of hardcoding context in your config, you can manage it through Payload admin:
+
+```typescript
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    contextCollection: true,  // Creates puck-ai-context collection
+  },
+})
+```
+
+This creates a `puck-ai-context` collection where you can add entries for:
+- **Brand Guidelines** - Colors, fonts, brand voice
+- **Tone of Voice** - How to communicate
+- **Product Information** - What you sell/offer
+- **Industry Context** - Your market and audience
+- **Technical Requirements** - Specific constraints
+- **Page Patterns** - Common layout structures
+
+Context entries can be enabled/disabled and ordered. The AI receives all enabled entries sorted by order.
+
+### Context Editor Plugin
+
+When `contextCollection: true`, a "Context" panel appears in the Puck plugin rail. Users can view, create, edit, and toggle context entries directly in the editor without visiting Payload admin.
+
+### Prompt Management
+
+Store reusable prompts in Payload:
+
+```typescript
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    promptsCollection: true,  // Creates puck-ai-prompts collection
+    examplePrompts: [
+      { label: 'Landing page', prompt: 'Create a landing page for...' },
+    ],
+  },
+})
+```
+
+Prompts from the collection appear in the AI chat interface. A "Prompts" panel in the plugin rail allows in-editor prompt management.
+
+### Custom Tools
+
+Enable the AI to query your data:
+
+```typescript
+import { z } from 'zod'
+
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    tools: {
+      getProducts: {
+        description: 'Get products from the database',
+        inputSchema: z.object({ category: z.string() }),
+        execute: async ({ category }, { payload }) => {
+          return await payload.find({
+            collection: 'products',
+            where: { category: { equals: category } },
+          })
+        },
+      },
+    },
+  },
+})
+```
+
+Tools receive a context object with the Payload instance and authenticated user.
+
+### AI Configuration Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `enabled` | `false` | Enable AI features |
+| `context` | `undefined` | Static system context for the AI |
+| `contextCollection` | `false` | Create `puck-ai-context` collection for dynamic context |
+| `promptsCollection` | `false` | Create `puck-ai-prompts` collection for reusable prompts |
+| `examplePrompts` | `[]` | Static example prompts for the chat interface |
+| `tools` | `undefined` | Custom tools for AI to query your system |
+| `componentInstructions` | `undefined` | Override default component AI instructions |
+
+### Component Instructions
+
+The plugin includes comprehensive instructions for all built-in components, teaching the AI:
+- Correct field names and values
+- Component composition patterns
+- Page structure best practices (Hero → Features → CTA flow)
+- Semantic HTML usage
+
+To customize or extend:
+
+```typescript
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    componentInstructions: {
+      Heading: {
+        ai: { instructions: 'Use our brand voice: professional but approachable' },
+        fields: {
+          text: { ai: { instructions: 'Keep under 8 words' } },
+        },
+      },
+    },
+  },
+})
+```
+
+### Standalone API Routes
+
+For custom implementations outside the plugin:
+
+```typescript
+// app/api/puck/[...all]/route.ts
+import { createPuckAiApiRoutes } from '@delmaredigital/payload-puck/ai'
+import config from '@payload-config'
+
+export const POST = createPuckAiApiRoutes({
+  payloadConfig: config,
+  auth: {
+    authenticate: async (request) => {
+      // Your auth implementation
+      return { user: { id: '...' } }
+    },
+  },
+  ai: {
+    context: 'Your business context...',
+  },
+})
+```
+
+### AI Exports
+
+```typescript
+import {
+  // Plugins
+  createAiPlugin,
+  createPromptEditorPlugin,
+  createContextEditorPlugin,
+
+  // Hooks
+  useAiPrompts,
+  useAiContext,
+
+  // Config utilities
+  injectAiConfig,
+  comprehensiveComponentAiConfig,
+  pagePatternSystemContext,
+
+  // API routes
+  createPuckAiApiRoutes,
+  createAiGenerate,
+} from '@delmaredigital/payload-puck/ai'
+```
+
+---
+
 ## Advanced Configuration
 
 ### Plugin Options
@@ -968,6 +1159,7 @@ See the JSDoc in `@delmaredigital/payload-puck/api` for usage examples.
 | `@delmaredigital/payload-puck/theme` | `ThemeProvider`, theme utilities |
 | `@delmaredigital/payload-puck/layouts` | Layout definitions, `LayoutWrapper` |
 | `@delmaredigital/payload-puck/api` | API route factories (for custom implementations) |
+| `@delmaredigital/payload-puck/ai` | AI plugins, hooks, config utilities, API routes |
 | `@delmaredigital/payload-puck/admin/client` | `EditWithPuckButton`, `EditWithPuckCell` |
 
 ---

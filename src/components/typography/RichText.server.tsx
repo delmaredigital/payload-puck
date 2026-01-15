@@ -7,8 +7,9 @@
  * Requires @tailwindcss/typography - uses the `prose` class for styling.
  */
 
-import type React from 'react'
+import React from 'react'
 import type { ComponentConfig } from '@puckeditor/core'
+import parse from 'html-react-parser'
 import {
   cn,
   marginValueToCSS,
@@ -35,7 +36,7 @@ const DEFAULT_PADDING: PaddingValue = {
 }
 
 export interface RichTextProps {
-  content: string
+  content: React.ReactNode // Puck richtext returns React elements or HTML strings
   alignment: Alignment | null
   textColor: ColorValue | null
   dimensions: DimensionsValue | null
@@ -80,26 +81,22 @@ export const RichTextConfig: ComponentConfig<RichTextProps> = {
     const alignmentValue = alignment ?? 'left'
     const alignmentClass = alignmentMap[alignmentValue] || alignmentMap.left
 
-    // Handle empty content
-    if (!content || content === '<p></p>') {
-      return (
-        <AnimatedWrapper animation={animation}>
-          <section className={cn('relative overflow-hidden', alignmentClass)} style={Object.keys(style).length > 0 ? style : undefined}>
-            <div className="prose dark:prose-invert max-w-none">
-              <p><em>No content available</em></p>
-            </div>
-          </section>
-        </AnimatedWrapper>
-      )
-    }
+    // Handle empty content - check for null/undefined or empty string
+    const isEmpty = !content || (typeof content === 'string' && (content === '' || content === '<p></p>'))
+
+    // Parse HTML strings to React elements, pass through React elements as-is
+    const renderedContent = isEmpty
+      ? <p><em>No content available</em></p>
+      : typeof content === 'string'
+        ? parse(content)
+        : content
 
     return (
       <AnimatedWrapper animation={animation}>
         <section className={cn('relative overflow-hidden', alignmentClass)} style={Object.keys(style).length > 0 ? style : undefined}>
-          <div
-            className="prose dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+          <div className="prose dark:prose-invert max-w-none">
+            {renderedContent}
+          </div>
         </section>
       </AnimatedWrapper>
     )

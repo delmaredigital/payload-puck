@@ -23,7 +23,7 @@
  * ```
  */
 
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import type { Config as PuckConfig } from '@puckeditor/core'
 import type { LayoutDefinition } from '../layouts/index.js'
 import type { ThemeConfig } from '../theme/index.js'
@@ -131,8 +131,15 @@ export function PuckConfigProvider({
   editorCss,
   children,
 }: PuckConfigProviderProps) {
+  // Memoize context value to prevent unnecessary re-renders of consumers
+  // when the provider re-renders but the values haven't changed
+  const contextValue = useMemo<PuckConfigContextValue>(
+    () => ({ config, layouts, theme, editorStylesheets, editorCss }),
+    [config, layouts, theme, editorStylesheets, editorCss]
+  )
+
   return (
-    <PuckConfigContext.Provider value={{ config, layouts, theme, editorStylesheets, editorCss }}>
+    <PuckConfigContext.Provider value={contextValue}>
       {children}
     </PuckConfigContext.Provider>
   )

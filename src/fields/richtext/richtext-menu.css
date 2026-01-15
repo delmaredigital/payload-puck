@@ -1,0 +1,50 @@
+/**
+ * Puck RichText Menu Overrides
+ *
+ * Fixes toolbar responsiveness and ensures controls wrap properly
+ * when the sidebar is narrow.
+ */
+
+/* Make the main toolbar container wrap - using data attribute selector (stable across versions) */
+[data-puck-rte-menu] {
+  flex-wrap: wrap !important;
+}
+
+/* Target CSS module class (version-specific but more precise) */
+[class*="_RichTextMenu_"] {
+  flex-wrap: wrap !important;
+}
+
+/* Make button groups wrap too */
+[class*="_RichTextMenu-group_"] {
+  flex-wrap: wrap !important;
+  flex-shrink: 0;
+}
+
+/* Disable horizontal scrolling on form variant since we're wrapping */
+[class*="_RichTextMenu--form_"] {
+  overflow-x: visible !important;
+}
+
+/* =============================================================================
+ * Fix dropdown overflow clipping
+ * The richtext field wrapper clips dropdowns - ensure overflow is visible
+ * ============================================================================= */
+
+/* Target Puck's richtext field wrapper to allow dropdowns to overflow */
+[class*="_RichtextField_"],
+[class*="_RichTextField_"],
+[class*="_richtext-field_"] {
+  overflow: visible !important;
+}
+
+/* Also target the editor content area */
+[class*="_RichtextField_"] > div,
+[class*="_RichTextField_"] > div {
+  overflow: visible !important;
+}
+
+/* Ensure the input wrapper doesn't clip */
+[class*="_inputWrapper_"] {
+  overflow: visible !important;
+}

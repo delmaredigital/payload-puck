@@ -2,6 +2,7 @@ import type { Access, CollectionConfig, Config as PayloadConfig, Field } from 'p
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 import type { ThemeConfig } from '../theme/types'
 import type { LayoutDefinition, LayoutConfig } from '../layouts/types'
+import type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types'
 
 // =============================================================================
 // Plugin Configuration Types
@@ -166,6 +167,23 @@ export interface PuckPluginOptions {
    * @example ['https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700']
    */
   editorStylesheetUrls?: string[]
+
+  /**
+   * AI configuration for the plugin.
+   * Enables AI-powered page generation in the editor.
+   *
+   * @example
+   * ```typescript
+   * createPuckPlugin({
+   *   ai: {
+   *     enabled: true,
+   *     context: 'We are Acme Corp. You build our landing pages.',
+   *     promptsCollection: true, // Auto-create puck-ai-prompts collection
+   *   },
+   * })
+   * ```
+   */
+  ai?: PuckPluginAiConfig
 }
 
 /**
@@ -382,16 +400,6 @@ export interface ColorPickerFieldProps {
   showOpacity?: boolean
 }
 
-/**
- * Props for the TiptapField custom field
- */
-export interface TiptapFieldProps {
-  value: string
-  onChange: (value: string) => void
-  label?: string
-  readOnly?: boolean
-}
-
 // =============================================================================
 // Re-exports from Puck
 // =============================================================================
@@ -404,3 +412,6 @@ export type { ThemeConfig } from '../theme/types'
 // =============================================================================
 
 export type { GetPuckFieldsOptions } from '../plugin/fields/types'
+
+// Re-export AI types for convenience
+export type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types'

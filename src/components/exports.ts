@@ -41,7 +41,7 @@ export { TemplateConfig } from './layout/Template.js'
 export { HeadingConfig } from './typography/Heading.js'
 export { TextConfig } from './typography/Text.js'
 export { RichTextEditorConfig } from './typography/RichText.editor.js'
-export { RichTextConfig } from './typography/RichText.js'
+export { RichTextConfig } from './typography/RichText.server.js'
 
 // Media components
 export { ImageConfig } from './media/Image.js'

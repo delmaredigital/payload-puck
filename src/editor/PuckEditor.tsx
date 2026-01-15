@@ -7,10 +7,13 @@ import type { ReactNode } from 'react'
 import type { LayoutStyle } from './components/IframeWrapper'
 import type { ThemeConfig } from '../theme'
 import type { LayoutDefinition } from '../layouts'
+import type { AiExamplePrompt, ComponentAiOverrides } from '../ai/types.js'
 import { LoadingState } from './components/LoadingState'
 import { injectPageTreeFields } from './utils/injectPageTreeFields.js'
 import { hasPageTreeFields } from './utils/detectPageTree.js'
 import { usePuckConfig } from '../views/PuckConfigContext.js'
+import { injectAiConfig, hasAiConfig } from '../ai/utils/injectAiConfig.js'
+import { comprehensiveComponentAiConfig } from '../ai/presets/index.js'
 
 // Dynamic import with ssr: false to prevent hydration mismatch
 // Puck generates random IDs for drag-and-drop that differ between server/client
@@ -170,6 +173,71 @@ export interface PuckEditorProps {
    * ```
    */
   editorCss?: string
+
+  // AI integration props
+
+  /**
+   * Enable AI features in the editor.
+   * When true, adds the AI chat plugin to the editor.
+   * Requires @puckeditor/plugin-ai to be installed and
+   * PUCK_API_KEY environment variable to be set.
+   * @default false
+   */
+  enableAi?: boolean
+
+  /**
+   * AI plugin configuration options.
+   * Only used when enableAi is true.
+   */
+  aiOptions?: {
+    /**
+     * API host for AI requests.
+     * @default '/api/puck/ai'
+     */
+    host?: string
+    /**
+     * Example prompts to show in the chat interface.
+     * Users can click these to quickly send common prompts.
+     */
+    examplePrompts?: AiExamplePrompt[]
+  }
+
+  /**
+   * Example prompts from plugin config.
+   * These are merged with aiOptions.examplePrompts if both are provided.
+   * Typically set automatically by PuckEditorView from plugin config.
+   */
+  aiExamplePrompts?: AiExamplePrompt[]
+
+  /**
+   * Whether the puck-ai-prompts collection is enabled.
+   * When true, the prompt editor plugin is added to the plugin rail.
+   * Typically set automatically by PuckEditorView from plugin config.
+   */
+  hasPromptsCollection?: boolean
+
+  /**
+   * Whether the puck-ai-context collection is enabled.
+   * When true, the context editor plugin is added to the plugin rail.
+   * Typically set automatically by PuckEditorView from plugin config.
+   */
+  hasContextCollection?: boolean
+
+  /**
+   * Custom component AI instructions to override or extend defaults.
+   * When AI is enabled, built-in component instructions are auto-applied.
+   * Use this to customize instructions for your brand/use case.
+   * Typically set automatically by PuckEditorView from plugin config.
+   */
+  aiComponentInstructions?: ComponentAiOverrides
+
+  /**
+   * Enable experimental full screen canvas mode.
+   * When enabled, the canvas takes up the full viewport with a floating viewport switcher.
+   * This is an experimental Puck feature.
+   * @default false
+   */
+  experimentalFullScreenCanvas?: boolean
 }
 
 /**
@@ -249,6 +317,14 @@ export function PuckEditor({
   // Editor iframe styling props
   editorStylesheets: editorStylesheetsProp,
   editorCss: editorCssProp,
+  // AI integration props
+  enableAi = false,
+  aiOptions,
+  aiExamplePrompts,
+  hasPromptsCollection = false,
+  hasContextCollection = false,
+  aiComponentInstructions,
+  experimentalFullScreenCanvas = false,
 }: PuckEditorProps) {
   // Get config from context as fallback
   const {
@@ -298,19 +374,29 @@ export function PuckEditor({
     })
   }, [layoutsProp, layoutsFromContext])
 
-  // Conditionally inject page-tree fields into config
+  // Conditionally inject page-tree fields and AI config into config
   const finalConfig = useMemo(() => {
     if (!baseConfig) return null
 
-    // If page-tree is not enabled, use config as-is
-    if (!hasPageTree) return baseConfig
+    let config = baseConfig
 
-    // If config already has page-tree fields (via pageTreeRoot preset), don't double-inject
-    if (hasPageTreeFields(baseConfig)) return baseConfig
+    // Inject AI component instructions when AI is enabled
+    if (enableAi && !hasAiConfig(config)) {
+      // Merge comprehensive instructions with user-provided overrides
+      const mergedAiConfig = aiComponentInstructions
+        ? { ...comprehensiveComponentAiConfig, ...aiComponentInstructions }
+        : comprehensiveComponentAiConfig
 
-    // Inject page-tree fields
-    return injectPageTreeFields(baseConfig)
-  }, [baseConfig, hasPageTree])
+      config = injectAiConfig(config, mergedAiConfig)
+    }
+
+    // Inject page-tree fields if enabled
+    if (hasPageTree && !hasPageTreeFields(config)) {
+      config = injectPageTreeFields(config)
+    }
+
+    return config
+  }, [baseConfig, hasPageTree, enableAi, aiComponentInstructions])
 
   // Merge page-tree initial values into initialData
   const finalInitialData = useMemo(() => {
@@ -398,6 +484,21 @@ export function PuckEditor({
     )
   }
 
+  // Merge example prompts from plugin config and aiOptions prop
+  const mergedAiOptions = useMemo(() => {
+    if (!enableAi) return undefined
+
+    const mergedPrompts = [
+      ...(aiExamplePrompts || []),
+      ...(aiOptions?.examplePrompts || []),
+    ]
+
+    return {
+      host: aiOptions?.host || '/api/puck/ai',
+      examplePrompts: mergedPrompts.length > 0 ? mergedPrompts : undefined,
+    }
+  }, [enableAi, aiExamplePrompts, aiOptions])
+
   return (
     <PuckEditorImpl
       pageId={pageId}
@@ -423,6 +524,11 @@ export function PuckEditor({
       theme={theme}
       editorStylesheets={editorStylesheets}
       editorCss={editorCss}
+      enableAi={enableAi}
+      aiOptions={mergedAiOptions}
+      hasPromptsCollection={hasPromptsCollection}
+      hasContextCollection={hasContextCollection}
+      experimentalFullScreenCanvas={experimentalFullScreenCanvas}
     />
   )
 }

@@ -90,6 +90,28 @@ export async function PuckEditorView({
   const puckConfig = (payload.config as any).custom?.puck?.config
   const layouts = (payload.config as any).custom?.puck?.layouts
   const explicitPageTreeConfig = (payload.config as any).custom?.puck?.pageTree
+  const aiConfig = (payload.config as any).custom?.puck?.ai
+
+  // Fetch AI prompts from collection if enabled
+  let aiExamplePrompts = aiConfig?.examplePrompts || []
+  if (aiConfig?.enabled && aiConfig?.promptsCollection) {
+    try {
+      const promptsResult = await payload.find({
+        collection: 'puck-ai-prompts' as any,
+        sort: 'order',
+        limit: 50,
+      })
+      // Merge collection prompts with config prompts (collection prompts first)
+      const collectionPrompts = promptsResult.docs.map((doc: any) => ({
+        label: doc.label,
+        prompt: doc.prompt,
+      }))
+      aiExamplePrompts = [...collectionPrompts, ...aiExamplePrompts]
+    } catch (e) {
+      // Collection might not exist yet, that's ok
+      console.warn('[PuckEditorView] Could not fetch AI prompts:', e)
+    }
+  }
 
   // Determine page-tree config:
   // 1. If explicitly set to false in plugin options, disable
@@ -184,6 +206,11 @@ export async function PuckEditorView({
             hasPageTree={!!pageTreeConfig}
             folder={pageTreeConfig ? (typeof page?.folder === 'object' ? page?.folder?.id : page?.folder) : undefined}
             pageSegment={pageTreeConfig ? page?.pageSegment : undefined}
+            enableAi={aiConfig?.enabled}
+            aiExamplePrompts={aiExamplePrompts}
+            hasPromptsCollection={!!aiConfig?.promptsCollection}
+            hasContextCollection={!!aiConfig?.contextCollection}
+            aiComponentInstructions={aiConfig?.componentInstructions}
           />
         </div>
       )}
