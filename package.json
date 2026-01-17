@@ -1,6 +1,6 @@
 {
   "name": "@delmaredigital/payload-puck",
-  "version": "0.6.2-dev.6",
+  "version": "0.6.2",
   "description": "Puck visual page builder plugin for Payload CMS",
   "type": "module",
   "license": "MIT",
