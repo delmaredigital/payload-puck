@@ -1,0 +1,20 @@
+/**
+ * CSS overrides for @puckeditor/plugin-ai
+ *
+ * These styles fix issues with the default plugin styling:
+ * 1. Example prompts should wrap instead of overflow horizontally
+ */
+
+/* Fix: Example prompts should wrap to multiple lines instead of single line overflow */
+/* Target by attribute selector since class names are hashed */
+[class*="Chat-examplePrompts"] {
+  flex-wrap: wrap !important;
+  overflow-x: visible !important;
+  gap: 8px !important;
+}
+
+/* Ensure individual prompt buttons don't shrink too much */
+[class*="Chat-examplePrompt"]:not([class*="Chat-examplePrompts"]) {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

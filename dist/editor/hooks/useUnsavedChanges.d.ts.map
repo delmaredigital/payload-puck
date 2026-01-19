@@ -1,0 +1,1 @@
+{"version":3,"file":"useUnsavedChanges.d.ts","sourceRoot":"","sources":["../../../src/editor/hooks/useUnsavedChanges.ts"],"names":[],"mappings":"AAIA,MAAM,WAAW,uBAAuB;IACtC,iBAAiB,EAAE,OAAO,CAAA;IAC1B,SAAS,EAAE,MAAM,IAAI,CAAA;IACrB,SAAS,EAAE,MAAM,IAAI,CAAA;CACtB;AAED;;;;;;;;;;;;;;;;;;;GAmBG;AACH,wBAAgB,iBAAiB,IAAI,uBAAuB,CAqC3D"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"useDarkMode.d.ts","sourceRoot":"","sources":["../../../src/editor/hooks/useDarkMode.ts"],"names":[],"mappings":"AAIA;;GAEG;AACH,MAAM,MAAM,cAAc,GAAG,OAAO,GAAG,aAAa,GAAG,MAAM,CAAA;AAE7D;;GAEG;AACH,MAAM,WAAW,iBAAiB;IAChC;;OAEG;IACH,UAAU,EAAE,OAAO,CAAA;IACnB;;OAEG;IACH,MAAM,EAAE,cAAc,CAAA;CACvB;AAED;;;;;;;;;;;;;;;;;GAiBG;AACH,wBAAgB,WAAW,IAAI,iBAAiB,CAqE/C"}

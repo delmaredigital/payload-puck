@@ -1,0 +1,1 @@
+{"version":3,"file":"FontSizeControl.d.ts","sourceRoot":"","sources":["../../../../src/fields/richtext/controls/FontSizeControl.tsx"],"names":[],"mappings":"AAcA,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,eAAe,CAAA;AAE3C,UAAU,oBAAoB;IAC5B,MAAM,EAAE,MAAM,CAAA;IACd,WAAW,EAAE,MAAM,GAAG,SAAS,CAAA;CAChC;AAED,wBAAgB,eAAe,CAAC,EAAE,MAAM,EAAE,WAAW,EAAE,EAAE,oBAAoB,2CAgI5E"}

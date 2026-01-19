@@ -1,0 +1,1 @@
+{"version":3,"file":"createAiPlugin.d.ts","sourceRoot":"","sources":["../../src/ai/createAiPlugin.ts"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,MAAM,IAAI,UAAU,EAAE,MAAM,kBAAkB,CAAA;AAC5D,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,YAAY,CAAA;AAEjD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAkCG;AACH,wBAAgB,cAAc,CAAC,OAAO,GAAE,eAAoB,GAAG,UAAU,CA2BxE"}

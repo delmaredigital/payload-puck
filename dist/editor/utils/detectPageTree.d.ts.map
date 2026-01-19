@@ -1,0 +1,1 @@
+{"version":3,"file":"detectPageTree.d.ts","sourceRoot":"","sources":["../../../src/editor/utils/detectPageTree.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,MAAM,IAAI,UAAU,EAAE,MAAM,kBAAkB,CAAA;AAE5D;;;;;;;;;;GAUG;AACH,wBAAgB,cAAc,CAAC,MAAM,EAAE,UAAU,EAAE,YAAY,CAAC,EAAE,OAAO,GAAG,OAAO,CAclF;AAED;;;;;;GAMG;AACH,wBAAgB,iBAAiB,CAAC,MAAM,EAAE,UAAU,GAAG,OAAO,CAG7D"}

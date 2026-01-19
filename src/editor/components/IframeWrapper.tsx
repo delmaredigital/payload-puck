@@ -225,8 +225,32 @@ export const IframeWrapper = memo(function IframeWrapper({
       const checkAllLoaded = () => {
         loadedCount++
         if (loadedCount >= pendingLoads) {
-          // All stylesheets loaded - trigger re-render
+          // All stylesheets loaded - force browser to recalculate styles
+          // This is necessary because the DOM was already rendered before CSS loaded
           setStylesLoaded(true)
+
+          // Force a browser repaint after styles load
+          // Use multiple techniques to ensure CSS is applied to existing elements
+          requestAnimationFrame(() => {
+            if (!html || !body) return
+
+            // Technique 1: Re-apply theme classes (mimics what dark mode toggle does)
+            const isDark = previewDarkModeOverride ?? layoutConfig.isDark
+            if (isDark) {
+              html.classList.remove('dark')
+              void html.offsetHeight // Force reflow
+              html.classList.add('dark')
+            } else {
+              html.classList.remove('light')
+              void html.offsetHeight // Force reflow
+              html.classList.add('light')
+            }
+
+            // Technique 2: Toggle visibility to force repaint
+            body.style.visibility = 'hidden'
+            void body.offsetHeight
+            body.style.visibility = ''
+          })
         }
       }
 
@@ -234,6 +258,15 @@ export const IframeWrapper = memo(function IframeWrapper({
       // Puck's iframe may use srcdoc which doesn't have a proper base URL,
       // so relative paths like '/api/puck/styles' won't resolve correctly
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
+
+      // Track which stylesheets have been counted to avoid double-counting
+      const loadedIndexes = new Set<number>()
+
+      const markLoaded = (index: number) => {
+        if (loadedIndexes.has(index)) return
+        loadedIndexes.add(index)
+        checkAllLoaded()
+      }
 
       editorStylesheets.forEach((href, index) => {
         const linkId = `puck-editor-stylesheet-${index}`
@@ -247,15 +280,23 @@ export const IframeWrapper = memo(function IframeWrapper({
           // Resolve relative URLs to absolute URLs for iframe compatibility
           link.href = href.startsWith('/') ? `${origin}${href}` : href
           // Track when stylesheet loads
-          link.onload = checkAllLoaded
-          link.onerror = checkAllLoaded // Count errors too to avoid hanging
+          link.onload = () => markLoaded(index)
+          link.onerror = () => markLoaded(index) // Count errors too to avoid hanging
           iframeDoc.head.appendChild(link)
+
+          // Fallback: if onload doesn't fire within 2 seconds, force trigger
+          // This handles edge cases with cached resources or browser quirks
+          setTimeout(() => {
+            if (!loadedIndexes.has(index)) {
+              console.debug('[IframeWrapper] Stylesheet load timeout, forcing repaint for index', index)
+              markLoaded(index)
+            }
+          }, 2000)
         } else if (!stylesLoaded) {
-          // Link exists - check if it's already loaded
-          // If the stylesheet is already in the document, it should be loaded
+          // Link exists - assume it's already loaded
           pendingLoads++
-          // Use a small timeout to check if styles are applied
-          setTimeout(checkAllLoaded, 50)
+          // Immediately mark as loaded since it's already in the DOM
+          requestAnimationFrame(() => markLoaded(index))
         }
       })
 
