@@ -86,6 +86,10 @@ Fixed FOUC (Flash of Unstyled Content) in the editor iframe by forcing a browser
 
 Fixed `isHomepage` field not being included in save/publish requests from the editor.
 
+#### `./next` Export Not Working with `next.config.ts`
+
+Fixed the `@delmaredigital/payload-puck/next` import failing when used in TypeScript Next.js configs (`next.config.ts`). The export now includes a `default` condition to support all module resolution strategies.
+
 ### Changed
 
 - `TemplateField` now uses Puck's `getItemById` API instead of manual tree traversal for accessing slot content, simplifying the code significantly
