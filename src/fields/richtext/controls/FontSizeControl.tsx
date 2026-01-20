@@ -8,10 +8,10 @@
  * - Custom size input with px/rem/em unit selection
  */
 
-import React, { useState, useRef, useCallback, type CSSProperties } from 'react'
+import React, { useState, useCallback, type CSSProperties } from 'react'
 import { ALargeSmall, ChevronDown } from 'lucide-react'
-import { FONT_SIZES, FONT_SIZE_UNITS, controlStyles, forcePuckUpdate } from './shared'
-import { DropdownPortal } from './DropdownPortal'
+import { FONT_SIZES, FONT_SIZE_UNITS, controlStyles } from './shared'
+import { Dropdown } from './DropdownPortal'
 import type { Editor } from '@tiptap/react'
 
 interface FontSizeControlProps {
@@ -23,7 +23,6 @@ export function FontSizeControl({ editor, currentSize }: FontSizeControlProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [customValue, setCustomValue] = useState('')
   const [customUnit, setCustomUnit] = useState<'px' | 'rem' | 'em'>('px')
-  const triggerRef = useRef<HTMLButtonElement>(null)
 
   const handlePresetClick = useCallback(
     (value: string | null) => {
@@ -33,7 +32,6 @@ export function FontSizeControl({ editor, currentSize }: FontSizeControlProps) {
         editor.chain().focus().unsetFontSize().run()
       }
       setIsOpen(false)
-      forcePuckUpdate(editor)
     },
     [editor]
   )
@@ -44,7 +42,6 @@ export function FontSizeControl({ editor, currentSize }: FontSizeControlProps) {
       editor.chain().focus().setFontSize(size).run()
       setIsOpen(false)
       setCustomValue('')
-      forcePuckUpdate(editor)
     }
   }, [editor, customValue, customUnit])
 
@@ -58,29 +55,27 @@ export function FontSizeControl({ editor, currentSize }: FontSizeControlProps) {
     [handleCustomApply]
   )
 
-  const close = useCallback(() => setIsOpen(false), [])
-
   // Find current preset label if any
   const currentPreset = FONT_SIZES.find((s) => s.value === currentSize)
   const hasCustomSize = currentSize && !currentPreset
 
+  const trigger = (
+    <button
+      type="button"
+      title="Font Size"
+      style={{
+        ...controlStyles.dropdownTrigger,
+        ...(currentSize ? controlStyles.dropdownTriggerActive : {}),
+      }}
+    >
+      <ALargeSmall style={controlStyles.icon} />
+      <ChevronDown style={{ width: '12px', height: '12px' }} />
+    </button>
+  )
+
   return (
     <div style={{ position: 'relative' }}>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        title="Font Size"
-        style={{
-          ...controlStyles.dropdownTrigger,
-          ...(currentSize ? controlStyles.dropdownTriggerActive : {}),
-        }}
-      >
-        <ALargeSmall style={controlStyles.icon} />
-        <ChevronDown style={{ width: '12px', height: '12px' }} />
-      </button>
-
-      <DropdownPortal isOpen={isOpen} onClose={close} triggerRef={triggerRef} minWidth={200}>
+      <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} trigger={trigger} minWidth={200}>
         {/* Preset label */}
         <div style={controlStyles.dropdownLabel}>Presets</div>
 
@@ -146,7 +141,7 @@ export function FontSizeControl({ editor, currentSize }: FontSizeControlProps) {
             Current: {currentSize}
           </div>
         )}
-      </DropdownPortal>
+      </Dropdown>
     </div>
   )
 }

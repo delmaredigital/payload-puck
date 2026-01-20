@@ -11,11 +11,11 @@
  * - "Theme Color (Auto)" option for dark/light mode adaptation
  */
 
-import React, { useState, useRef, useCallback, type CSSProperties } from 'react'
+import React, { useState, useCallback, type CSSProperties } from 'react'
 import { Palette, ChevronDown } from 'lucide-react'
 import { useTheme } from '../../../theme'
-import { parseColor, normalizeHex, hexToRgba, controlStyles, forcePuckUpdate } from './shared'
-import { DropdownPortal } from './DropdownPortal'
+import { parseColor, normalizeHex, hexToRgba, controlStyles } from './shared'
+import { Dropdown } from './DropdownPortal'
 import type { Editor } from '@tiptap/react'
 
 interface ColorPickerControlProps {
@@ -25,7 +25,6 @@ interface ColorPickerControlProps {
 
 export function ColorPickerControl({ editor, currentColor }: ColorPickerControlProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const triggerRef = useRef<HTMLButtonElement>(null)
 
   const handleColorChange = useCallback(
     (color: string | null) => {
@@ -34,7 +33,6 @@ export function ColorPickerControl({ editor, currentColor }: ColorPickerControlP
       } else {
         editor.chain().focus().unsetColor().run()
       }
-      forcePuckUpdate(editor)
     },
     [editor]
   )
@@ -43,45 +41,45 @@ export function ColorPickerControl({ editor, currentColor }: ColorPickerControlP
 
   const hasColor = Boolean(currentColor)
 
+  const trigger = (
+    <button
+      type="button"
+      title="Text Color"
+      style={{
+        ...controlStyles.dropdownTrigger,
+        ...(hasColor ? controlStyles.dropdownTriggerActive : {}),
+      }}
+    >
+      <Palette style={controlStyles.icon} />
+      <ChevronDown style={{ width: '12px', height: '12px' }} />
+      {/* Color indicator */}
+      {currentColor && (
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '2px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '12px',
+            height: '3px',
+            borderRadius: '1px',
+            backgroundColor: currentColor,
+          }}
+        />
+      )}
+    </button>
+  )
+
   return (
     <div style={{ position: 'relative' }}>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        title="Text Color"
-        style={{
-          ...controlStyles.dropdownTrigger,
-          ...(hasColor ? controlStyles.dropdownTriggerActive : {}),
-        }}
-      >
-        <Palette style={controlStyles.icon} />
-        <ChevronDown style={{ width: '12px', height: '12px' }} />
-        {/* Color indicator */}
-        {currentColor && (
-          <span
-            style={{
-              position: 'absolute',
-              bottom: '2px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '12px',
-              height: '3px',
-              borderRadius: '1px',
-              backgroundColor: currentColor,
-            }}
-          />
-        )}
-      </button>
-
-      <DropdownPortal isOpen={isOpen} onClose={close} triggerRef={triggerRef} minWidth={260}>
+      <Dropdown isOpen={isOpen} onOpenChange={setIsOpen} trigger={trigger} minWidth={260}>
         <ColorPickerPanel
           currentColor={currentColor}
           onColorChange={handleColorChange}
           onClose={close}
           mode="text"
         />
-      </DropdownPortal>
+      </Dropdown>
     </div>
   )
 }

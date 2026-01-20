@@ -37,6 +37,34 @@ function MyComponent() {
 
 This is particularly useful for components that need to dynamically change JavaScript-controlled styles (like overlay colors) based on the preview theme.
 
+### Fixed
+
+#### Rich Text Dropdown Controls Not Syncing Changes (Supersedes 0.6.4 Workaround)
+
+Fixed the root cause of rich text dropdown controls (font size, text color, highlight) not triggering Puck's dirty state or updating the preview.
+
+**What was happening:**
+1. User clicks our dropdown (font size, color picker, etc.)
+2. Focus moves from TipTap editor to the dropdown
+3. Puck's blur handler checks: `e.relatedTarget?.closest("[data-puck-rte-menu]")`
+4. Our dropdown didn't have this attribute, so Puck cleared `currentRichText`
+5. All menu controls lost their editor reference, including native Puck ones like HeadingSelect
+6. Changes were silently dropped due to Puck's `isFocused` guard
+
+**The fix:** Add `data-puck-rte-menu` attribute to our dropdown content so Puck recognizes it as part of the rich text menu.
+
+**What changed:**
+- Dropdown controls now use `@radix-ui/react-popover` (matches Puck's pattern)
+- Added `data-puck-rte-menu` attribute for Puck's focus management
+- Removed the `forcePuckUpdate()` workaround from 0.6.4 (no longer needed)
+- Fixed React warning about mixing border shorthand/non-shorthand properties
+
+**Note:** The 0.6.4 release incorrectly identified this as a Puck core issue. It was actually a bug in our own code—missing the focus preservation attribute that Puck requires.
+
+### Removed
+
+- `docs/PUCK_CORE_RICH_TEXT_ISSUE.md` - This document incorrectly blamed Puck for an issue in our own code
+
 ## [0.6.4] - 2026-01-19
 
 This release adds homepage swap functionality and fixes several issues with rich text editing, hook merging, and editor iframe styling.
