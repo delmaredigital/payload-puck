@@ -52,7 +52,13 @@ export { PuckEditorView, type PuckEditorViewProps } from '../admin/PuckEditorVie
 
 // Sub-components for advanced customization
 export { HeaderActions, type HeaderActionsProps } from './components/HeaderActions.js'
-export { IframeWrapper, type IframeWrapperProps, type LayoutStyle } from './components/IframeWrapper.js'
+export {
+  IframeWrapper,
+  type IframeWrapperProps,
+  type LayoutStyle,
+  PuckPreviewThemeContext,
+  usePuckPreviewTheme,
+} from './components/IframeWrapper.js'
 export { LoadingState, type LoadingStateProps } from './components/LoadingState.js'
 export { PreviewModal, type PreviewModalProps } from './components/PreviewModal.js'
 export { DarkModeStyles, type DarkModeStylesProps } from './components/DarkModeStyles.js'

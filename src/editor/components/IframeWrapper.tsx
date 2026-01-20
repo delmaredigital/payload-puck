@@ -1,12 +1,43 @@
 'use client'
 
-import { memo, useEffect, useMemo, useState, type ReactNode, type ComponentType } from 'react'
+import { memo, useEffect, useMemo, useState, createContext, useContext, type ReactNode, type ComponentType } from 'react'
 import { createUsePuck } from '@puckeditor/core'
 import type { LayoutDefinition } from '../../layouts'
 import { backgroundValueToCSS, type BackgroundValue } from '../../fields/shared'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()
+
+/**
+ * Context for preview dark mode state.
+ * - `null` = not inside the editor (use DOM-based theme detection)
+ * - `boolean` = inside the editor, indicates current dark mode state
+ *
+ * This allows Puck components to reactively respond to preview theme changes
+ * without polling or MutationObserver hacks.
+ */
+export const PuckPreviewThemeContext = createContext<boolean | null>(null)
+
+/**
+ * Hook to get the current preview theme from IframeWrapper context.
+ *
+ * @returns `null` if not inside the editor, or a `boolean` indicating dark mode state
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const previewTheme = usePuckPreviewTheme()
+ *
+ *   // If in editor, use context; otherwise fall back to DOM
+ *   const isDark = previewTheme !== null
+ *     ? previewTheme
+ *     : document.documentElement.getAttribute('data-theme') === 'dark'
+ *
+ *   return <div className={isDark ? 'dark-styles' : 'light-styles'}>...</div>
+ * }
+ * ```
+ */
+export const usePuckPreviewTheme = () => useContext(PuckPreviewThemeContext)
 
 /**
  * Layout style configuration for theme-aware preview
@@ -179,6 +210,9 @@ export const IframeWrapper = memo(function IframeWrapper({
   // Get config for current layout
   const layoutConfig = layoutConfigMap[layoutValue] || layoutConfigMap[defaultLayout] || DEFAULT_LAYOUT_CONFIG
 
+  // Calculate isDark for context provider (same logic as in useEffect)
+  const isDark = previewDarkModeOverride ?? layoutConfig.isDark
+
   useEffect(() => {
     if (!iframeDoc) return
 
@@ -203,7 +237,6 @@ export const IframeWrapper = memo(function IframeWrapper({
     // Apply theme class and data-theme attribute for dark/light mode
     // Supports both patterns: CSS classes (.dark/.light) and data attributes ([data-theme='dark'])
     // previewDarkModeOverride takes precedence over layoutConfig.isDark
-    const isDark = previewDarkModeOverride ?? layoutConfig.isDark
     if (isDark) {
       html.classList.add('dark')
       html.classList.remove('light')
@@ -478,29 +511,33 @@ export const IframeWrapper = memo(function IframeWrapper({
     // Use key to force re-render when styles finish loading
     // This ensures Tailwind classes are applied after the stylesheet loads
     return (
-      <div
-        key={stylesLoaded ? 'styles-loaded' : 'styles-loading'}
-        style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
-      >
-        {shouldShowHeader && LayoutHeader && (
-          <div style={headerFooterStyle}>
-            <LayoutHeader />
-          </div>
-        )}
-        <div style={contentStyle}>{children}</div>
-        {shouldShowFooter && LayoutFooter && (
-          <div style={headerFooterStyle}>
-            <LayoutFooter />
-          </div>
-        )}
-      </div>
+      <PuckPreviewThemeContext.Provider value={isDark}>
+        <div
+          key={stylesLoaded ? 'styles-loaded' : 'styles-loading'}
+          style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
+        >
+          {shouldShowHeader && LayoutHeader && (
+            <div style={headerFooterStyle}>
+              <LayoutHeader />
+            </div>
+          )}
+          <div style={contentStyle}>{children}</div>
+          {shouldShowFooter && LayoutFooter && (
+            <div style={headerFooterStyle}>
+              <LayoutFooter />
+            </div>
+          )}
+        </div>
+      </PuckPreviewThemeContext.Provider>
     )
   }
 
   // Use key to force re-render when styles finish loading
   return (
-    <div key={stylesLoaded ? 'styles-loaded' : 'styles-loading'}>
-      {children}
-    </div>
+    <PuckPreviewThemeContext.Provider value={isDark}>
+      <div key={stylesLoaded ? 'styles-loaded' : 'styles-loading'}>
+        {children}
+      </div>
+    </PuckPreviewThemeContext.Provider>
   )
 })
