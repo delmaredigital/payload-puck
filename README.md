@@ -223,9 +223,21 @@ When adding Puck to an existing Payload project:
 
 Without step 3, Puck pages will render blank because your existing routes only look for legacy block fields like `layout` or `hero`.
 
-**Option A: Hybrid Rendering (recommended for migration)**
+**Option A: Hybrid Rendering (recommended)**
 
-Use `HybridPageRenderer` to support both legacy blocks and Puck pages:
+Use `HybridPageRenderer` to render Puck pages. For new projects, this is all you need:
+
+```typescript
+import { HybridPageRenderer } from '@delmaredigital/payload-puck/render'
+import { baseConfig } from '@delmaredigital/payload-puck/config'
+
+export default async function Page({ params }) {
+  const page = await getPage(params.slug)
+  return <HybridPageRenderer page={page} config={baseConfig} />
+}
+```
+
+If you're migrating an existing site with legacy Payload blocks, provide a `legacyRenderer`:
 
 ```typescript
 import { HybridPageRenderer } from '@delmaredigital/payload-puck/render'

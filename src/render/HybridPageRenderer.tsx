@@ -2,10 +2,20 @@
  * Hybrid Page Renderer
  *
  * Renders pages that can be either Puck-edited or legacy Payload block-based.
- * Use this when migrating existing collections to Puck while maintaining
- * backwards compatibility with legacy content.
+ * For new projects using only Puck, legacyRenderer is optional.
  *
- * @example
+ * @example New project (Puck-only)
+ * ```tsx
+ * import { HybridPageRenderer } from '@delmaredigital/payload-puck/render'
+ * import { puckConfig } from '@/puck/config'
+ *
+ * export async function PageRenderer({ slug }) {
+ *   const page = await fetchPage(slug)
+ *   return <HybridPageRenderer page={page} config={puckConfig} />
+ * }
+ * ```
+ *
+ * @example Migration (with legacy blocks)
  * ```tsx
  * import { HybridPageRenderer } from '@delmaredigital/payload-puck/render'
  * import { puckConfig } from '@/puck/config'
@@ -75,6 +85,9 @@ export interface HybridPageRendererProps<TBlocks = unknown[]>
    * Render function for legacy Payload blocks.
    * Called when editorVersion is 'legacy' or when puckData is not available.
    *
+   * Optional for new projects that will only have Puck pages. If not provided
+   * and legacy blocks are encountered, the fallback will be rendered instead.
+   *
    * Use the generic type parameter to get proper typing for your blocks:
    * @example
    * ```tsx
@@ -86,7 +99,7 @@ export interface HybridPageRendererProps<TBlocks = unknown[]>
    * @param blocks - The legacy blocks array from the page
    * @returns React node to render
    */
-  legacyRenderer: (blocks: TBlocks) => ReactNode
+  legacyRenderer?: (blocks: TBlocks) => ReactNode
 
   /**
    * Name of the field containing legacy blocks
@@ -106,7 +119,7 @@ export interface HybridPageRendererProps<TBlocks = unknown[]>
  *
  * Decision logic:
  * 1. If editorVersion is 'puck' AND puckData has content → render with PageRenderer
- * 2. If legacy blocks exist → render with legacyRenderer
+ * 2. If legacy blocks exist AND legacyRenderer is provided → render with legacyRenderer
  * 3. Otherwise → render fallback
  */
 export function HybridPageRenderer<TBlocks = unknown[]>({
@@ -141,8 +154,8 @@ export function HybridPageRenderer<TBlocks = unknown[]>({
     )
   }
 
-  // Render legacy pages
-  if (hasLegacyContent) {
+  // Render legacy pages (only if legacyRenderer is provided)
+  if (hasLegacyContent && legacyRenderer) {
     return <>{legacyRenderer(legacyBlocks as TBlocks)}</>
   }
 

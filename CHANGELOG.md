@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.10] - 2025-01-23
+
+### Changed
+
+#### `legacyRenderer` Now Optional on HybridPageRenderer
+
+The `legacyRenderer` prop is now optional for new projects that will only have Puck pages. Previously it was required even when there were no legacy blocks to render.
+
+```typescript
+// Before: required even for new projects
+<HybridPageRenderer
+  page={page}
+  config={baseConfig}
+  legacyRenderer={() => null}  // unnecessary boilerplate
+/>
+
+// After: optional for Puck-only projects
+<HybridPageRenderer page={page} config={baseConfig} />
+```
+
+For migration projects with existing Payload blocks, provide `legacyRenderer` as before—behavior is unchanged.
+
 ### Fixed
 
 #### Preview Modal Not Rendering Custom Components
