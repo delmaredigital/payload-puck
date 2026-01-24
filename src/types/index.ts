@@ -206,6 +206,43 @@ export interface PuckPluginOptions {
    * ```
    */
   ai?: PuckPluginAiConfig
+
+  /**
+   * Preview URL for the "View" button in the editor.
+   *
+   * Can be:
+   * - A string: Static URL prefix (e.g., '/' or '/preview')
+   * - A function receiving the page document: Returns a string prefix or a slug-to-URL function
+   *
+   * **RSC Serialization:** Since PuckEditorView is a React Server Component, functions
+   * cannot be passed directly to the client. Instead, the server:
+   * 1. Calls your function with the page document
+   * 2. If the result is a function, calls it with `''` (empty string) to extract the base prefix
+   * 3. Passes the string prefix to the client, which reconstructs the URL function
+   *
+   * **Important:** When returning a function, it MUST return just the prefix when called
+   * with an empty/falsy slug. Use this pattern:
+   * ```typescript
+   * return (slug) => slug ? `/${prefix}/${slug}` : `/${prefix}`
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Simple static prefix (pages at /about, /contact, etc.)
+   * previewUrl: '/'
+   *
+   * // Dynamic prefix based on page data (org-scoped pages)
+   * previewUrl: (page) => {
+   *   const orgSlug = page.organization?.slug || 'default'
+   *   // Return a function - MUST return just prefix when slug is empty
+   *   return (slug) => slug ? `/${orgSlug}/${slug}` : `/${orgSlug}`
+   * }
+   *
+   * // Or return the prefix string directly
+   * previewUrl: (page) => `/${page.organization?.slug || 'default'}`
+   * ```
+   */
+  previewUrl?: string | ((page: any) => string | ((slug: string) => string))
 }
 
 /**

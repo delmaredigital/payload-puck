@@ -1322,6 +1322,7 @@ import {
 | `editorStylesheet` | `undefined` | Path to CSS file for editor iframe styling (e.g., `'src/app/globals.css'`) |
 | `editorStylesheetCompiled` | `undefined` | Path to pre-compiled CSS for production (e.g., `'/puck-editor-styles.css'`) |
 | `editorStylesheetUrls` | `[]` | Additional stylesheet URLs for the editor (e.g., Google Fonts) |
+| `previewUrl` | `undefined` | URL for "View" button - string or function receiving page data |
 
 ```typescript
 createPuckPlugin({
@@ -1348,6 +1349,34 @@ createPuckPlugin({
   },
 })
 ```
+
+### Preview URL (View Button)
+
+The "View" button in the editor opens the published page in a new tab. By default, it navigates to `/{slug}` (or `/` for homepage). Use the `previewUrl` option to customize this behavior.
+
+```typescript
+// Simple static URL pattern
+createPuckPlugin({
+  previewUrl: '/preview',
+})
+
+// Dynamic prefix based on page data
+createPuckPlugin({
+  previewUrl: (page) => `/${page.slug || ''}`,
+})
+
+// Organization-scoped pages (multi-tenant)
+// The function receives the full page document with relationships populated
+createPuckPlugin({
+  previewUrl: (page) => {
+    const orgSlug = page.organization?.slug || 'default'
+    // Return a function that handles homepage vs regular pages
+    return (slug) => slug ? `/${orgSlug}/${slug}` : `/${orgSlug}`
+  },
+})
+```
+
+When `previewUrl` is a function, the page document is fetched with `depth: 1` so relationship fields (like `organization`) are populated with their full data.
 
 ### Editor Stylesheet (Iframe Styling)
 

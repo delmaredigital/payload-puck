@@ -68,22 +68,6 @@ export async function PuckEditorView({
     )
   }
 
-  // Fetch the page data
-  let page: any = null
-  let error: string | null = null
-
-  try {
-    page = await payload.findByID({
-      collection: collection as any,
-      id: pageId,
-      draft: true, // Always get draft for editing
-      depth: 0,
-    })
-  } catch (err) {
-    console.error('[PuckEditorView] Error fetching page:', err)
-    error = err instanceof Error ? err.message : 'Failed to load page'
-  }
-
   // Get visible entities for the sidebar navigation
   const visibleEntities = getVisibleEntities({ req })
 
@@ -93,6 +77,52 @@ export async function PuckEditorView({
   const explicitPageTreeConfig = (payload.config as any).custom?.puck?.pageTree
   const aiConfig = (payload.config as any).custom?.puck?.ai
   const editorStylesheets = (payload.config as any).custom?.puck?.editorStylesheets as string[] | undefined
+  const previewUrlConfig = (payload.config as any).custom?.puck?.previewUrl as
+    | string
+    | ((page: any) => string | ((slug: string) => string))
+    | undefined
+
+  // Fetch the page data
+  // Use depth: 1 if previewUrl is a function (may need relationship data like organization)
+  let page: any = null
+  let error: string | null = null
+  const needsRelationships = typeof previewUrlConfig === 'function'
+
+  try {
+    page = await payload.findByID({
+      collection: collection as any,
+      id: pageId,
+      draft: true, // Always get draft for editing
+      depth: needsRelationships ? 1 : 0,
+    })
+  } catch (err) {
+    console.error('[PuckEditorView] Error fetching page:', err)
+    error = err instanceof Error ? err.message : 'Failed to load page'
+  }
+
+  // Compute preview URL prefix from config
+  // Note: Functions can't be passed to client components, so we extract a string prefix here.
+  // The client reconstructs the URL function as: (slug) => slug ? `${prefix}/${slug}` : prefix
+  //
+  // IMPORTANT: When the config returns a function, we call it with '' to get the prefix.
+  // This relies on the function using the pattern: (slug) => slug ? `/${org}/${slug}` : `/${org}`
+  // See PuckPluginOptions.previewUrl JSDoc in src/types/index.ts for details.
+  let previewUrlPrefix: string | undefined
+  if (previewUrlConfig && page) {
+    if (typeof previewUrlConfig === 'function') {
+      const result = previewUrlConfig(page)
+      if (typeof result === 'string') {
+        // Function returned a string prefix directly (e.g., '/acme')
+        previewUrlPrefix = result
+      } else if (typeof result === 'function') {
+        // Function returned a slug-to-URL function - call with '' to extract prefix
+        // e.g., (slug) => slug ? `/acme/${slug}` : `/acme` called with '' returns '/acme'
+        previewUrlPrefix = result('')
+      }
+    } else {
+      previewUrlPrefix = previewUrlConfig
+    }
+  }
 
   // Fetch AI prompts from collection if enabled
   let aiExamplePrompts = aiConfig?.examplePrompts || []
@@ -210,6 +240,7 @@ export async function PuckEditorView({
             apiEndpoint={`/api/puck/${collection}`}
             initialStatus={page?._status}
             backUrl={backUrl}
+            previewUrlPrefix={previewUrlPrefix}
             layouts={layouts}
             hasPageTree={!!pageTreeConfig}
             folder={pageTreeConfig ? (typeof page?.folder === 'object' ? page?.folder?.id : page?.folder) : undefined}

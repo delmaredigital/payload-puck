@@ -61,6 +61,14 @@ export interface PuckEditorProps {
    */
   previewUrl?: string | ((slug: string) => string)
   /**
+   * URL prefix for preview (e.g., '/acme' for org-scoped pages).
+   * When provided, the preview URL will be built as:
+   * - Homepage: `{prefix}`
+   * - Regular pages: `{prefix}/{slug}`
+   * This is useful for Server Components where functions can't be passed.
+   */
+  previewUrlPrefix?: string
+  /**
    * Whether to enable viewport switching
    * @default true
    */
@@ -321,6 +329,7 @@ export function PuckEditor({
   apiEndpoint,
   backUrl,
   previewUrl,
+  previewUrlPrefix,
   enableViewports,
   plugins,
   layouts: layoutsProp,
@@ -541,6 +550,16 @@ export function PuckEditor({
     }
   }, [enableAi, aiExamplePrompts, aiOptions])
 
+  // Compute preview URL from prefix (for Server Component compatibility)
+  // previewUrlPrefix takes precedence if provided
+  const finalPreviewUrl = useMemo(() => {
+    if (previewUrlPrefix) {
+      // Convert prefix to a function that builds the full URL
+      return (slug: string) => (slug ? `${previewUrlPrefix}/${slug}` : previewUrlPrefix)
+    }
+    return previewUrl
+  }, [previewUrlPrefix, previewUrl])
+
   return (
     <PuckEditorImpl
       pageId={pageId}
@@ -550,7 +569,7 @@ export function PuckEditor({
       pageSlug={pageSlug}
       apiEndpoint={apiEndpoint}
       backUrl={backUrl}
-      previewUrl={previewUrl}
+      previewUrl={finalPreviewUrl}
       enableViewports={enableViewports}
       plugins={mergedPlugins}
       layouts={layouts}

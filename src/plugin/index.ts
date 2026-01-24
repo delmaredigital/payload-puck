@@ -154,6 +154,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     editorStylesheetUrls = [],
     editorStylesheetCompiled,
     ai: aiConfig,
+    previewUrl,
   } = options
 
   const { addEditButton = true } = pluginAdminConfig
@@ -465,6 +466,8 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
           pageTree: pageTreeConfig,
           // Editor stylesheets for iframe
           editorStylesheets: editorStylesheets.length > 0 ? editorStylesheets : undefined,
+          // Preview URL configuration
+          previewUrl,
           // AI configuration
           ai: aiConfig?.enabled
             ? {

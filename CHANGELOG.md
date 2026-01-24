@@ -5,7 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.11] - 2026-01-24
+
+### Added
+
+#### Custom Preview URL Support
+
+Added `previewUrl` plugin option to customize the "View" button in the editor. By default, the View button navigates to `/{slug}`. This option enables custom URL patterns for multi-tenant apps, preview environments, or non-standard routing.
+
+```typescript
+// Static prefix for all pages
+createPuckPlugin({
+  previewUrl: '/preview',
+})
+
+// Organization-scoped pages (multi-tenant)
+createPuckPlugin({
+  previewUrl: (page) => {
+    const orgSlug = page.organization?.slug || 'default'
+    return (slug) => slug ? `/${orgSlug}/${slug}` : `/${orgSlug}`
+  },
+})
+```
+
+When `previewUrl` is a function, page data is fetched with `depth: 1` to populate relationships like `organization`.
 
 ## [0.6.10] - 2025-01-23
 
