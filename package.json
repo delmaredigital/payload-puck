@@ -77,7 +77,7 @@
     "dist"
   ],
   "scripts": {
-    "dev-publish": "pnpm version prerelease --preid=dev && pnpm build && pnpm publish --registry http://localhost:4873",
+    "dev-publish": "pnpm version prerelease --preid=dev --no-git-tag-version && pnpm build && pnpm publish --registry http://localhost:4873 --no-git-checks",
     "generate-version": "node scripts/generate-version.js",
     "prebuild": "pnpm generate-version",
     "build": "tsc && pnpm copy:css",
