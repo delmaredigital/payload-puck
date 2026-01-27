@@ -25,16 +25,16 @@ import {
   type AnimationValue,
   type TransformValue,
   type ColorValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createMarginField } from '../../fields/MarginField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createResetField } from '../../fields/ResetField'
-import { createBackgroundField } from '../../fields/BackgroundField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createTransformField } from '../../fields/TransformField'
-import { createColorPickerField } from '../../fields/ColorPickerField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createBackgroundField } from '../../fields/BackgroundField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createTransformField } from '../../fields/TransformField.js'
+import { createColorPickerField } from '../../fields/ColorPickerField.js'
 
 interface AccordionItemData {
   title: string

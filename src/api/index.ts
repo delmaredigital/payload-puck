@@ -34,9 +34,9 @@
  */
 
 // Route factories
-export { createPuckApiRoutes } from './createPuckApiRoutes'
-export { createPuckApiRoutesWithId } from './createPuckApiRoutesWithId'
-export { createPuckApiRoutesVersions } from './createPuckApiRoutesVersions'
+export { createPuckApiRoutes } from './createPuckApiRoutes.js'
+export { createPuckApiRoutesWithId } from './createPuckApiRoutesWithId.js'
+export { createPuckApiRoutesVersions } from './createPuckApiRoutesVersions.js'
 
 // Utilities
 export {
@@ -47,7 +47,7 @@ export {
   getNestedValue,
   mergeMappings,
   deepMerge,
-} from './utils/mapRootProps'
+} from './utils/mapRootProps.js'
 
 // Types
 export type {
@@ -80,4 +80,4 @@ export type {
   // Version types
   PageVersion,
   PuckApiVersionsRouteHandlers,
-} from './types'
+} from './types.js'

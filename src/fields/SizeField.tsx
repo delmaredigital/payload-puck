@@ -19,9 +19,9 @@ export {
   type SizeValue,
   sizeValueToCSS,
   getSizeClasses,
-} from './shared'
+} from './shared.js'
 
-import type { SizeValue, SizeMode, SizeUnit } from './shared'
+import type { SizeValue, SizeMode, SizeUnit } from './shared.js'
 
 interface SizeFieldProps {
   value: SizeValue | null

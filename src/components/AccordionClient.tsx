@@ -23,8 +23,8 @@ import {
   type AnimationValue,
   type TransformValue,
   type ColorValue,
-} from '../fields/shared'
-import { AnimatedWrapper } from './AnimatedWrapper'
+} from '../fields/shared.js'
+import { AnimatedWrapper } from './AnimatedWrapper.js'
 
 interface AccordionItemData {
   title: string

@@ -1,7 +1,7 @@
 import type { Access, CollectionConfig, Field } from 'payload'
-import type { PuckPluginOptions } from '../../types'
-import { DEFAULT_LAYOUTS } from '../../layouts/defaults'
-import { layoutsToPayloadOptions } from '../../layouts/utils'
+import type { PuckPluginOptions } from '../../types/index.js'
+import { DEFAULT_LAYOUTS } from '../../layouts/defaults.js'
+import { layoutsToPayloadOptions } from '../../layouts/utils.js'
 import {
   puckDataField,
   createEditorVersionField,
@@ -9,8 +9,8 @@ import {
   isHomepageField,
   seoFieldGroup,
   conversionFieldGroup,
-} from '../fields'
-import { createIsHomepageUniqueHook } from '../hooks/isHomepageUnique'
+} from '../fields/index.js'
+import { createIsHomepageUniqueHook } from '../hooks/isHomepageUnique.js'
 
 /**
  * Default access function - allows all
@@ -160,6 +160,6 @@ export function generatePagesCollection(
   }
 }
 
-// Note: puckDataField is now exported from '../fields' for hybrid collection integration
+// Note: puckDataField is now exported from '../fields/index.js' for hybrid collection integration
 // Re-export for backwards compatibility
-export { puckDataField } from '../fields'
+export { puckDataField } from '../fields/index.js'

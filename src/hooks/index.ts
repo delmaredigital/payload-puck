@@ -8,11 +8,11 @@ export {
   useScrollAnimation,
   type UseScrollAnimationOptions,
   type UseScrollAnimationResult,
-} from './useScrollAnimation'
+} from './useScrollAnimation.js'
 
 export {
   useCurrentBreakpoint,
   useResponsiveValue,
   useResponsiveStyles,
   type UseResponsiveStylesOptions,
-} from './useResponsiveStyles'
+} from './useResponsiveStyles.js'

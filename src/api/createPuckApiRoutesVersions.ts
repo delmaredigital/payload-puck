@@ -4,7 +4,7 @@ import type {
   PuckApiRoutesConfig,
   PuckApiVersionsRouteHandlers,
   RouteHandlerWithIdContext,
-} from './types'
+} from './types.js'
 
 /**
  * Create API route handlers for /api/puck/pages/[id]/versions

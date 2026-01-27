@@ -20,8 +20,8 @@ import {
   ArrowDown,
   ArrowLeft,
 } from 'lucide-react'
-import { ColorPickerField } from './ColorPickerField'
-import type { BorderValue, ColorValue } from './shared'
+import { ColorPickerField } from './ColorPickerField.js'
+import type { BorderValue, ColorValue } from './shared.js'
 
 // =============================================================================
 // Types

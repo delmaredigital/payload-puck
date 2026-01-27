@@ -168,7 +168,7 @@ export interface GradientMask {
 }
 
 export interface BackgroundImageValue {
-  media: import('./MediaField').MediaReference | null
+  media: import('./MediaField.js').MediaReference | null
   size: 'cover' | 'contain' | 'auto'
   position:
     | 'center'

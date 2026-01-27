@@ -1,91 +1,195 @@
 {
   "name": "@delmaredigital/payload-puck",
-  "version": "0.6.12",
+  "version": "0.6.13-dev.1",
   "description": "Puck visual page builder plugin for Payload CMS",
   "type": "module",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     },
     "./plugin": {
-      "import": "./dist/plugin/index.js",
-      "types": "./dist/plugin/index.d.ts"
+      "import": "./src/plugin/index.ts",
+      "types": "./src/plugin/index.ts",
+      "default": "./src/plugin/index.ts"
     },
     "./config": {
-      "import": "./dist/config/index.js",
-      "types": "./dist/config/index.d.ts"
+      "import": "./src/config/index.tsx",
+      "types": "./src/config/index.tsx",
+      "default": "./src/config/index.tsx"
     },
     "./config/editor": {
-      "import": "./dist/config/config.editor.js",
-      "types": "./dist/config/config.editor.d.ts"
+      "import": "./src/config/config.editor.tsx",
+      "types": "./src/config/config.editor.tsx",
+      "default": "./src/config/config.editor.tsx"
     },
     "./render": {
-      "import": "./dist/render/index.js",
-      "types": "./dist/render/index.d.ts"
+      "import": "./src/render/index.ts",
+      "types": "./src/render/index.ts",
+      "default": "./src/render/index.ts"
     },
     "./client": {
-      "import": "./dist/exports/client.js",
-      "types": "./dist/exports/client.d.ts"
+      "import": "./src/exports/client.ts",
+      "types": "./src/exports/client.ts",
+      "default": "./src/exports/client.ts"
     },
     "./rsc": {
-      "import": "./dist/exports/rsc.js",
-      "types": "./dist/exports/rsc.d.ts"
+      "import": "./src/exports/rsc.ts",
+      "types": "./src/exports/rsc.ts",
+      "default": "./src/exports/rsc.ts"
     },
     "./layouts": {
-      "import": "./dist/layouts/index.js",
-      "types": "./dist/layouts/index.d.ts"
+      "import": "./src/layouts/index.ts",
+      "types": "./src/layouts/index.ts",
+      "default": "./src/layouts/index.ts"
     },
     "./api": {
-      "import": "./dist/api/index.js",
-      "types": "./dist/api/index.d.ts"
+      "import": "./src/api/index.ts",
+      "types": "./src/api/index.ts",
+      "default": "./src/api/index.ts"
     },
     "./admin/client": {
-      "import": "./dist/admin/client.js",
-      "types": "./dist/admin/client.d.ts"
+      "import": "./src/admin/client.ts",
+      "types": "./src/admin/client.ts",
+      "default": "./src/admin/client.ts"
     },
     "./theme": {
-      "import": "./dist/theme/index.js",
-      "types": "./dist/theme/index.d.ts"
+      "import": "./src/theme/index.ts",
+      "types": "./src/theme/index.ts",
+      "default": "./src/theme/index.ts"
     },
     "./components": {
-      "import": "./dist/components/exports.js",
-      "types": "./dist/components/exports.d.ts"
+      "import": "./src/components/exports.ts",
+      "types": "./src/components/exports.ts",
+      "default": "./src/components/exports.ts"
     },
     "./fields": {
-      "import": "./dist/fields/index.js",
-      "types": "./dist/fields/index.d.ts"
+      "import": "./src/fields/index.ts",
+      "types": "./src/fields/index.ts",
+      "default": "./src/fields/index.ts"
     },
     "./editor": {
-      "import": "./dist/editor/index.js",
-      "types": "./dist/editor/index.d.ts"
+      "import": "./src/editor/index.ts",
+      "types": "./src/editor/index.ts",
+      "default": "./src/editor/index.ts"
     },
     "./ai": {
-      "import": "./dist/ai/index.js",
-      "types": "./dist/ai/index.d.ts"
+      "import": "./src/ai/index.ts",
+      "types": "./src/ai/index.ts",
+      "default": "./src/ai/index.ts"
     },
     "./next": {
-      "types": "./dist/next/index.d.ts",
-      "import": "./dist/next/index.js",
-      "default": "./dist/next/index.js"
+      "import": "./src/next/index.ts",
+      "types": "./src/next/index.ts",
+      "default": "./src/next/index.ts"
     }
   },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "dev-publish": "pnpm version prerelease --preid=dev --no-git-tag-version && pnpm build && pnpm publish --registry http://localhost:4873 --no-git-checks",
     "generate-version": "node scripts/generate-version.js",
     "prebuild": "pnpm generate-version",
-    "build": "tsc && pnpm copy:css",
-    "copy:css": "cp src/fields/*.css dist/fields/ 2>/dev/null || true && mkdir -p dist/fields/richtext && cp src/fields/richtext/*.css dist/fields/richtext/ 2>/dev/null || true && cp src/editor/*.css dist/editor/ 2>/dev/null || true",
-    "dev": "pnpm generate-version && tsc --watch",
+    "build": "pnpm build:swc && pnpm build:types && pnpm copyfiles",
+    "build:swc": "swc ./src -d ./dist --strip-leading-paths",
+    "build:types": "tsc --outDir dist",
+    "copyfiles": "copyfiles -u 1 \"src/**/*.css\" dist",
+    "dev": "pnpm generate-version && swc ./src -d ./dist --strip-leading-paths --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./plugin": {
+        "import": "./dist/plugin/index.js",
+        "types": "./dist/plugin/index.d.ts",
+        "default": "./dist/plugin/index.js"
+      },
+      "./config": {
+        "import": "./dist/config/index.js",
+        "types": "./dist/config/index.d.ts",
+        "default": "./dist/config/index.js"
+      },
+      "./config/editor": {
+        "import": "./dist/config/config.editor.js",
+        "types": "./dist/config/config.editor.d.ts",
+        "default": "./dist/config/config.editor.js"
+      },
+      "./render": {
+        "import": "./dist/render/index.js",
+        "types": "./dist/render/index.d.ts",
+        "default": "./dist/render/index.js"
+      },
+      "./client": {
+        "import": "./dist/exports/client.js",
+        "types": "./dist/exports/client.d.ts",
+        "default": "./dist/exports/client.js"
+      },
+      "./rsc": {
+        "import": "./dist/exports/rsc.js",
+        "types": "./dist/exports/rsc.d.ts",
+        "default": "./dist/exports/rsc.js"
+      },
+      "./layouts": {
+        "import": "./dist/layouts/index.js",
+        "types": "./dist/layouts/index.d.ts",
+        "default": "./dist/layouts/index.js"
+      },
+      "./api": {
+        "import": "./dist/api/index.js",
+        "types": "./dist/api/index.d.ts",
+        "default": "./dist/api/index.js"
+      },
+      "./admin/client": {
+        "import": "./dist/admin/client.js",
+        "types": "./dist/admin/client.d.ts",
+        "default": "./dist/admin/client.js"
+      },
+      "./theme": {
+        "import": "./dist/theme/index.js",
+        "types": "./dist/theme/index.d.ts",
+        "default": "./dist/theme/index.js"
+      },
+      "./components": {
+        "import": "./dist/components/exports.js",
+        "types": "./dist/components/exports.d.ts",
+        "default": "./dist/components/exports.js"
+      },
+      "./fields": {
+        "import": "./dist/fields/index.js",
+        "types": "./dist/fields/index.d.ts",
+        "default": "./dist/fields/index.js"
+      },
+      "./editor": {
+        "import": "./dist/editor/index.js",
+        "types": "./dist/editor/index.d.ts",
+        "default": "./dist/editor/index.js"
+      },
+      "./ai": {
+        "import": "./dist/ai/index.js",
+        "types": "./dist/ai/index.d.ts",
+        "default": "./dist/ai/index.js"
+      },
+      "./next": {
+        "import": "./dist/next/index.js",
+        "types": "./dist/next/index.d.ts",
+        "default": "./dist/next/index.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
   },
   "peerDependencies": {
     "@payloadcms/next": ">=3.69.0",
@@ -146,9 +250,12 @@
     "@payloadcms/next": "^3.73.0",
     "@payloadcms/ui": "^3.73.0",
     "@puckeditor/core": "^0.21.1",
+    "@swc/cli": "^0.6.0",
+    "@swc/core": "^1.10.0",
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
+    "copyfiles": "^2.4.1",
     "next": "^16.1.4",
     "payload": "^3.73.0",
     "react": "^19.2.3",

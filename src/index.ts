@@ -61,7 +61,7 @@
  */
 
 // Re-export all types
-export * from './types'
+export * from './types/index.js'
 
 // Re-export plugin utilities
 export {
@@ -69,7 +69,7 @@ export {
   generatePagesCollection,
   generatePuckEditField,
   TemplatesCollection,
-} from './plugin'
+} from './plugin/index.js'
 
 // Re-export field utilities for hybrid collection integration
 export {
@@ -82,7 +82,7 @@ export {
   isHomepageField,
   seoFieldGroup,
   conversionFieldGroup,
-} from './plugin'
+} from './plugin/index.js'
 
 // Re-export field types
-export type { GetPuckFieldsOptions } from './plugin/fields/types'
+export type { GetPuckFieldsOptions } from './plugin/fields/types.js'

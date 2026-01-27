@@ -22,11 +22,11 @@ import {
   type AnimationValue,
   type TransformValue,
   type SizeValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import type { Alignment } from '../../fields/AlignmentField'
-import { DEFAULT_BUTTON_VARIANTS, DEFAULT_FOCUS_RING } from '../../theme/defaults'
-import { getVariantClasses } from '../../theme/utils'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import type { Alignment } from '../../fields/AlignmentField.js'
+import { DEFAULT_BUTTON_VARIANTS, DEFAULT_FOCUS_RING } from '../../theme/defaults.js'
+import { getVariantClasses } from '../../theme/utils.js'
 
 export interface ButtonProps {
   text: string

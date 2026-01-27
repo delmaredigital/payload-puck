@@ -32,11 +32,11 @@
  */
 
 import type { CollectionConfig, Field } from 'payload'
-import type { GetPuckFieldsOptions, GetPuckCollectionConfigOptions, ConversionTypeOption } from './types'
-import { createIsHomepageUniqueHook } from '../hooks/isHomepageUnique'
-import type { LayoutDefinition } from '../../layouts/types'
-import { DEFAULT_LAYOUTS } from '../../layouts/defaults'
-import { layoutsToPayloadOptions } from '../../layouts/utils'
+import type { GetPuckFieldsOptions, GetPuckCollectionConfigOptions, ConversionTypeOption } from './types.js'
+import { createIsHomepageUniqueHook } from '../hooks/isHomepageUnique.js'
+import type { LayoutDefinition } from '../../layouts/types.js'
+import { DEFAULT_LAYOUTS } from '../../layouts/defaults.js'
+import { layoutsToPayloadOptions } from '../../layouts/utils.js'
 
 // =============================================================================
 // Core Fields
@@ -475,4 +475,4 @@ export function getPuckCollectionConfig(options: GetPuckCollectionConfigOptions 
 }
 
 // Re-export types
-export type { GetPuckFieldsOptions, GetPuckCollectionConfigOptions, ConversionTypeOption } from './types'
+export type { GetPuckFieldsOptions, GetPuckCollectionConfigOptions, ConversionTypeOption } from './types.js'

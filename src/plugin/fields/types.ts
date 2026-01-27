@@ -4,7 +4,7 @@
  * These types support the getPuckFields() utility for hybrid collection integration.
  */
 
-import type { LayoutDefinition } from '../../layouts/types'
+import type { LayoutDefinition } from '../../layouts/types.js'
 
 /**
  * Conversion type option for the conversion tracking field

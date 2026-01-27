@@ -21,18 +21,18 @@ import {
   type DimensionsValue,
   type AnimationValue,
   type TransformValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createMarginField } from '../../fields/MarginField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createResetField } from '../../fields/ResetField'
-import { createBackgroundField } from '../../fields/BackgroundField'
-import { createBorderField } from '../../fields/BorderField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createAlignmentField, type Alignment } from '../../fields/AlignmentField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createTransformField } from '../../fields/TransformField'
-import type { MediaReference } from '../../fields/MediaField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createBackgroundField } from '../../fields/BackgroundField.js'
+import { createBorderField } from '../../fields/BorderField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createAlignmentField, type Alignment } from '../../fields/AlignmentField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createTransformField } from '../../fields/TransformField.js'
+import type { MediaReference } from '../../fields/MediaField.js'
 
 // Default content padding for card (replaces hardcoded p-4)
 const DEFAULT_CONTENT_PADDING: PaddingValue = {

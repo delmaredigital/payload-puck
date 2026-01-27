@@ -14,8 +14,8 @@
 import React, { useState, useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@puckeditor/core'
 import { X } from 'lucide-react'
-import type { ColorValue } from './shared'
-import { useTheme } from '../theme'
+import type { ColorValue } from './shared.js'
+import { useTheme } from '../theme/index.js'
 
 // =============================================================================
 // Types

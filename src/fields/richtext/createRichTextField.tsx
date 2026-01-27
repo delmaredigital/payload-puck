@@ -23,10 +23,10 @@ import Superscript from '@tiptap/extension-superscript'
 import Subscript from '@tiptap/extension-subscript'
 import { Superscript as SuperscriptIcon, Subscript as SubscriptIcon } from 'lucide-react'
 
-import { FontSize } from './extensions/FontSize'
-import { ColorPickerControl } from './controls/ColorPickerControl'
-import { FontSizeControl } from './controls/FontSizeControl'
-import { HighlightControl } from './controls/HighlightControl'
+import { FontSize } from './extensions/FontSize.js'
+import { ColorPickerControl } from './controls/ColorPickerControl.js'
+import { FontSizeControl } from './controls/FontSizeControl.js'
+import { HighlightControl } from './controls/HighlightControl.js'
 
 import type { Editor } from '@tiptap/react'
 

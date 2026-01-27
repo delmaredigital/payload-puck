@@ -10,9 +10,9 @@
 
 import { useId } from 'react'
 import type { ComponentConfig } from '@puckeditor/core'
-import { cn, visibilityValueToCSS, type VisibilityValue } from '../../fields/shared'
-import { createResetField } from '../../fields/ResetField'
-import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'
+import { cn, visibilityValueToCSS, type VisibilityValue } from '../../fields/shared.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
 
 const spacingOptions = [
   { label: '8px', value: '8px' },

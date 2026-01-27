@@ -20,11 +20,11 @@ import type {
   GradientValue,
   GradientMask,
   BackgroundOverlay,
-} from './shared'
-import { backgroundValueToCSS, getBackgroundImageOpacity } from './shared'
-import { ColorPickerField } from './ColorPickerField'
-import { MediaField, type MediaReference } from './MediaField'
-import { GradientEditor } from './GradientEditor'
+} from './shared.js'
+import { backgroundValueToCSS, getBackgroundImageOpacity } from './shared.js'
+import { ColorPickerField } from './ColorPickerField.js'
+import { MediaField, type MediaReference } from './MediaField.js'
+import { GradientEditor } from './GradientEditor.js'
 
 // =============================================================================
 // Types

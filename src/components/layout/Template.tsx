@@ -29,14 +29,14 @@ import {
   type DimensionsValue,
   type ResponsiveValue,
   type VisibilityValue,
-} from '../../fields/shared'
-import { createResetField } from '../../fields/ResetField'
-import { createTemplateField } from '../../fields/TemplateField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createMarginField } from '../../fields/MarginField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createResponsiveField } from '../../fields/ResponsiveField'
-import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'
+} from '../../fields/shared.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createTemplateField } from '../../fields/TemplateField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createResponsiveField } from '../../fields/ResponsiveField.js'
+import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
 
 // Default values for responsive fields
 const DEFAULT_PADDING: PaddingValue = {

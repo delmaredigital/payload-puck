@@ -5,16 +5,16 @@
  */
 
 // Layout Components
-export * from './layout'
+export * from './layout/index.js'
 
 // Typography Components
-export * from './typography'
+export * from './typography/index.js'
 
 // Media Components
-export * from './media'
+export * from './media/index.js'
 
 // Interactive Components
-export * from './interactive'
+export * from './interactive/index.js'
 
 // Animation
-export { AnimatedWrapper, type AnimatedWrapperProps } from './AnimatedWrapper'
+export { AnimatedWrapper, type AnimatedWrapperProps } from './AnimatedWrapper.js'

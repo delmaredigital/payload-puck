@@ -38,7 +38,7 @@
  */
 
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
-import { PageRenderer, type PageRendererProps } from './PageRenderer'
+import { PageRenderer, type PageRendererProps } from './PageRenderer.js'
 import type { ReactNode } from 'react'
 
 /**

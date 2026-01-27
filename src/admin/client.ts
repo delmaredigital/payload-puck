@@ -15,7 +15,7 @@ export {
   EditWithPuckButton,
   EditWithPuckLink,
   type EditWithPuckButtonProps,
-} from './EditWithPuckButton'
+} from './EditWithPuckButton.js'
 
 // Cell component for list view
-export { EditWithPuckCell, type EditWithPuckCellConfig } from './EditWithPuckCell'
+export { EditWithPuckCell, type EditWithPuckCellConfig } from './EditWithPuckCell.js'

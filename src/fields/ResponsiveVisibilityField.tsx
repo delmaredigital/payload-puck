@@ -18,8 +18,8 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
-import type { Breakpoint, VisibilityValue } from './shared'
-import { BREAKPOINTS, DEFAULT_VISIBILITY } from './shared'
+import type { Breakpoint, VisibilityValue } from './shared.js'
+import { BREAKPOINTS, DEFAULT_VISIBILITY } from './shared.js'
 
 // =============================================================================
 // Types

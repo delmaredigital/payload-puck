@@ -31,8 +31,8 @@ import type {
   DimensionsUnit,
   DimensionsMode,
   ContentAlignment,
-} from './shared'
-import { getDimensionsSummary } from './shared'
+} from './shared.js'
+import { getDimensionsSummary } from './shared.js'
 
 // =============================================================================
 // Types

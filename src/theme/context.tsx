@@ -9,9 +9,9 @@
  */
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react'
-import type { ThemeConfig, ThemeContextValue, ResolvedTheme } from './types'
-import { DEFAULT_THEME } from './defaults'
-import { resolveTheme } from './utils'
+import type { ThemeConfig, ThemeContextValue, ResolvedTheme } from './types.js'
+import { DEFAULT_THEME } from './defaults.js'
+import { resolveTheme } from './utils.js'
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 

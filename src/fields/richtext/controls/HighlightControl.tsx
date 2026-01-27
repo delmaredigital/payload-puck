@@ -13,9 +13,9 @@
 
 import React, { useState, useCallback } from 'react'
 import { Highlighter, ChevronDown } from 'lucide-react'
-import { controlStyles } from './shared'
-import { ColorPickerPanel } from './ColorPickerControl'
-import { Dropdown } from './DropdownPortal'
+import { controlStyles } from './shared.js'
+import { ColorPickerPanel } from './ColorPickerControl.js'
+import { Dropdown } from './DropdownPortal.js'
 import type { Editor } from '@tiptap/react'
 
 interface HighlightControlProps {

@@ -1,4 +1,4 @@
-import type { RootPropsMapping } from '../types'
+import type { RootPropsMapping } from '../types.js'
 
 /**
  * Default mappings from Puck root.props to Payload fields

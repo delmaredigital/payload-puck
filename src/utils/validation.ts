@@ -4,7 +4,7 @@
  * Provides validation functions for ensuring Puck data structures are well-formed.
  */
 
-import type { PuckPageData, PuckRootProps } from '../types'
+import type { PuckPageData, PuckRootProps } from '../types/index.js'
 
 // =============================================================================
 // Validation Result Types

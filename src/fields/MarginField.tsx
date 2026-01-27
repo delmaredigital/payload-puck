@@ -13,7 +13,7 @@
 import React, { useCallback, memo, type CSSProperties } from 'react'
 import type { CustomField } from '@puckeditor/core'
 import { Link, Unlink } from 'lucide-react'
-import type { PaddingValue } from './shared'
+import type { PaddingValue } from './shared.js'
 
 // Re-use PaddingValue type for margin (same structure)
 export type MarginValue = PaddingValue

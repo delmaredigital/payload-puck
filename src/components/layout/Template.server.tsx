@@ -25,7 +25,7 @@ import {
   type DimensionsValue,
   type ResponsiveValue,
   type VisibilityValue,
-} from '../../fields/shared'
+} from '../../fields/shared.js'
 
 // Simple ID generator for server-side rendering
 let idCounter = 0

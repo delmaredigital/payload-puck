@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useDarkMode } from '../hooks/useDarkMode'
+import { useDarkMode } from '../hooks/useDarkMode.js'
 
 /**
  * Dark mode CSS to inject. This contains all Puck color variable overrides.

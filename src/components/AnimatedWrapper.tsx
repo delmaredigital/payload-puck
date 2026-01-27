@@ -9,12 +9,12 @@
  */
 
 import type { ReactNode, CSSProperties, ElementType } from 'react'
-import { useScrollAnimation } from '../hooks/useScrollAnimation'
+import { useScrollAnimation } from '../hooks/useScrollAnimation.js'
 import {
   getEntranceAnimationStyles,
   animationValueToCSS,
   type AnimationValue,
-} from '../fields/shared'
+} from '../fields/shared.js'
 
 export interface AnimatedWrapperProps {
   /** Animation configuration from the component */

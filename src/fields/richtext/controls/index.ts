@@ -4,9 +4,9 @@
  * Custom controls for Puck's native richtext field.
  */
 
-export { ColorPickerControl, ColorPickerPanel } from './ColorPickerControl'
-export { FontSizeControl } from './FontSizeControl'
-export { HighlightControl } from './HighlightControl'
+export { ColorPickerControl, ColorPickerPanel } from './ColorPickerControl.js'
+export { FontSizeControl } from './FontSizeControl.js'
+export { HighlightControl } from './HighlightControl.js'
 
 export {
   // Color utilities
@@ -18,6 +18,6 @@ export {
   FONT_SIZE_UNITS,
   // Shared styles
   controlStyles,
-} from './shared'
+} from './shared.js'
 
-export type { FontSizeUnit } from './shared'
+export type { FontSizeUnit } from './shared.js'

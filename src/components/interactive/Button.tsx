@@ -18,22 +18,22 @@ import {
   type BorderValue,
   type AnimationValue,
   type TransformValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createMarginField } from '../../fields/MarginField'
-import { createColorPickerField } from '../../fields/ColorPickerField'
-import { createBorderField } from '../../fields/BorderField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createAlignmentField, type Alignment } from '../../fields/AlignmentField'
-import { createSizeField, sizeValueToCSS, getSizeClasses, type SizeValue } from '../../fields/SizeField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createTransformField } from '../../fields/TransformField'
-import { createResetField } from '../../fields/ResetField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createColorPickerField } from '../../fields/ColorPickerField.js'
+import { createBorderField } from '../../fields/BorderField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createAlignmentField, type Alignment } from '../../fields/AlignmentField.js'
+import { createSizeField, sizeValueToCSS, getSizeClasses, type SizeValue } from '../../fields/SizeField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createTransformField } from '../../fields/TransformField.js'
+import { createResetField } from '../../fields/ResetField.js'
 import {
   DEFAULT_BUTTON_VARIANTS,
   DEFAULT_FOCUS_RING,
   getVariantClasses,
-} from '../../theme'
+} from '../../theme/index.js'
 
 export interface ButtonProps {
   text: string

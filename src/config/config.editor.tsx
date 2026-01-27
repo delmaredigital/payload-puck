@@ -12,30 +12,30 @@
 
 import type { Config as PuckConfig, ComponentConfig } from '@puckeditor/core'
 import type { ReactNode } from 'react'
-import { createBackgroundField } from '../fields/BackgroundField'
-import { lockedSlugField, lockedHomepageField } from '../fields/LockedField'
+import { createBackgroundField } from '../fields/BackgroundField.js'
+import { lockedSlugField, lockedHomepageField } from '../fields/LockedField.js'
 
 // Layout Components
-import { ContainerConfig } from '../components/layout/Container'
-import { FlexConfig } from '../components/layout/Flex'
-import { GridConfig } from '../components/layout/Grid'
-import { SectionConfig } from '../components/layout/Section'
-import { SpacerConfig } from '../components/layout/Spacer'
-import { TemplateConfig } from '../components/layout/Template'
+import { ContainerConfig } from '../components/layout/Container.js'
+import { FlexConfig } from '../components/layout/Flex.js'
+import { GridConfig } from '../components/layout/Grid.js'
+import { SectionConfig } from '../components/layout/Section.js'
+import { SpacerConfig } from '../components/layout/Spacer.js'
+import { TemplateConfig } from '../components/layout/Template.js'
 
 // Typography Components
-import { HeadingConfig } from '../components/typography/Heading'
-import { TextConfig } from '../components/typography/Text'
-import { RichTextEditorConfig } from '../components/typography/RichText.editor'
+import { HeadingConfig } from '../components/typography/Heading.js'
+import { TextConfig } from '../components/typography/Text.js'
+import { RichTextEditorConfig } from '../components/typography/RichText.editor.js'
 
 // Media Components
-import { ImageConfig } from '../components/media/Image'
+import { ImageConfig } from '../components/media/Image.js'
 
 // Interactive Components
-import { ButtonConfig } from '../components/interactive/Button'
-import { CardConfig } from '../components/interactive/Card'
-import { DividerConfig } from '../components/interactive/Divider'
-import { AccordionConfig } from '../components/interactive/Accordion'
+import { ButtonConfig } from '../components/interactive/Button.js'
+import { CardConfig } from '../components/interactive/Card.js'
+import { DividerConfig } from '../components/interactive/Divider.js'
+import { AccordionConfig } from '../components/interactive/Accordion.js'
 
 /**
  * Editor Puck configuration with all components including client-only ones
@@ -152,7 +152,7 @@ export const editorConfig = {
 } satisfies PuckConfig
 
 // Re-export merge utility for convenience
-export { mergeConfigs } from './merge'
+export { mergeConfigs } from './merge.js'
 
 // Re-export presets for extending configs
 export {

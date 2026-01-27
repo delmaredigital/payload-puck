@@ -4,8 +4,8 @@
  * Functions for working with layout configurations.
  */
 
-import type { LayoutDefinition, LayoutConfig, LayoutOption } from './types'
-import { DEFAULT_LAYOUTS, DEFAULT_LAYOUT_CONFIG } from './defaults'
+import type { LayoutDefinition, LayoutConfig, LayoutOption } from './types.js'
+import { DEFAULT_LAYOUTS, DEFAULT_LAYOUT_CONFIG } from './defaults.js'
 
 /**
  * Resolves a layout config, merging with defaults if needed

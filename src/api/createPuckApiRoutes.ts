@@ -7,7 +7,7 @@ import type {
   PuckApiRouteHandlers,
   CreatePageBody,
   RouteHandlerContext,
-} from './types'
+} from './types.js'
 
 /**
  * Default Puck data for new pages

@@ -20,8 +20,8 @@ import {
   type DimensionsValue,
   type AnimationValue,
   type TransformValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
 
 // Default padding with standard horizontal spacing (replaces hardcoded px-4)
 const DEFAULT_PADDING: PaddingValue = {

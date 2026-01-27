@@ -14,8 +14,8 @@
 
 import React, { useCallback, memo, useState, type CSSProperties } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
-import type { GradientValue, GradientStop, ColorValue } from './shared'
-import { colorValueToCSS } from './shared'
+import type { GradientValue, GradientStop, ColorValue } from './shared.js'
+import { colorValueToCSS } from './shared.js'
 
 // =============================================================================
 // Types

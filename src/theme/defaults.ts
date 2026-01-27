@@ -10,7 +10,7 @@ import type {
   BackgroundStyles,
   ColorPreset,
   ResolvedTheme,
-} from './types'
+} from './types.js'
 
 /**
  * Default button variant styles

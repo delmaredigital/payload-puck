@@ -26,18 +26,18 @@ import {
   type AnimationValue,
   type TransformValue,
   type VisibilityValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createMarginField } from '../../fields/MarginField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createBorderField } from '../../fields/BorderField'
-import { createMediaField, type MediaReference } from '../../fields/MediaField'
-import { createAlignmentField, type Alignment } from '../../fields/AlignmentField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createTransformField } from '../../fields/TransformField'
-import { createResetField } from '../../fields/ResetField'
-import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createBorderField } from '../../fields/BorderField.js'
+import { createMediaField, type MediaReference } from '../../fields/MediaField.js'
+import { createAlignmentField, type Alignment } from '../../fields/AlignmentField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createTransformField } from '../../fields/TransformField.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
 
 // Default padding with standard spacing (replaces hardcoded py-4 px-4)
 const DEFAULT_PADDING: PaddingValue = {

@@ -116,7 +116,7 @@ export function PuckEditorView({
 
   // Dynamically import PuckEditor to avoid SSR issues
   useEffect(() => {
-    import('../editor/PuckEditor').then((mod) => {
+    import('../editor/PuckEditor.js').then((mod) => {
       setPuckEditor(() => mod.PuckEditor)
     })
   }, [])

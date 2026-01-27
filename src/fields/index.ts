@@ -5,13 +5,13 @@
  */
 
 // Shared field definitions
-export * from './shared'
+export * from './shared.js'
 
 // Custom field components
-export { MediaField, createMediaField } from './MediaField'
-export type { MediaReference } from './MediaField'
+export { MediaField, createMediaField } from './MediaField.js'
+export type { MediaReference } from './MediaField.js'
 
-export { ColorPickerField, createColorPickerField, colorToRgba } from './ColorPickerField'
+export { ColorPickerField, createColorPickerField, colorToRgba } from './ColorPickerField.js'
 
 // =============================================================================
 // RichText Field
@@ -38,31 +38,31 @@ export {
   FONT_SIZE_UNITS,
   controlStyles,
   type FontSizeUnit,
-} from './richtext'
+} from './richtext/index.js'
 
-export { PaddingField, createPaddingField } from './PaddingField'
+export { PaddingField, createPaddingField } from './PaddingField.js'
 
-export { MarginField, createMarginField } from './MarginField'
-export type { MarginValue } from './MarginField'
+export { MarginField, createMarginField } from './MarginField.js'
+export type { MarginValue } from './MarginField.js'
 
-export { BorderField, createBorderField } from './BorderField'
+export { BorderField, createBorderField } from './BorderField.js'
 
-export { WidthField, createWidthField } from './WidthField'
+export { WidthField, createWidthField } from './WidthField.js'
 
-export { DimensionsField, createDimensionsField } from './DimensionsField'
+export { DimensionsField, createDimensionsField } from './DimensionsField.js'
 export {
   dimensionsValueToCSS,
   getDimensionsSummary,
   isLegacyWidthValue,
   migrateWidthValue,
-} from './shared'
+} from './shared.js'
 export type {
   DimensionsValue,
   DimensionConstraint,
   DimensionsUnit,
   DimensionsMode,
   ContentAlignment,
-} from './shared'
+} from './shared.js'
 
 export {
   LockedTextField,
@@ -71,21 +71,21 @@ export {
   createLockedRadioField,
   lockedSlugField,
   lockedHomepageField,
-} from './LockedField'
+} from './LockedField.js'
 
-export { AlignmentField, createAlignmentField } from './AlignmentField'
-export type { Alignment } from './AlignmentField'
+export { AlignmentField, createAlignmentField } from './AlignmentField.js'
+export type { Alignment } from './AlignmentField.js'
 
 export {
   JustifyContentField,
   AlignItemsField,
   createJustifyContentField,
   createAlignItemsField,
-} from './FlexAlignmentField'
-export type { JustifyContent, AlignItems } from './FlexAlignmentField'
+} from './FlexAlignmentField.js'
+export type { JustifyContent, AlignItems } from './FlexAlignmentField.js'
 
-export { VerticalAlignmentField, createVerticalAlignmentField } from './VerticalAlignmentField'
-export type { VerticalAlignment } from './VerticalAlignmentField'
+export { VerticalAlignmentField, createVerticalAlignmentField } from './VerticalAlignmentField.js'
+export type { VerticalAlignment } from './VerticalAlignmentField.js'
 
 export {
   ContentAlignmentField,
@@ -94,20 +94,20 @@ export {
   alignmentToGridCSS,
   alignmentToPlaceSelfCSS,
   alignmentToTailwind,
-} from './ContentAlignmentField'
+} from './ContentAlignmentField.js'
 export type {
   ContentAlignmentValue,
   HorizontalAlign,
   VerticalAlign,
   PositionLabel,
-} from './ContentAlignmentField'
+} from './ContentAlignmentField.js'
 
-export { SizeField, createSizeField, sizeValueToCSS, getSizeClasses } from './SizeField'
-export type { SizeValue, SizeMode, SizeUnit } from './SizeField'
+export { SizeField, createSizeField, sizeValueToCSS, getSizeClasses } from './SizeField.js'
+export type { SizeValue, SizeMode, SizeUnit } from './SizeField.js'
 
-export { GradientEditor } from './GradientEditor'
+export { GradientEditor } from './GradientEditor.js'
 
-export { BackgroundField, createBackgroundField } from './BackgroundField'
+export { BackgroundField, createBackgroundField } from './BackgroundField.js'
 export type {
   BackgroundValue,
   BackgroundImageValue,
@@ -115,11 +115,11 @@ export type {
   GradientValue,
   GradientStop,
   GradientMask,
-} from './shared'
-export { backgroundValueToCSS, gradientValueToCSS, getBackgroundImageOpacity } from './shared'
+} from './shared.js'
+export { backgroundValueToCSS, gradientValueToCSS, getBackgroundImageOpacity } from './shared.js'
 
-export { ResponsiveField, createResponsiveField } from './ResponsiveField'
-export type { Breakpoint, ResponsiveValue, VisibilityValue, ResponsiveCSSResult } from './shared'
+export { ResponsiveField, createResponsiveField } from './ResponsiveField.js'
+export type { Breakpoint, ResponsiveValue, VisibilityValue, ResponsiveCSSResult } from './shared.js'
 export {
   BREAKPOINTS,
   isResponsiveValue,
@@ -127,14 +127,14 @@ export {
   cssPropertiesToString,
   visibilityValueToCSS,
   DEFAULT_VISIBILITY,
-} from './shared'
+} from './shared.js'
 
 export {
   ResponsiveVisibilityField,
   createResponsiveVisibilityField,
-} from './ResponsiveVisibilityField'
+} from './ResponsiveVisibilityField.js'
 
-export { AnimationField, createAnimationField } from './AnimationField'
+export { AnimationField, createAnimationField } from './AnimationField.js'
 export type {
   AnimationValue,
   EasingFunction,
@@ -144,7 +144,7 @@ export type {
   AnimationCategory,
   StaggerConfig,
   StaggerDirection,
-} from './shared'
+} from './shared.js'
 export {
   animationValueToCSS,
   getEntranceAnimationStyles,
@@ -156,11 +156,11 @@ export {
   EASING_CSS_MAP,
   ANIMATION_CATEGORIES,
   DEFAULT_ANIMATION,
-} from './shared'
+} from './shared.js'
 
-export { TransformField, createTransformField } from './TransformField'
-export type { TransformValue, TransformOrigin } from './shared'
-export { transformValueToCSS, DEFAULT_TRANSFORM } from './shared'
+export { TransformField, createTransformField } from './TransformField.js'
+export type { TransformValue, TransformOrigin } from './shared.js'
+export { transformValueToCSS, DEFAULT_TRANSFORM } from './shared.js'
 
 // =============================================================================
 // Legacy CSS Utilities (Deprecated)
@@ -187,11 +187,11 @@ export function injectRichtextStyles() {
 // Page-Tree Integration Fields
 // =============================================================================
 
-export { FolderPickerField, createFolderPickerField } from './FolderPickerField'
+export { FolderPickerField, createFolderPickerField } from './FolderPickerField.js'
 export {
   PageSegmentField,
   createPageSegmentField,
   LockedPageSegmentField,
   createLockedPageSegmentField,
-} from './PageSegmentField'
-export { SlugPreviewField, createSlugPreviewField } from './SlugPreviewField'
+} from './PageSegmentField.js'
+export { SlugPreviewField, createSlugPreviewField } from './SlugPreviewField.js'

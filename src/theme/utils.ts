@@ -10,7 +10,7 @@ import type {
   ResolvedTheme,
   ButtonVariantStyles,
   BackgroundStyles,
-} from './types'
+} from './types.js'
 import {
   DEFAULT_BUTTON_VARIANTS,
   DEFAULT_CTA_BUTTON_VARIANTS,
@@ -18,7 +18,7 @@ import {
   DEFAULT_COLOR_PRESETS,
   DEFAULT_FOCUS_RING,
   DEFAULT_THEME,
-} from './defaults'
+} from './defaults.js'
 
 /**
  * Merges user-provided theme config with defaults to create a fully resolved theme

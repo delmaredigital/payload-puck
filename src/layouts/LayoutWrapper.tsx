@@ -5,8 +5,8 @@
  */
 
 import type { ReactNode, CSSProperties } from 'react'
-import type { LayoutDefinition } from './types'
-import { backgroundValueToCSS, type BackgroundValue } from '../fields/shared'
+import type { LayoutDefinition } from './types.js'
+import { backgroundValueToCSS, type BackgroundValue } from '../fields/shared.js'
 
 /**
  * Page-level overrides for layout settings

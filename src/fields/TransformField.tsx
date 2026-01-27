@@ -25,8 +25,8 @@ import {
   ChevronRight,
   Box,
 } from 'lucide-react'
-import type { TransformValue, TransformOrigin } from './shared'
-import { DEFAULT_TRANSFORM, transformValueToCSS } from './shared'
+import type { TransformValue, TransformOrigin } from './shared.js'
+import { DEFAULT_TRANSFORM, transformValueToCSS } from './shared.js'
 
 // =============================================================================
 // Types

@@ -8,8 +8,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import type { Breakpoint, ResponsiveValue } from '../fields/shared'
-import { BREAKPOINTS, isResponsiveValue } from '../fields/shared'
+import type { Breakpoint, ResponsiveValue } from '../fields/shared.js'
+import { BREAKPOINTS, isResponsiveValue } from '../fields/shared.js'
 
 // =============================================================================
 // Types

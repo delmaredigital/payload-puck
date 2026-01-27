@@ -3,7 +3,7 @@
 import { createElement } from 'react'
 import { History } from 'lucide-react'
 import type { Plugin } from '@puckeditor/core'
-import { VersionHistoryPanel } from './VersionHistoryPanel'
+import { VersionHistoryPanel } from './VersionHistoryPanel.js'
 
 export interface VersionHistoryPluginOptions {
   /**

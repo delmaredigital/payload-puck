@@ -1,5 +1,5 @@
 import type { Config as PuckConfig } from '@puckeditor/core'
-import type { MergeConfigOptions } from '../types'
+import type { MergeConfigOptions } from '../types/index.js'
 
 /**
  * Merges Puck configurations together

@@ -17,8 +17,8 @@ import {
   Monitor,
   X,
 } from 'lucide-react'
-import type { Breakpoint, ResponsiveValue } from './shared'
-import { BREAKPOINTS } from './shared'
+import type { Breakpoint, ResponsiveValue } from './shared.js'
+import { BREAKPOINTS } from './shared.js'
 
 // =============================================================================
 // Types

@@ -31,17 +31,17 @@ import {
   type AnimationValue,
   type ResponsiveValue,
   type VisibilityValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createBorderField } from '../../fields/BorderField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createMarginField } from '../../fields/MarginField'
-import { createResetField } from '../../fields/ResetField'
-import { createBackgroundField } from '../../fields/BackgroundField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createResponsiveField } from '../../fields/ResponsiveField'
-import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createBorderField } from '../../fields/BorderField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createBackgroundField } from '../../fields/BackgroundField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createResponsiveField } from '../../fields/ResponsiveField.js'
+import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
 
 // Default padding (none)
 const DEFAULT_PADDING: PaddingValue = {

@@ -54,7 +54,7 @@ export {
   type PuckContentItem,
   type MigrateLegacyOptions,
   type MigrationPreview,
-} from './migration'
+} from './migration.js'
 
 // =============================================================================
 // Validation Exports
@@ -73,4 +73,4 @@ export {
   // Types
   type ValidationResult,
   type ValidationOptions,
-} from './validation'
+} from './validation.js'

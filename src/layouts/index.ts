@@ -31,7 +31,7 @@ export type {
   LayoutDefinition,
   LayoutConfig,
   LayoutWrapperProps,
-} from './types'
+} from './types.js'
 
 // Defaults
 export {
@@ -43,7 +43,7 @@ export {
   DEFAULT_LAYOUTS,
   EXTENDED_LAYOUTS,
   DEFAULT_LAYOUT_CONFIG,
-} from './defaults'
+} from './defaults.js'
 
 // Utilities
 export {
@@ -54,7 +54,7 @@ export {
   createLayout,
   mergeLayouts,
   createRenderLayouts,
-} from './utils'
+} from './utils.js'
 
 // Components
-export { LayoutWrapper, type LayoutWrapperProps as LayoutWrapperComponentProps, type PageOverrides } from './LayoutWrapper'
+export { LayoutWrapper, type LayoutWrapperProps as LayoutWrapperComponentProps, type PageOverrides } from './LayoutWrapper.js'

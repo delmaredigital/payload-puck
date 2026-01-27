@@ -15,8 +15,8 @@ import type {
   AnimationValue,
   TransformValue,
   ColorValue,
-} from '../../fields/shared'
-import { AccordionClient } from '../AccordionClient'
+} from '../../fields/shared.js'
+import { AccordionClient } from '../AccordionClient.js'
 
 interface AccordionItemData {
   title: string

@@ -21,12 +21,12 @@ import {
   dimensionsValueToCSS,
   type PaddingValue,
   type DimensionsValue,
-} from '../../fields/shared'
-import { createMarginField } from '../../fields/MarginField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createResetField } from '../../fields/ResetField'
-import { createRichTextField } from '../../fields/richtext'
+} from '../../fields/shared.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createResetField } from '../../fields/ResetField.js'
+import { createRichTextField } from '../../fields/richtext/index.js'
 
 export interface RichTextEditorProps {
   content: React.ReactNode // Puck richtext returns React elements for contentEditable

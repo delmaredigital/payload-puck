@@ -1,8 +1,8 @@
 import { Render } from '@puckeditor/core'
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
-import { baseConfig } from '../config'
-import { LayoutWrapper, getLayout, DEFAULT_LAYOUTS, type LayoutDefinition, type PageOverrides } from '../layouts'
-import type { BackgroundValue } from '../fields/shared'
+import { baseConfig } from '../config/index.js'
+import { LayoutWrapper, getLayout, DEFAULT_LAYOUTS, type LayoutDefinition, type PageOverrides } from '../layouts/index.js'
+import type { BackgroundValue } from '../fields/shared.js'
 
 export interface PageRendererProps {
   /**

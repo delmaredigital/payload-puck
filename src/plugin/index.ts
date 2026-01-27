@@ -1,11 +1,11 @@
 import type { CollectionConfig, Config as PayloadConfig, Field, Plugin } from 'payload'
-import type { PuckPluginOptions, PuckAdminConfig, PageTreeIntegrationOptions } from '../types'
-import { generatePagesCollection } from './collections/Pages'
-import { TemplatesCollection } from '../collections/Templates'
+import type { PuckPluginOptions, PuckAdminConfig, PageTreeIntegrationOptions } from '../types/index.js'
+import { generatePagesCollection } from './collections/Pages.js'
+import { TemplatesCollection } from '../collections/Templates.js'
 import { AiPromptsCollection } from '../ai/collections/AiPrompts.js'
 import { AiContextCollection } from '../ai/collections/AiContext.js'
-import { getPuckFields } from './fields'
-import { createIsHomepageUniqueHook } from './hooks/isHomepageUnique'
+import { getPuckFields } from './fields/index.js'
+import { createIsHomepageUniqueHook } from './hooks/isHomepageUnique.js'
 import {
   createListHandler,
   createCreateHandler,
@@ -491,8 +491,8 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
 }
 
 // Re-export collection utilities
-export { generatePagesCollection } from './collections/Pages'
-export { TemplatesCollection } from '../collections/Templates'
+export { generatePagesCollection } from './collections/Pages.js'
+export { TemplatesCollection } from '../collections/Templates.js'
 
 // Re-export field utilities for hybrid collection integration
 export {
@@ -506,7 +506,7 @@ export {
   isHomepageField,
   seoFieldGroup,
   conversionFieldGroup,
-} from './fields'
+} from './fields/index.js'
 
 // Export the edit button generator for hybrid collections
 export { generatePuckEditField }
@@ -519,9 +519,9 @@ export {
   createIsHomepageUniqueHook,
   unsetHomepage,
   HomepageConflictError,
-} from './hooks'
-export type { IsHomepageUniqueHookOptions } from './hooks'
+} from './hooks/index.js'
+export type { IsHomepageUniqueHookOptions } from './hooks/index.js'
 
 // Re-export types
-export type { PuckPluginOptions, PuckAdminConfig } from '../types'
-export type { GetPuckFieldsOptions, GetPuckCollectionConfigOptions } from './fields/types'
+export type { PuckPluginOptions, PuckAdminConfig } from '../types/index.js'
+export type { GetPuckFieldsOptions, GetPuckCollectionConfigOptions } from './fields/types.js'

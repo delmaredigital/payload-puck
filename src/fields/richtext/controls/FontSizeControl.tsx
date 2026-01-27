@@ -10,8 +10,8 @@
 
 import React, { useState, useCallback, type CSSProperties } from 'react'
 import { ALargeSmall, ChevronDown } from 'lucide-react'
-import { FONT_SIZES, FONT_SIZE_UNITS, controlStyles } from './shared'
-import { Dropdown } from './DropdownPortal'
+import { FONT_SIZES, FONT_SIZE_UNITS, controlStyles } from './shared.js'
+import { Dropdown } from './DropdownPortal.js'
 import type { Editor } from '@tiptap/react'
 
 interface FontSizeControlProps {

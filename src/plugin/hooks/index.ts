@@ -10,4 +10,4 @@ export {
   HomepageConflictError,
   type IsHomepageUniqueHookOptions,
   type ExistingHomepageInfo,
-} from './isHomepageUnique'
+} from './isHomepageUnique.js'

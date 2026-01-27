@@ -15,15 +15,15 @@ export {
   minimalRichTextField,
   sidebarRichTextField,
   type CreateRichTextFieldOptions,
-} from './createRichTextField'
+} from './createRichTextField.js'
 
 // Extensions (for advanced customization)
-export { FontSize } from './extensions/FontSize'
+export { FontSize } from './extensions/FontSize.js'
 
 // Controls (for custom menu building)
-export { ColorPickerControl, ColorPickerPanel } from './controls/ColorPickerControl'
-export { FontSizeControl } from './controls/FontSizeControl'
-export { HighlightControl } from './controls/HighlightControl'
+export { ColorPickerControl, ColorPickerPanel } from './controls/ColorPickerControl.js'
+export { FontSizeControl } from './controls/FontSizeControl.js'
+export { HighlightControl } from './controls/HighlightControl.js'
 
 // Utilities
 export {
@@ -34,4 +34,4 @@ export {
   FONT_SIZE_UNITS,
   controlStyles,
   type FontSizeUnit,
-} from './controls/shared'
+} from './controls/shared.js'

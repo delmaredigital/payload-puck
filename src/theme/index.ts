@@ -34,7 +34,7 @@ export type {
   ThemeConfig,
   ResolvedTheme,
   ThemeContextValue,
-} from './types'
+} from './types.js'
 
 // Context & Provider
 export {
@@ -43,7 +43,7 @@ export {
   getDefaultTheme,
   useHasThemeProvider,
   type ThemeProviderProps,
-} from './context'
+} from './context.js'
 
 // Defaults
 export {
@@ -53,10 +53,10 @@ export {
   DEFAULT_COLOR_PRESETS,
   DEFAULT_FOCUS_RING,
   DEFAULT_THEME,
-} from './defaults'
+} from './defaults.js'
 
 // Utilities
-export { resolveTheme, getVariantClasses, getBackgroundClasses } from './utils'
+export { resolveTheme, getVariantClasses, getBackgroundClasses } from './utils.js'
 
 // Example theme (copy and customize for your project)
-export { exampleTheme } from './example'
+export { exampleTheme } from './example.js'

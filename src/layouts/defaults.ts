@@ -5,7 +5,7 @@
  * Users can override or extend these in their own configuration.
  */
 
-import type { LayoutDefinition, LayoutConfig } from './types'
+import type { LayoutDefinition, LayoutConfig } from './types.js'
 
 /**
  * Default layout - standard content width with padding

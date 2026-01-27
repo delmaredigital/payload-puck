@@ -22,10 +22,10 @@ import {
   type DimensionsValue,
   type AnimationValue,
   type TransformValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import type { MediaReference } from '../../fields/MediaField'
-import type { Alignment } from '../../fields/AlignmentField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import type { MediaReference } from '../../fields/MediaField.js'
+import type { Alignment } from '../../fields/AlignmentField.js'
 
 // Default content padding for card (replaces hardcoded p-4)
 const DEFAULT_CONTENT_PADDING: PaddingValue = {

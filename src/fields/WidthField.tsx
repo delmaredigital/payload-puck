@@ -21,7 +21,7 @@ import {
   Container,
   SlidersHorizontal,
 } from 'lucide-react'
-import type { WidthValue } from './shared'
+import type { WidthValue } from './shared.js'
 
 // =============================================================================
 // Types

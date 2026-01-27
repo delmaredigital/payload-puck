@@ -22,10 +22,10 @@ import {
   type AnimationValue,
   type TransformValue,
   type VisibilityValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import type { MediaReference } from '../../fields/MediaField'
-import type { Alignment } from '../../fields/AlignmentField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import type { MediaReference } from '../../fields/MediaField.js'
+import type { Alignment } from '../../fields/AlignmentField.js'
 
 // Default padding with standard spacing (replaces hardcoded py-4 px-4)
 const DEFAULT_PADDING: PaddingValue = {

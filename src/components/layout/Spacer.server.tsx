@@ -12,7 +12,7 @@
  */
 
 import type { ComponentConfig } from '@puckeditor/core'
-import { cn, visibilityValueToCSS, type VisibilityValue } from '../../fields/shared'
+import { cn, visibilityValueToCSS, type VisibilityValue } from '../../fields/shared.js'
 
 // Simple ID generator for server-side rendering
 let idCounter = 0

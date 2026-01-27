@@ -21,9 +21,9 @@ import {
   type DimensionsValue,
   type ColorValue,
   type AnimationValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import type { Alignment } from '../../fields/AlignmentField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import type { Alignment } from '../../fields/AlignmentField.js'
 
 // Default padding with standard horizontal spacing (replaces hardcoded px-4)
 const DEFAULT_PADDING: PaddingValue = {

@@ -21,13 +21,13 @@ import type {
   EntranceAnimation,
   AnimationOrigin,
   StaggerDirection,
-} from './shared'
+} from './shared.js'
 import {
   ANIMATION_CATEGORIES,
   DEFAULT_ANIMATION,
   getRelevantIntensityControls,
   getDefaultEasingForAnimation,
-} from './shared'
+} from './shared.js'
 
 // =============================================================================
 // Types

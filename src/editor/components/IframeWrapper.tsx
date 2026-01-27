@@ -2,8 +2,8 @@
 
 import { memo, useEffect, useMemo, useState, createContext, useContext, type ReactNode, type ComponentType } from 'react'
 import { createUsePuck } from '@puckeditor/core'
-import type { LayoutDefinition } from '../../layouts'
-import { backgroundValueToCSS, type BackgroundValue } from '../../fields/shared'
+import type { LayoutDefinition } from '../../layouts/index.js'
+import { backgroundValueToCSS, type BackgroundValue } from '../../fields/shared.js'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()

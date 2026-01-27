@@ -1,8 +1,8 @@
 import type { Access, CollectionConfig, Config as PayloadConfig, Field } from 'payload'
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
-import type { ThemeConfig } from '../theme/types'
-import type { LayoutDefinition, LayoutConfig } from '../layouts/types'
-import type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types'
+import type { ThemeConfig } from '../theme/types.js'
+import type { LayoutDefinition, LayoutConfig } from '../layouts/types.js'
+import type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types.js'
 
 // =============================================================================
 // Plugin Configuration Types
@@ -464,13 +464,13 @@ export interface ColorPickerFieldProps {
 // =============================================================================
 
 export type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
-export type { ThemeConfig } from '../theme/types'
+export type { ThemeConfig } from '../theme/types.js'
 
 // =============================================================================
 // Re-exports for Hybrid Integration
 // =============================================================================
 
-export type { GetPuckFieldsOptions } from '../plugin/fields/types'
+export type { GetPuckFieldsOptions } from '../plugin/fields/types.js'
 
 // Re-export AI types for convenience
-export type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types'
+export type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types.js'

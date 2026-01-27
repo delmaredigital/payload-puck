@@ -7,7 +7,7 @@
 
 import type { PayloadHandler, CollectionSlug } from 'payload'
 import { APIError } from 'payload'
-import { unsetHomepage, HomepageConflictError } from '../plugin/hooks/isHomepageUnique'
+import { unsetHomepage, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
 
 export interface PuckEndpointOptions {
   collections: string[]

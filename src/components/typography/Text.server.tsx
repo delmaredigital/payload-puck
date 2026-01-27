@@ -19,9 +19,9 @@ import {
   type ColorValue,
   type DimensionsValue,
   type AnimationValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import type { Alignment } from '../../fields/AlignmentField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import type { Alignment } from '../../fields/AlignmentField.js'
 
 export interface TextProps {
   content: string

@@ -4,11 +4,11 @@ import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { Config as PuckConfig, Data, Plugin as PuckPlugin, Overrides as PuckOverrides } from '@puckeditor/core'
 import type { ReactNode } from 'react'
-import type { LayoutStyle } from './components/IframeWrapper'
-import type { ThemeConfig } from '../theme'
-import type { LayoutDefinition } from '../layouts'
+import type { LayoutStyle } from './components/IframeWrapper.js'
+import type { ThemeConfig } from '../theme/index.js'
+import type { LayoutDefinition } from '../layouts/index.js'
 import type { AiExamplePrompt, ComponentAiOverrides } from '../ai/types.js'
-import { LoadingState } from './components/LoadingState'
+import { LoadingState } from './components/LoadingState.js'
 import { injectPageTreeFields } from './utils/injectPageTreeFields.js'
 import { hasPageTreeFields } from './utils/detectPageTree.js'
 import { usePuckConfig } from '../views/PuckConfigContext.js'
@@ -18,7 +18,7 @@ import { comprehensiveComponentAiConfig } from '../ai/presets/index.js'
 // Dynamic import with ssr: false to prevent hydration mismatch
 // Puck generates random IDs for drag-and-drop that differ between server/client
 const PuckEditorImpl = dynamic(
-  () => import('./PuckEditorImpl.client').then((mod) => mod.PuckEditorImpl),
+  () => import('./PuckEditorImpl.client.js').then((mod) => mod.PuckEditorImpl),
   {
     ssr: false,
     loading: () => <LoadingState />,

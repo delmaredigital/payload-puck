@@ -7,29 +7,29 @@
 
 import type { Config as PuckConfig, ComponentConfig } from '@puckeditor/core'
 import type { ReactNode } from 'react'
-import { DEFAULT_LAYOUTS, layoutsToOptions, type LayoutDefinition } from '../layouts'
+import { DEFAULT_LAYOUTS, layoutsToOptions, type LayoutDefinition } from '../layouts/index.js'
 
 // Layout Components (server-safe versions)
-import { ContainerConfig } from '../components/layout/Container.server'
-import { FlexConfig } from '../components/layout/Flex.server'
-import { GridConfig } from '../components/layout/Grid.server'
-import { SectionConfig } from '../components/layout/Section.server'
-import { SpacerConfig } from '../components/layout/Spacer.server'
-import { TemplateServerConfig } from '../components/layout/Template.server'
+import { ContainerConfig } from '../components/layout/Container.server.js'
+import { FlexConfig } from '../components/layout/Flex.server.js'
+import { GridConfig } from '../components/layout/Grid.server.js'
+import { SectionConfig } from '../components/layout/Section.server.js'
+import { SpacerConfig } from '../components/layout/Spacer.server.js'
+import { TemplateServerConfig } from '../components/layout/Template.server.js'
 
 // Typography Components (server-safe versions)
-import { HeadingConfig } from '../components/typography/Heading.server'
-import { TextConfig } from '../components/typography/Text.server'
-import { RichTextConfig } from '../components/typography/RichText.server'
+import { HeadingConfig } from '../components/typography/Heading.server.js'
+import { TextConfig } from '../components/typography/Text.server.js'
+import { RichTextConfig } from '../components/typography/RichText.server.js'
 
 // Media Components (server-safe versions)
-import { ImageConfig } from '../components/media/Image.server'
+import { ImageConfig } from '../components/media/Image.server.js'
 
 // Interactive Components (server-safe versions)
-import { ButtonConfig } from '../components/interactive/Button.server'
-import { CardConfig } from '../components/interactive/Card.server'
-import { DividerConfig } from '../components/interactive/Divider.server'
-import { AccordionConfig } from '../components/interactive/Accordion.server'
+import { ButtonConfig } from '../components/interactive/Button.server.js'
+import { CardConfig } from '../components/interactive/Card.server.js'
+import { DividerConfig } from '../components/interactive/Divider.server.js'
+import { AccordionConfig } from '../components/interactive/Accordion.server.js'
 
 /**
  * Creates a Puck configuration with custom layouts
@@ -127,8 +127,8 @@ export function createConfig(layouts: LayoutDefinition[] = DEFAULT_LAYOUTS): Puc
 export const baseConfig = createConfig(DEFAULT_LAYOUTS)
 
 // Re-export merge utility and layout helpers
-export { mergeConfigs, mergeConfigs as extendConfig } from './merge'
-export { DEFAULT_LAYOUTS, createLayout, type LayoutDefinition } from '../layouts'
+export { mergeConfigs, mergeConfigs as extendConfig } from './merge.js'
+export { DEFAULT_LAYOUTS, createLayout, type LayoutDefinition } from '../layouts/index.js'
 
 // Re-export server-specific types
-export type { ServerComponentConfig, ServerRootConfig, SlotField } from './types'
+export type { ServerComponentConfig, ServerRootConfig, SlotField } from './types.js'

@@ -5,8 +5,8 @@ import type {
   PuckApiRouteWithIdHandlers,
   UpdatePageBody,
   RouteHandlerWithIdContext,
-} from './types'
-import { mapRootPropsToPayloadFields, deepMerge } from './utils/mapRootProps'
+} from './types.js'
+import { mapRootPropsToPayloadFields, deepMerge } from './utils/mapRootProps.js'
 
 /**
  * Create API route handlers for /api/puck/pages/[id]

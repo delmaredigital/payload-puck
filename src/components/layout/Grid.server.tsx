@@ -32,8 +32,8 @@ import {
   type AnimationValue,
   type ResponsiveValue,
   type VisibilityValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
 
 // Simple ID generator for server-side rendering
 let idCounter = 0

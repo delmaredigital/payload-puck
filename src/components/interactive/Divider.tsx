@@ -19,15 +19,15 @@ import {
   type DimensionsValue,
   type AnimationValue,
   type TransformValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createMarginField } from '../../fields/MarginField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createColorPickerField } from '../../fields/ColorPickerField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createTransformField } from '../../fields/TransformField'
-import { createResetField } from '../../fields/ResetField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createColorPickerField } from '../../fields/ColorPickerField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createTransformField } from '../../fields/TransformField.js'
+import { createResetField } from '../../fields/ResetField.js'
 
 // Default padding with standard horizontal spacing (replaces hardcoded px-4)
 const DEFAULT_PADDING: PaddingValue = {

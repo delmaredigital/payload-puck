@@ -5,7 +5,7 @@
  * Puck visual editor format, enabling seamless migration of existing content.
  */
 
-import type { PuckPageData, PuckRootProps, MediaObject } from '../types'
+import type { PuckPageData, PuckRootProps, MediaObject } from '../types/index.js'
 
 // =============================================================================
 // Type Definitions

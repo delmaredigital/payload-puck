@@ -13,9 +13,9 @@
 
 import React, { useState, useCallback, type CSSProperties } from 'react'
 import { Palette, ChevronDown } from 'lucide-react'
-import { useTheme } from '../../../theme'
-import { parseColor, normalizeHex, hexToRgba, controlStyles } from './shared'
-import { Dropdown } from './DropdownPortal'
+import { useTheme } from '../../../theme/index.js'
+import { parseColor, normalizeHex, hexToRgba, controlStyles } from './shared.js'
+import { Dropdown } from './DropdownPortal.js'
 import type { Editor } from '@tiptap/react'
 
 interface ColorPickerControlProps {

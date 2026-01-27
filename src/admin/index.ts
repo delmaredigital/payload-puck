@@ -15,10 +15,10 @@
  */
 
 // Re-export types only (safe for RSC)
-export type { PuckEditorViewProps } from './PuckEditorView'
-export type { EditWithPuckButtonProps } from './EditWithPuckButton'
-export type { EditWithPuckCellConfig } from './EditWithPuckCell'
-export type { AdminComponentsConfig } from './generateAdminComponents'
+export type { PuckEditorViewProps } from './PuckEditorView.js'
+export type { EditWithPuckButtonProps } from './EditWithPuckButton.js'
+export type { EditWithPuckCellConfig } from './EditWithPuckCell.js'
+export type { AdminComponentsConfig } from './generateAdminComponents.js'
 
 // Helper for generating edit button field (safe for RSC)
-export { generatePuckEditField } from './generateAdminComponents'
+export { generatePuckEditField } from './generateAdminComponents.js'

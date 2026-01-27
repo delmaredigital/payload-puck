@@ -19,15 +19,15 @@ import {
   type ColorValue,
   type DimensionsValue,
   type AnimationValue,
-} from '../../fields/shared'
-import { AnimatedWrapper } from '../AnimatedWrapper'
-import { createMarginField } from '../../fields/MarginField'
-import { createPaddingField } from '../../fields/PaddingField'
-import { createColorPickerField } from '../../fields/ColorPickerField'
-import { createAlignmentField, type Alignment } from '../../fields/AlignmentField'
-import { createDimensionsField } from '../../fields/DimensionsField'
-import { createAnimationField } from '../../fields/AnimationField'
-import { createResetField } from '../../fields/ResetField'
+} from '../../fields/shared.js'
+import { AnimatedWrapper } from '../AnimatedWrapper.js'
+import { createMarginField } from '../../fields/MarginField.js'
+import { createPaddingField } from '../../fields/PaddingField.js'
+import { createColorPickerField } from '../../fields/ColorPickerField.js'
+import { createAlignmentField, type Alignment } from '../../fields/AlignmentField.js'
+import { createDimensionsField } from '../../fields/DimensionsField.js'
+import { createAnimationField } from '../../fields/AnimationField.js'
+import { createResetField } from '../../fields/ResetField.js'
 
 export interface TextProps {
   content: string

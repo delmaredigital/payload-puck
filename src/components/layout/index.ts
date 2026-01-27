@@ -4,11 +4,11 @@
  * Structural components for page layout and content organization.
  */
 
-export { ContainerConfig } from './Container'
-export { FlexConfig } from './Flex'
-export { GridConfig } from './Grid'
-export { SectionConfig } from './Section'
-export { SpacerConfig } from './Spacer'
-export { TemplateConfig } from './Template'
-export { TemplateServerConfig } from './Template.server'
-export type { TemplateProps } from './Template'
+export { ContainerConfig } from './Container.js'
+export { FlexConfig } from './Flex.js'
+export { GridConfig } from './Grid.js'
+export { SectionConfig } from './Section.js'
+export { SpacerConfig } from './Spacer.js'
+export { TemplateConfig } from './Template.js'
+export { TemplateServerConfig } from './Template.server.js'
+export type { TemplateProps } from './Template.js'
