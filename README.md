@@ -14,6 +14,12 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
 
 ---
 
+## Documentation
+
+For additional documentation, visit: [https://deepwiki.com/delmaredigital/payload-puck](https://deepwiki.com/delmaredigital/payload-puck)
+
+---
+
 ## Table of Contents
 
 - [Installation](#installation)
