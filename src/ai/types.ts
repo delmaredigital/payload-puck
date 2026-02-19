@@ -626,4 +626,18 @@ export interface PuckPluginAiConfig {
    * ```
    */
   componentInstructions?: ComponentAiOverrides
+  /**
+   * Callback invoked when AI generation finishes.
+   * Provides usage metrics for cost tracking and analytics.
+   */
+  onFinish?: (result: {
+    totalCost: number
+    tokenUsage: {
+      inputTokens: number | undefined
+      outputTokens: number | undefined
+      totalTokens: number | undefined
+      reasoningTokens?: number | undefined
+      cachedInputTokens?: number | undefined
+    }
+  }) => void
 }

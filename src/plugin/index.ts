@@ -358,7 +358,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
                 {
                   path: '/puck/ai',
                   method: 'post' as const,
-                  handler: createAiEndpointHandler({ context: aiConfig.context, tools: aiConfig.tools }),
+                  handler: createAiEndpointHandler({ context: aiConfig.context, tools: aiConfig.tools, onFinish: aiConfig.onFinish }),
                 },
               ]
             : []),

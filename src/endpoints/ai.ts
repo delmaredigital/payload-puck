@@ -69,7 +69,16 @@ export interface AiEndpointOptions {
   /**
    * Callback invoked when AI generation finishes with usage metrics.
    */
-  onFinish?: (result: { totalCost: number; tokenUsage: any }) => void
+  onFinish?: (result: {
+    totalCost: number
+    tokenUsage: {
+      inputTokens: number | undefined
+      outputTokens: number | undefined
+      totalTokens: number | undefined
+      reasoningTokens?: number | undefined
+      cachedInputTokens?: number | undefined
+    }
+  }) => void
 }
 
 /**
