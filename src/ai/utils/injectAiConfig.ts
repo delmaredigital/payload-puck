@@ -6,6 +6,7 @@ import type { ComponentAiOverrides } from '../types.js'
 type ComponentWithAi = {
   ai?: {
     instructions?: string
+    exclude?: boolean
     schema?: object
   }
   fields?: Record<string, FieldWithAi>
@@ -17,6 +18,7 @@ type FieldWithAi = {
     instructions?: string
     required?: boolean
     exclude?: boolean
+    bind?: string
     schema?: object
   }
   [key: string]: unknown
