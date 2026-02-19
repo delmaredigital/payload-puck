@@ -71,6 +71,11 @@ export interface AiTool<TInput = unknown, TOutput = unknown> {
    * - "inline": Tool runs inline during generation
    */
   mode?: 'auto' | 'preload' | 'inline'
+  /**
+   * Optional output schema for the tool's return value.
+   * Must be a Zod schema.
+   */
+  outputSchema?: import('zod').ZodTypeAny
 }
 
 // =============================================================================
@@ -199,6 +204,10 @@ export interface AiFieldConfig {
    * ```
    */
   bind?: string
+  /**
+   * Whether this field's value should be streamed during AI generation.
+   */
+  stream?: boolean
 }
 
 /**
@@ -225,6 +234,11 @@ export interface AiComponentConfig {
    * The component remains available for manual use in the editor.
    */
   exclude?: boolean
+  /**
+   * Controls which components are allowed/disallowed in the default slot zone
+   * during AI generation.
+   */
+  defaultZone?: { allow?: string[]; disallow?: string[]; disabled?: boolean }
   /**
    * @deprecated Removed in Puck AI 0.4. Use field-level `schema` on `AiFieldConfig` instead.
    */

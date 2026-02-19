@@ -196,6 +196,12 @@ export interface PuckEditorImplProps {
   aiOptions?: {
     host?: string
     examplePrompts?: AiExamplePrompt[]
+    prepareRequest?: (opts: {
+      body?: { chatId?: string; trigger?: string; [key: string]: any }
+      headers?: HeadersInit
+      credentials?: RequestCredentials
+    }) => any | Promise<any>
+    scrollTracking?: boolean
   }
 
   /**
@@ -766,6 +772,8 @@ export function PuckEditorImpl({
       chat: {
         examplePrompts: convertedPrompts.length > 0 ? convertedPrompts : undefined,
       },
+      prepareRequest: aiOptions?.prepareRequest,
+      scrollTracking: aiOptions?.scrollTracking,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omit prompt arrays to prevent recreation
   }, [enableAi, hasPromptsCollection, promptsLoading, aiOptions?.host])

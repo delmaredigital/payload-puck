@@ -245,6 +245,7 @@ export function createAiEndpointHandler(options: AiEndpointOptions = {}): Payloa
             name: tool.name,
             description: tool.description,
             inputSchema: tool.inputSchema,
+            outputSchema: tool.outputSchema,
             mode: tool.mode,
             // Wrap execute to inject Payload context
             execute: (input: any) => tool.execute(input, toolContext),

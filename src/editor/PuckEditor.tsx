@@ -208,6 +208,20 @@ export interface PuckEditorProps {
      * Users can click these to quickly send common prompts.
      */
     examplePrompts?: AiExamplePrompt[]
+    /**
+     * Intercept and modify outgoing AI requests before they are sent.
+     * Use this to add custom headers, credentials, or body data.
+     */
+    prepareRequest?: (opts: {
+      body?: { chatId?: string; trigger?: string; [key: string]: any }
+      headers?: HeadersInit
+      credentials?: RequestCredentials
+    }) => any | Promise<any>
+    /**
+     * Enable automatic scroll tracking during AI generation.
+     * @default true
+     */
+    scrollTracking?: boolean
   }
 
   /**

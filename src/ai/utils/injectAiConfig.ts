@@ -7,6 +7,7 @@ type ComponentWithAi = {
   ai?: {
     instructions?: string
     exclude?: boolean
+    defaultZone?: { allow?: string[]; disallow?: string[]; disabled?: boolean }
     schema?: object
   }
   fields?: Record<string, FieldWithAi>
@@ -19,6 +20,7 @@ type FieldWithAi = {
     required?: boolean
     exclude?: boolean
     bind?: string
+    stream?: boolean
     schema?: object
   }
   [key: string]: unknown

@@ -84,6 +84,7 @@ export function createPuckAiApiRoutes(config: PuckAiRoutesConfig): PuckAiRouteHa
             puckTools[name] = tool({
               description: toolDef.description,
               inputSchema: toolDef.inputSchema,
+              outputSchema: toolDef.outputSchema,
               execute: toolDef.execute,
               name: toolDef.name,
               mode: toolDef.mode,
