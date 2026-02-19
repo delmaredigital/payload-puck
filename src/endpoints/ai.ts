@@ -66,6 +66,10 @@ export interface AiEndpointOptions {
    * These allow AI to perform actions like database lookups, API calls, etc.
    */
   tools?: Record<string, AiTool>
+  /**
+   * Callback invoked when AI generation finishes with usage metrics.
+   */
+  onFinish?: (result: { totalCost: number; tokenUsage: any }) => void
 }
 
 /**
@@ -232,6 +236,7 @@ export function createAiEndpointHandler(options: AiEndpointOptions = {}): Payloa
             name: tool.name,
             description: tool.description,
             inputSchema: tool.inputSchema,
+            mode: tool.mode,
             // Wrap execute to inject Payload context
             execute: (input: any) => tool.execute(input, toolContext),
           }
@@ -240,7 +245,10 @@ export function createAiEndpointHandler(options: AiEndpointOptions = {}): Payloa
       }
 
       const response = await puckHandler(webRequest, {
-        ai: aiOptions,
+        ai: {
+          ...aiOptions,
+          onFinish: options.onFinish,
+        },
         apiKey,
       })
 

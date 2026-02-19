@@ -92,6 +92,7 @@ export function createAiGenerate(config: AiGenerateConfig): AiGenerateFunction {
           inputSchema: toolDef.inputSchema,
           execute: toolDef.execute,
           name: toolDef.name,
+          mode: toolDef.mode,
         })
       }
     }
@@ -105,6 +106,7 @@ export function createAiGenerate(config: AiGenerateConfig): AiGenerateFunction {
       host: ai?.host,
       pageData,
       tools: Object.keys(puckTools).length > 0 ? puckTools : undefined,
+      onFinish: ai?.onFinish,
     })
 
     if (!result) {

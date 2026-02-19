@@ -86,6 +86,7 @@ export function createPuckAiApiRoutes(config: PuckAiRoutesConfig): PuckAiRouteHa
               inputSchema: toolDef.inputSchema,
               execute: toolDef.execute,
               name: toolDef.name,
+              mode: toolDef.mode,
             })
           }
         }
@@ -97,6 +98,7 @@ export function createPuckAiApiRoutes(config: PuckAiRoutesConfig): PuckAiRouteHa
           ai: {
             context: ai?.context,
             tools: Object.keys(puckTools).length > 0 ? puckTools : undefined,
+            onFinish: ai?.onFinish,
           },
         })
       } catch (error) {
