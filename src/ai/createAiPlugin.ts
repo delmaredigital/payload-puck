@@ -39,7 +39,7 @@ import type { AiPluginOptions } from './types.js'
  * ```
  */
 export function createAiPlugin(options: AiPluginOptions = {}): PuckPlugin {
-  const { host = '/api/puck', examplePrompts, onSubmit } = options
+  const { host = '/api/puck', examplePrompts, onSubmit, prepareRequest, scrollTracking } = options
 
   // Dynamic import to avoid build errors if plugin-ai not installed
   // Also allows for tree-shaking when AI is not used
@@ -53,6 +53,8 @@ export function createAiPlugin(options: AiPluginOptions = {}): PuckPlugin {
         examplePrompts,
         onSubmit,
       },
+      prepareRequest,
+      scrollTracking,
     })
   } catch (e) {
     // Return a placeholder plugin if @puckeditor/plugin-ai is not installed
