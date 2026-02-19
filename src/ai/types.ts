@@ -64,6 +64,13 @@ export interface AiTool<TInput = unknown, TOutput = unknown> {
    * Optional name for the tool
    */
   name?: string
+  /**
+   * Controls how the tool interacts with the AI agent.
+   * - "auto": Agent decides when to use the tool (default)
+   * - "preload": Tool result is fetched before generation starts
+   * - "inline": Tool runs inline during generation
+   */
+  mode?: 'auto' | 'preload' | 'inline'
 }
 
 // =============================================================================
@@ -108,6 +115,27 @@ export interface AiOptions {
    * Custom Puck Cloud host URL
    */
   host?: string
+  /**
+   * Callback invoked when AI generation finishes.
+   * Provides usage metrics for cost tracking and analytics.
+   *
+   * @example
+   * ```typescript
+   * onFinish: ({ totalCost, tokenUsage }) => {
+   *   console.log(`Used ${tokenUsage.totalTokens} tokens, cost: ${totalCost}`)
+   * }
+   * ```
+   */
+  onFinish?: (result: {
+    totalCost: number
+    tokenUsage: {
+      inputTokens: number | undefined
+      outputTokens: number | undefined
+      totalTokens: number | undefined
+      reasoningTokens?: number | undefined
+      cachedInputTokens?: number | undefined
+    }
+  }) => void
 }
 
 // =============================================================================
@@ -156,6 +184,21 @@ export interface AiFieldConfig {
     type: string
     [key: string]: unknown
   }
+  /**
+   * Bind this field to a named tool. The tool runs during generation
+   * and its result populates this field deterministically.
+   *
+   * @example
+   * ```typescript
+   * fields: {
+   *   src: {
+   *     type: 'text',
+   *     ai: { bind: 'getImageUrl' },
+   *   },
+   * }
+   * ```
+   */
+  bind?: string
 }
 
 /**
@@ -178,8 +221,12 @@ export interface AiComponentConfig {
    */
   instructions?: string
   /**
-   * Custom JSON schema for the entire component.
-   * For when Puck can't infer from fields.
+   * Exclude this component from AI generation.
+   * The component remains available for manual use in the editor.
+   */
+  exclude?: boolean
+  /**
+   * @deprecated Removed in Puck AI 0.4. Use field-level `schema` on `AiFieldConfig` instead.
    */
   schema?: {
     type: 'object'
@@ -349,6 +396,34 @@ export interface AiPluginOptions {
    * Callback when user submits a prompt
    */
   onSubmit?: (prompt: string) => void
+  /**
+   * Intercept and modify outgoing AI requests before they are sent.
+   * Use this to add custom headers, credentials, or body data.
+   *
+   * @example
+   * ```typescript
+   * prepareRequest: (opts) => ({
+   *   ...opts,
+   *   headers: { ...opts.headers, Authorization: 'Bearer token' },
+   *   credentials: 'include',
+   * })
+   * ```
+   */
+  prepareRequest?: (opts: {
+    body?: {
+      chatId?: string
+      trigger?: string
+      [key: string]: any
+    }
+    headers?: HeadersInit
+    credentials?: RequestCredentials
+  }) => any | Promise<any>
+  /**
+   * Enable automatic scroll tracking during AI generation.
+   * When true, the editor scrolls to follow new content as it streams in.
+   * @default true (in @puckeditor/plugin-ai 0.4+)
+   */
+  scrollTracking?: boolean
 }
 
 // =============================================================================
