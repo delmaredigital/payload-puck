@@ -1224,6 +1224,7 @@ createPuckPlugin({
       getProducts: {
         description: 'Get products from the database',
         inputSchema: z.object({ category: z.string() }),
+        mode: 'preload', // 'auto' | 'preload' | 'inline'
         execute: async ({ category }, { payload }) => {
           return await payload.find({
             collection: 'products',
@@ -1238,6 +1239,50 @@ createPuckPlugin({
 
 Tools receive a context object with the Payload instance and authenticated user.
 
+Tool properties:
+- `description` - What the tool does
+- `inputSchema` - Zod schema for input validation
+- `outputSchema` - Optional Zod schema for output type-checking
+- `mode` - Execution mode: `"auto"` (default), `"preload"` (load results before generation), or `"inline"` (run during generation)
+- `execute` - The function to run, receives `(input, { payload, user })`
+
+### Usage Tracking with `onFinish`
+
+Track AI generation costs and token usage:
+
+```typescript
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    onFinish: ({ totalCost, tokenUsage }) => {
+      console.log(`Cost: $${totalCost}`)
+      console.log(`Tokens: ${tokenUsage.totalTokens}`)
+      // tokenUsage also includes: inputTokens, outputTokens,
+      // reasoningTokens, cachedInputTokens
+    },
+  },
+})
+```
+
+Also available on `createPuckAiApiRoutes` and `createAiGenerate`.
+
+### Request Interception with `prepareRequest`
+
+Modify outgoing AI requests before they're sent (e.g., add custom headers or credentials):
+
+```typescript
+<PuckEditor
+  enableAi={true}
+  aiOptions={{
+    prepareRequest: (opts) => ({
+      ...opts,
+      headers: { ...opts.headers, 'X-Tenant-ID': tenantId },
+    }),
+    scrollTracking: true, // Auto-scroll chat panel
+  }}
+/>
+```
+
 ### AI Configuration Options
 
 | Option | Default | Description |
@@ -1249,6 +1294,7 @@ Tools receive a context object with the Payload instance and authenticated user.
 | `examplePrompts` | `[]` | Static example prompts for the chat interface |
 | `tools` | `undefined` | Custom tools for AI to query your system |
 | `componentInstructions` | `undefined` | Override default component AI instructions |
+| `onFinish` | `undefined` | Callback with cost and token usage after generation |
 
 ### Component Instructions
 
@@ -1268,13 +1314,44 @@ createPuckPlugin({
       Heading: {
         ai: { instructions: 'Use our brand voice: professional but approachable' },
         fields: {
-          text: { ai: { instructions: 'Keep under 8 words' } },
+          text: {
+            ai: {
+              instructions: 'Keep under 8 words',
+              bind: 'heading',    // Bind to a semantic role
+              stream: true,       // Enable streaming generation
+            },
+          },
+        },
+      },
+      // Exclude a component from AI generation entirely
+      InternalWidget: {
+        ai: { exclude: true },
+      },
+      // Configure default zone behavior
+      Section: {
+        ai: {
+          defaultZone: {
+            allow: ['Text', 'Heading', 'Button'],
+            disallow: ['Section'],  // Prevent nesting
+          },
         },
       },
     },
   },
 })
 ```
+
+**Component-level AI options:**
+- `instructions` - Natural language guidance for the AI
+- `exclude` - Fully exclude this component from AI generation
+- `defaultZone` - Configure which components are allowed/disallowed in this component's default zone (`allow`, `disallow`, `disabled`)
+
+**Field-level AI options:**
+- `instructions` - Natural language guidance for this field
+- `required` - Mark as required for AI generation
+- `exclude` - Exclude this field from AI generation
+- `bind` - Bind to a semantic role (e.g., `'heading'`)
+- `stream` - Enable streaming generation for this field
 
 ### Standalone API Routes
 

@@ -5,6 +5,137 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.15] - 2026-02-19
+
+### Changed
+
+#### Puck AI 0.6.0 Upgrade
+
+Bumped `@puckeditor/plugin-ai` and `@puckeditor/cloud-client` from `^0.5.0` to `^0.6.0`. This is an additive update — no APIs were removed. The Puck packages now use Vercel AI SDK v6 internally (up from v5); payload-puck does not import from `ai` directly, so this is transparent.
+
+### Added
+
+#### `prepareRequest` Callback for AI Requests
+
+New option to intercept and modify outgoing AI requests before they're sent. Useful for adding custom headers, credentials, or body data.
+
+```typescript
+<PuckEditor
+  enableAi={true}
+  aiOptions={{
+    prepareRequest: (opts) => ({
+      ...opts,
+      headers: { ...opts.headers, 'X-Custom': 'value' },
+    }),
+  }}
+/>
+```
+
+Available on `PuckEditor` `aiOptions`, `createAiPlugin()`, and `AiPluginOptions`.
+
+#### `scrollTracking` Option for AI Chat
+
+New boolean option to control automatic scroll tracking in the AI chat panel.
+
+```typescript
+<PuckEditor
+  enableAi={true}
+  aiOptions={{
+    scrollTracking: true,
+  }}
+/>
+```
+
+#### Tool `mode` Property
+
+AI tools now support a `mode` property (`"auto" | "preload" | "inline"`) that controls how the tool is executed by the AI.
+
+```typescript
+const tools = {
+  getProducts: {
+    description: 'Fetch products',
+    inputSchema: z.object({}),
+    mode: 'preload', // Load results before generation
+    execute: async () => payload.find({ collection: 'products' }),
+  },
+}
+```
+
+Supported in `createPuckAiApiRoutes`, `createAiGenerate`, and the Payload endpoint handler.
+
+#### Tool `outputSchema` Property
+
+AI tools can now define an `outputSchema` (Zod schema) to type-check tool return values.
+
+#### `onFinish` Callback for AI Generation
+
+New callback on all server-side AI paths, invoked when generation completes with usage metrics:
+
+```typescript
+createPuckPlugin({
+  ai: {
+    enabled: true,
+    onFinish: ({ totalCost, tokenUsage }) => {
+      console.log(`Cost: $${totalCost}, tokens: ${tokenUsage.totalTokens}`)
+    },
+  },
+})
+```
+
+The `tokenUsage` object includes `inputTokens`, `outputTokens`, `totalTokens`, `reasoningTokens`, and `cachedInputTokens`.
+
+Available on `createPuckPlugin` AI config, `createPuckAiApiRoutes`, `createAiGenerate`, and the Payload endpoint handler.
+
+#### Component AI `exclude` Property
+
+Components can now be fully excluded from AI generation:
+
+```typescript
+const aiConfig = {
+  MyInternalComponent: {
+    ai: { exclude: true },
+  },
+}
+```
+
+Supported in `injectAiConfig()` overrides and the `AiComponentConfig` type.
+
+#### Component AI `defaultZone` Property
+
+Components can now configure default zone behavior for AI generation:
+
+```typescript
+const aiConfig = {
+  Section: {
+    ai: {
+      defaultZone: { allow: ['Text', 'Heading'], disallow: ['Image'] },
+    },
+  },
+}
+```
+
+#### Field AI `bind` Property
+
+Fields can now specify a `bind` value for AI field binding:
+
+```typescript
+fields: {
+  title: {
+    ai: { bind: 'heading' },
+  },
+}
+```
+
+#### Field AI `stream` Property
+
+Fields can now opt into streaming AI generation with `stream: boolean`.
+
+### Deprecated
+
+- `AiComponentConfig.schema` — use component-level AI instructions instead
+
+---
+
 ## [0.6.14] - 2026-01-28
 
 ### Fixed
