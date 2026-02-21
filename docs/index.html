@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>payload-puck &mdash; Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #010919;
+  --bg-raised: #041020;
+  --bg-surface: #0d1b2d;
+  --bg-hover: #142235;
+  --border: #1b2a3c;
+  --border-subtle: #091628;
+  --text: #e8f0f3;
+  --text-secondary: #a5b0b6;
+  --text-muted: #59656e;
+  --accent: #00b2b3;
+  --accent-dim: #009696;
+  --accent-glow: rgba(0, 178, 179, 0.08);
+  --code-bg: #000514;
+  --code-border: #051223;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --sidebar-w: 280px;
+  --header-h: 56px;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'DM Mono', 'SF Mono', monospace;
+  --radius: 8px;
+  --radius-sm: 5px;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 24px); }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -- HEADER -- */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: rgba(1, 9, 25, 0.82);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+}
+
+.header-brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-brand span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.header-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+}
+
+.header-links {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.header-links a {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.header-links a:hover { color: var(--text); background: var(--bg-hover); }
+
+.header-links a.cta {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.header-links a.cta:hover { background: var(--accent-dim); }
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+}
+
+.menu-toggle svg { display: block; }
+
+/* -- SEARCH -- */
+.search-wrap {
+  position: relative;
+  flex: 0 1 260px;
+  margin-left: 24px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 7px 12px 7px 34px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--accent); }
+
+.search-icon {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-kbd {
+  position: absolute;
+  right: 8px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+}
+
+/* -- LAYOUT -- */
+.layout {
+  display: flex;
+  margin-top: var(--header-h);
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* -- SIDEBAR -- */
+.sidebar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  width: var(--sidebar-w);
+  height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  padding: 20px 16px 40px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--bg);
+  z-index: 50;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.nav-section {
+  margin-bottom: 8px;
+}
+
+.nav-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 12px 12px 6px;
+}
+
+.nav-link {
+  display: block;
+  padding: 6px 12px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: color 0.12s, background 0.12s;
+  line-height: 1.4;
+}
+
+.nav-link:hover { color: var(--text); background: var(--bg-hover); }
+
+.nav-link.active {
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.nav-link.sub {
+  padding-left: 28px;
+  font-size: 12.5px;
+}
+
+/* -- MAIN CONTENT -- */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+  padding: 40px 48px 80px;
+  max-width: 860px;
+}
+
+/* -- HERO -- */
+.hero {
+  padding: 48px 0 56px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 48px;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero p {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 540px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.btn-primary:hover { background: var(--accent-dim); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+
+/* -- SECTIONS -- */
+.section {
+  margin-bottom: 56px;
+  scroll-margin-top: calc(var(--header-h) + 24px);
+}
+
+.section h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  line-height: 1.3;
+}
+
+.section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 36px;
+  margin-bottom: 10px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.section p {
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+}
+
+.section p strong { color: var(--text); font-weight: 500; }
+
+.section a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.section a:hover { border-bottom-color: var(--accent); }
+
+.section ul, .section ol {
+  margin-bottom: 14px;
+  padding-left: 20px;
+  color: var(--text-secondary);
+}
+
+.section li { margin-bottom: 6px; }
+.section li code { font-size: 13px; }
+
+/* -- CODE BLOCKS -- */
+pre {
+  position: relative;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin: 14px 0 18px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+pre::-webkit-scrollbar { height: 4px; }
+pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+pre .copy-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+pre:hover .copy-btn { opacity: 1; }
+pre .copy-btn:hover { color: var(--text); background: var(--bg-hover); }
+
+pre .lang-tag {
+  position: absolute;
+  top: 8px; left: 12px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--bg-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* -- SYNTAX COLORS -- */
+.hl-keyword { color: #a8b4e0; }
+.hl-string { color: #6cd4b0; }
+.hl-comment { color: #3d4f5e; font-style: italic; }
+.hl-type { color: #00b2b3; }
+.hl-func { color: #6aadeb; }
+.hl-const { color: #d4a07a; }
+.hl-prop { color: #6ec5bf; }
+
+/* -- TABLES -- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0 18px;
+  font-size: 13.5px;
+}
+
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-surface);
+  border-bottom: 2px solid var(--border);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+td code { font-size: 12.5px; }
+
+tr:last-child td { border-bottom: none; }
+
+/* -- CALLOUTS -- */
+.callout {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin: 14px 0 18px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border-left: 3px solid;
+}
+
+.callout p { margin-bottom: 0; }
+.callout p + p { margin-top: 8px; }
+
+.callout-note {
+  background: rgba(0, 178, 179, 0.06);
+  border-color: var(--accent);
+  color: var(--text-secondary);
+}
+
+.callout-warn {
+  background: rgba(251, 191, 36, 0.06);
+  border-color: var(--warning);
+  color: var(--text-secondary);
+}
+
+.callout-tip {
+  background: rgba(74, 222, 128, 0.06);
+  border-color: var(--success);
+  color: var(--text-secondary);
+}
+
+.callout strong { color: var(--text); }
+
+/* -- DETAILS / COLLAPSIBLE -- */
+details {
+  margin: 14px 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+details summary {
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--bg-surface);
+  transition: background 0.12s;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+details summary::-webkit-details-marker { display: none; }
+
+details summary::before {
+  content: '\25B8';
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.15s;
+}
+
+details[open] summary::before { transform: rotate(90deg); }
+details summary:hover { background: var(--bg-hover); }
+
+details .details-body {
+  padding: 18px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+details .details-body > :first-child { margin-top: 0; }
+
+/* -- STEP INDICATOR -- */
+.steps {
+  counter-reset: step;
+}
+
+.step {
+  position: relative;
+  padding-left: 48px;
+  padding-bottom: 28px;
+  border-left: 1px solid var(--border);
+  margin-left: 14px;
+}
+
+.step:last-child { border-left: none; }
+
+.step::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -14px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  background: var(--bg-surface);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.step h3 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+/* -- INSTALL BLOCK -- */
+.install-block {
+  display: flex;
+  align-items: center;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  gap: 12px;
+  margin: 14px 0 18px;
+}
+
+.install-block code {
+  flex: 1;
+  background: none;
+  color: var(--text);
+  padding: 0;
+}
+
+.install-block .copy-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.install-block .copy-btn:hover { color: var(--text); background: var(--bg-hover); }
+
+/* -- SEARCH RESULTS OVERLAY -- */
+.search-results {
+  display: none;
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0; bottom: 0;
+  background: rgba(1, 9, 25, 0.92);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  overflow-y: auto;
+  padding: 40px;
+}
+
+.search-results.active { display: block; }
+
+.search-results-inner {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-result-item {
+  display: block;
+  padding: 14px 18px;
+  margin-bottom: 4px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.12s;
+}
+
+.search-result-item:hover { background: var(--bg-surface); }
+
+.search-result-item .result-title {
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.search-result-item .result-preview {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.search-no-results {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+/* -- SCROLL TO TOP -- */
+.scroll-top {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  width: 40px; height: 40px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  z-index: 50;
+}
+
+.scroll-top:hover { color: var(--text); border-color: var(--text-muted); }
+.scroll-top.visible { display: flex; }
+
+/* -- RESPONSIVE -- */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s;
+  }
+
+  .sidebar.open { transform: translateX(0); box-shadow: 8px 0 30px rgba(0,0,0,0.4); }
+  .menu-toggle { display: block; }
+  .main { margin-left: 0; padding: 32px 20px 60px; }
+  .search-wrap { flex: 0 1 180px; }
+  .hero h1 { font-size: 28px; }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 40;
+  }
+
+  .sidebar-overlay.active { display: block; }
+}
+
+@media (max-width: 600px) {
+  .search-wrap { display: none; }
+  .header-links a:not(.cta) { display: none; }
+  .hero-actions { flex-direction: column; }
+  .btn { justify-content: center; }
+  table { font-size: 12px; }
+  th, td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <div class="header-brand">
+    <span>payload</span>-puck
+  </div>
+  <span class="header-badge">v0.6.15</span>
+
+  <div class="search-wrap">
+    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input class="search-input" type="text" placeholder="Search docs..." id="searchInput" autocomplete="off">
+    <span class="search-kbd">/</span>
+  </div>
+
+  <div class="header-links">
+    <a href="https://github.com/delmaredigital/payload-puck">GitHub</a>
+    <a href="https://www.npmjs.com/package/@delmaredigital/payload-puck">npm</a>
+    <a href="https://demo.delmaredigital.com" class="cta">Live Demo</a>
+  </div>
+</header>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="nav-section">
+      <div class="nav-section-title">Getting Started</div>
+      <a class="nav-link" href="#installation">Installation</a>
+      <a class="nav-link" href="#quick-start">Quick Start</a>
+      <a class="nav-link sub" href="#step-1-plugin">Add the Plugin</a>
+      <a class="nav-link sub" href="#step-2-provider">Puck Configuration</a>
+      <a class="nav-link sub" href="#step-3-route">Frontend Route</a>
+      <a class="nav-link" href="#styling-setup">Styling Setup</a>
+      <a class="nav-link" href="#adding-to-existing">Adding to Existing Projects</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Core Concepts</div>
+      <a class="nav-link" href="#server-vs-client">Server vs Client Config</a>
+      <a class="nav-link" href="#draft-system">Draft System</a>
+      <a class="nav-link" href="#editor-architecture">Editor Architecture</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Components</div>
+      <a class="nav-link" href="#components">Built-in Components</a>
+      <a class="nav-link" href="#custom-fields">Custom Fields</a>
+      <a class="nav-link" href="#building-custom">Building Custom Components</a>
+      <a class="nav-link" href="#extending-configs">Extending Configs</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Features</div>
+      <a class="nav-link" href="#theming">Theming</a>
+      <a class="nav-link" href="#layouts">Layouts</a>
+      <a class="nav-link" href="#dark-mode">Dark Mode</a>
+      <a class="nav-link" href="#page-tree">Page-Tree Integration</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Advanced</div>
+      <a class="nav-link" href="#hybrid-integration">Hybrid Integration</a>
+      <a class="nav-link" href="#ai-integration">AI Integration</a>
+      <a class="nav-link" href="#plugin-order">Plugin Order</a>
+      <a class="nav-link" href="#plugin-options">Plugin Options</a>
+      <a class="nav-link" href="#editor-stylesheet">Editor Stylesheet</a>
+      <a class="nav-link" href="#custom-api-routes">Custom API Routes</a>
+      <a class="nav-link" href="#export-reference">Export Reference</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>Visual Page Builder for <em>Payload CMS</em></h1>
+      <p>Drag-and-drop page building with 15+ components, rich text editing, AI-assisted generation, and seamless Payload integration.</p>
+      <div class="hero-actions">
+        <a href="#quick-start" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/delmaredigital/dd-starter" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/></svg>
+          Starter Template
+        </a>
+      </div>
+    </div>
+
+
+    <!-- INSTALLATION -->
+    <div class="section" id="installation">
+      <h2>Installation</h2>
+
+      <h3>Requirements</h3>
+      <table>
+        <thead><tr><th>Dependency</th><th>Version</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>@puckeditor/core</code></td><td>&ge; 0.21.0</td><td>Visual editor core</td></tr>
+          <tr><td><code>payload</code></td><td>&ge; 3.69.0</td><td>CMS backend</td></tr>
+          <tr><td><code>@payloadcms/next</code></td><td>&ge; 3.69.0</td><td>Payload Next.js integration</td></tr>
+          <tr><td><code>next</code></td><td>&ge; 15.4.8</td><td>React framework</td></tr>
+          <tr><td><code>react</code></td><td>&ge; 19.2.1</td><td>UI library</td></tr>
+          <tr><td><code>@tailwindcss/typography</code></td><td>&ge; 0.5.0</td><td>RichText component styling</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-note">
+        <p><strong>Note:</strong> Puck 0.21+ moved from <code>@measured/puck</code> to <code>@puckeditor/core</code>. This plugin requires the new package scope.</p>
+      </div>
+
+      <h3>Install</h3>
+      <div class="install-block">
+        <code>pnpm add @delmaredigital/payload-puck @puckeditor/core</code>
+        <button class="copy-btn" onclick="copyText('pnpm add @delmaredigital/payload-puck @puckeditor/core', this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- QUICK START -->
+    <div class="section" id="quick-start">
+      <h2>Quick Start</h2>
+      <p>The plugin integrates directly into Payload's admin UI with minimal configuration. API endpoints and admin views are registered automatically.</p>
+
+      <div class="steps">
+
+        <div class="step" id="step-1-plugin">
+          <h3>Add the Plugin</h3>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// src/payload.config.ts</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">buildConfig</span> } <span class="hl-keyword">from</span> <span class="hl-string">'payload'</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">createPuckPlugin</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/plugin'</span>
+
+<span class="hl-keyword">export default</span> <span class="hl-func">buildConfig</span>({
+  plugins: [
+    <span class="hl-func">createPuckPlugin</span>({
+      pagesCollection: <span class="hl-string">'pages'</span>, <span class="hl-comment">// Collection slug (default: 'pages')</span>
+    }),
+  ],
+  <span class="hl-comment">// ...</span>
+})</code></pre>
+          <p>This automatically:</p>
+          <ul>
+            <li>Creates a <code>pages</code> collection with Puck fields (or adds fields to your existing collection)</li>
+            <li>Registers API endpoints at <code>/api/puck/:collection</code></li>
+            <li>Adds the Puck editor view at <code>/admin/puck-editor/:collection/:id</code></li>
+            <li>Adds "Edit with Puck" buttons to the admin UI</li>
+          </ul>
+        </div>
+
+        <div class="step" id="step-2-provider">
+          <h3>Provide Puck Configuration</h3>
+          <p>Wrap your app with <code>PuckConfigProvider</code> to supply the Puck configuration. This makes the config available to the editor via React context.</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// app/(app)/layout.tsx (covers both admin and frontend)</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">PuckConfigProvider</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/client'</span>
+<span class="hl-keyword">import</span> { editorConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config/editor'</span>
+
+<span class="hl-keyword">export default function</span> <span class="hl-func">RootLayout</span>({ children }: { children: <span class="hl-type">React.ReactNode</span> }) {
+  <span class="hl-keyword">return</span> (
+    &lt;html lang=<span class="hl-string">"en"</span>&gt;
+      &lt;body&gt;
+        &lt;<span class="hl-type">PuckConfigProvider</span> config={editorConfig}&gt;
+          {children}
+        &lt;/<span class="hl-type">PuckConfigProvider</span>&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  )
+}</code></pre>
+
+          <div class="callout callout-tip">
+            <p><strong>Tip:</strong> <code>PuckConfigProvider</code> also accepts <code>layouts</code> and <code>theme</code> props. See <a href="#layouts">Layouts</a> and <a href="#theming">Theming</a> sections.</p>
+          </div>
+
+          <details>
+            <summary>Alternative: Payload Admin Provider pattern</summary>
+            <div class="details-body">
+              <p>If you're using the vanilla Payload starter structure, you can register the provider via the admin config instead:</p>
+              <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// src/payload.config.ts</span>
+<span class="hl-keyword">export default</span> <span class="hl-func">buildConfig</span>({
+  admin: {
+    components: {
+      providers: [<span class="hl-string">'@/components/admin/PuckProvider'</span>],
+    },
+  },
+  <span class="hl-comment">// ...</span>
+})</code></pre>
+              <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// src/components/admin/PuckProvider.tsx</span>
+<span class="hl-string">'use client'</span>
+
+<span class="hl-keyword">import</span> { <span class="hl-type">PuckConfigProvider</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/client'</span>
+<span class="hl-keyword">import</span> { editorConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config/editor'</span>
+
+<span class="hl-keyword">export default function</span> <span class="hl-func">PuckProvider</span>({ children }: { children: <span class="hl-type">React.ReactNode</span> }) {
+  <span class="hl-keyword">return</span> &lt;<span class="hl-type">PuckConfigProvider</span> config={editorConfig}&gt;{children}&lt;/<span class="hl-type">PuckConfigProvider</span>&gt;
+}</code></pre>
+            </div>
+          </details>
+        </div>
+
+        <div class="step" id="step-3-route">
+          <h3>Create a Frontend Route</h3>
+          <p>The plugin can't auto-create frontend routes (Next.js App Router is file-based), but here's copy-paste ready code:</p>
+
+          <details>
+            <summary>app/(frontend)/[[...slug]]/page.tsx (click to expand)</summary>
+            <div class="details-body">
+              <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">getPayload</span> } <span class="hl-keyword">from</span> <span class="hl-string">'payload'</span>
+<span class="hl-keyword">import</span> config <span class="hl-keyword">from</span> <span class="hl-string">'@payload-config'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">PageRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
+<span class="hl-keyword">import</span> { baseConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config'</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">notFound</span> } <span class="hl-keyword">from</span> <span class="hl-string">'next/navigation'</span>
+<span class="hl-keyword">import type</span> { <span class="hl-type">Metadata</span> } <span class="hl-keyword">from</span> <span class="hl-string">'next'</span>
+
+<span class="hl-comment">// Fetch page by slug (or homepage if no slug)</span>
+<span class="hl-keyword">async function</span> <span class="hl-func">getPage</span>(slug?: <span class="hl-type">string</span>[]) {
+  <span class="hl-keyword">const</span> payload = <span class="hl-keyword">await</span> <span class="hl-func">getPayload</span>({ config })
+  <span class="hl-keyword">const</span> slugPath = slug?.join(<span class="hl-string">'/'</span>) || <span class="hl-string">''</span>
+
+  <span class="hl-keyword">const</span> { docs } = <span class="hl-keyword">await</span> payload.<span class="hl-func">find</span>({
+    collection: <span class="hl-string">'pages'</span>,
+    where: {
+      and: [
+        { _status: { equals: <span class="hl-string">'published'</span> } },
+        slugPath
+          ? { slug: { equals: slugPath } }
+          : { isHomepage: { equals: <span class="hl-const">true</span> } },
+      ],
+    },
+    limit: <span class="hl-const">1</span>,
+  })
+
+  <span class="hl-keyword">return</span> docs[<span class="hl-const">0</span>] || <span class="hl-const">null</span>
+}
+
+<span class="hl-comment">// Generate metadata from page SEO fields</span>
+<span class="hl-keyword">export async function</span> <span class="hl-func">generateMetadata</span>({
+  params
+}: {
+  params: <span class="hl-type">Promise</span>&lt;{ slug?: <span class="hl-type">string</span>[] }&gt;
+}): <span class="hl-type">Promise</span>&lt;<span class="hl-type">Metadata</span>&gt; {
+  <span class="hl-keyword">const</span> { slug } = <span class="hl-keyword">await</span> params
+  <span class="hl-keyword">const</span> page = <span class="hl-keyword">await</span> <span class="hl-func">getPage</span>(slug)
+
+  <span class="hl-keyword">if</span> (!page) <span class="hl-keyword">return</span> {}
+
+  <span class="hl-keyword">return</span> {
+    title: page.meta?.title || page.title,
+    description: page.meta?.description,
+  }
+}
+
+<span class="hl-comment">// Render the page</span>
+<span class="hl-keyword">export default async function</span> <span class="hl-func">Page</span>({
+  params
+}: {
+  params: <span class="hl-type">Promise</span>&lt;{ slug?: <span class="hl-type">string</span>[] }&gt;
+}) {
+  <span class="hl-keyword">const</span> { slug } = <span class="hl-keyword">await</span> params
+  <span class="hl-keyword">const</span> page = <span class="hl-keyword">await</span> <span class="hl-func">getPage</span>(slug)
+
+  <span class="hl-keyword">if</span> (!page) <span class="hl-func">notFound</span>()
+
+  <span class="hl-keyword">return</span> &lt;<span class="hl-type">PageRenderer</span> config={baseConfig} data={page.puckData} /&gt;
+}</code></pre>
+            </div>
+          </details>
+
+          <div class="callout callout-note">
+            <p><strong>Note:</strong> The <code>[[...slug]]</code> pattern with double brackets makes the slug optional, so this handles both <code>/</code> (homepage) and <code>/any/path</code>.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="callout callout-tip">
+        <p><strong>That's it!</strong> The plugin registers the editor view at <code>/admin/puck-editor/:collection/:id</code>. "Edit with Puck" buttons appear in the collection list view. The editor runs inside Payload's admin UI with full navigation. API endpoints are handled automatically via Payload's endpoint system.</p>
+      </div>
+    </div>
+
+
+    <!-- STYLING SETUP -->
+    <div class="section" id="styling-setup">
+      <h2>Styling Setup</h2>
+
+      <h3>Tailwind Typography</h3>
+      <p>Required only if using the RichText component. The RichText component uses <code>@tailwindcss/typography</code>:</p>
+      <div class="install-block">
+        <code>pnpm add @tailwindcss/typography</code>
+        <button class="copy-btn" onclick="copyText('pnpm add @tailwindcss/typography', this)">Copy</button>
+      </div>
+
+      <h4>Tailwind v4</h4>
+      <pre><span class="lang-tag">css</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">@import</span> <span class="hl-string">"tailwindcss"</span>;
+<span class="hl-keyword">@plugin</span> <span class="hl-string">"@tailwindcss/typography"</span>;</code></pre>
+
+      <h4>Tailwind v3</h4>
+      <pre><span class="lang-tag">js</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// tailwind.config.js</span>
+module.exports = {
+  plugins: [<span class="hl-func">require</span>(<span class="hl-string">'@tailwindcss/typography'</span>)],
+}</code></pre>
+
+      <h3>Package Scanning</h3>
+      <p>Required if your project uses Tailwind CSS. Ensures component classes are included in your build.</p>
+
+      <h4>Tailwind v4</h4>
+      <pre><span class="lang-tag">css</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">/* Adjust path relative to your CSS file */</span>
+<span class="hl-keyword">@source</span> <span class="hl-string">"../node_modules/@delmaredigital/payload-puck"</span>;</code></pre>
+
+      <h4>Tailwind v3</h4>
+      <pre><span class="lang-tag">js</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// tailwind.config.js</span>
+module.exports = {
+  content: [
+    <span class="hl-string">'./src/**/*.{js,ts,jsx,tsx}'</span>,
+    <span class="hl-string">'./node_modules/@delmaredigital/payload-puck/**/*.{js,mjs,jsx,tsx}'</span>,
+  ],
+}</code></pre>
+
+      <details>
+        <summary>Theme CSS Variables (optional)</summary>
+        <div class="details-body">
+          <p>The plugin uses <a href="https://ui.shadcn.com">shadcn/ui</a>-style CSS variables. If you don't use shadcn/ui and want to customize colors, define these in your CSS:</p>
+          <pre><span class="lang-tag">css</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>:root {
+  --background: <span class="hl-const">0 0% 100%</span>;
+  --foreground: <span class="hl-const">222.2 84% 4.9%</span>;
+  --primary: <span class="hl-const">222.2 47.4% 11.2%</span>;
+  --primary-foreground: <span class="hl-const">210 40% 98%</span>;
+  --secondary: <span class="hl-const">210 40% 96%</span>;
+  --secondary-foreground: <span class="hl-const">222.2 47.4% 11.2%</span>;
+  --muted: <span class="hl-const">210 40% 96%</span>;
+  --muted-foreground: <span class="hl-const">215.4 16.3% 46.9%</span>;
+  --accent: <span class="hl-const">210 40% 96%</span>;
+  --accent-foreground: <span class="hl-const">222.2 47.4% 11.2%</span>;
+  --destructive: <span class="hl-const">0 84.2% 60.2%</span>;
+  --destructive-foreground: <span class="hl-const">210 40% 98%</span>;
+  --border: <span class="hl-const">214.3 31.8% 91.4%</span>;
+  --input: <span class="hl-const">214.3 31.8% 91.4%</span>;
+  --ring: <span class="hl-const">222.2 84% 4.9%</span>;
+  --radius: <span class="hl-const">0.5rem</span>;
+}</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- ADDING TO EXISTING PROJECTS -->
+    <div class="section" id="adding-to-existing">
+      <h2>Adding to Existing Projects</h2>
+
+      <div class="callout callout-warn">
+        <p><strong>Important:</strong> If you're adding Puck to a project with existing frontend routes, you must update those routes to render Puck content.</p>
+      </div>
+
+      <p>When adding Puck to an existing Payload project:</p>
+      <ol>
+        <li>Add the plugin to <code>payload.config.ts</code></li>
+        <li>Add <code>PuckConfigProvider</code> to your admin layout</li>
+        <li><strong>Update your frontend page templates</strong> to render <code>puckData</code></li>
+      </ol>
+      <p>Without step 3, Puck pages will render blank because your existing routes only look for legacy block fields like <code>layout</code> or <code>hero</code>.</p>
+
+      <h3>Option A: Hybrid Rendering (recommended)</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">HybridPageRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
+<span class="hl-keyword">import</span> { baseConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config'</span>
+
+<span class="hl-keyword">export default async function</span> <span class="hl-func">Page</span>({ params }) {
+  <span class="hl-keyword">const</span> page = <span class="hl-keyword">await</span> <span class="hl-func">getPage</span>(params.slug)
+  <span class="hl-keyword">return</span> &lt;<span class="hl-type">HybridPageRenderer</span> page={page} config={baseConfig} /&gt;
+}</code></pre>
+
+      <p>If you're migrating an existing site with legacy Payload blocks, provide a <code>legacyRenderer</code>:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">HybridPageRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
+<span class="hl-keyword">import</span> { baseConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">LegacyBlockRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@/components/LegacyBlockRenderer'</span>
+
+<span class="hl-keyword">export default async function</span> <span class="hl-func">Page</span>({ params }) {
+  <span class="hl-keyword">const</span> page = <span class="hl-keyword">await</span> <span class="hl-func">getPage</span>(params.slug)
+
+  <span class="hl-keyword">return</span> (
+    &lt;<span class="hl-type">HybridPageRenderer</span>
+      page={page}
+      config={baseConfig}
+      legacyRenderer={(blocks) =&gt; &lt;<span class="hl-type">LegacyBlockRenderer</span> blocks={blocks} /&gt;}
+    /&gt;
+  )
+}</code></pre>
+
+      <h3>Option B: Manual Detection</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Check if page was created with Puck</span>
+<span class="hl-keyword">const</span> isPuckPage = page.editorVersion === <span class="hl-string">'puck'</span> &amp;&amp; page.puckData?.content?.length &gt; <span class="hl-const">0</span>
+
+<span class="hl-keyword">if</span> (isPuckPage) {
+  <span class="hl-keyword">return</span> &lt;<span class="hl-type">PageRenderer</span> config={baseConfig} data={page.puckData} /&gt;
+}
+
+<span class="hl-comment">// Fall back to legacy rendering</span>
+<span class="hl-keyword">return</span> &lt;<span class="hl-type">LegacyBlockRenderer</span> blocks={page.layout} /&gt;</code></pre>
+    </div>
+
+    <!-- SERVER VS CLIENT CONFIG -->
+    <div class="section" id="server-vs-client">
+      <h2>Server vs Client Config</h2>
+      <p>The plugin provides two configurations for React Server Components:</p>
+      <table>
+        <thead><tr><th>Config</th><th>Import</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><code>baseConfig</code></td><td><code>@delmaredigital/payload-puck/config</code></td><td>Server-safe rendering with <code>PageRenderer</code></td></tr>
+          <tr><td><code>editorConfig</code></td><td><code>@delmaredigital/payload-puck/config/editor</code></td><td>Client-side editing with full interactivity</td></tr>
+        </tbody>
+      </table>
+
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Server component - use baseConfig</span>
+<span class="hl-keyword">import</span> { baseConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config'</span>
+&lt;<span class="hl-type">PageRenderer</span> config={baseConfig} data={page.puckData} /&gt;
+
+<span class="hl-comment">// PuckConfigProvider - use editorConfig</span>
+<span class="hl-keyword">import</span> { editorConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config/editor'</span>
+&lt;<span class="hl-type">PuckConfigProvider</span> config={editorConfig}&gt;</code></pre>
+    </div>
+
+    <!-- DRAFT SYSTEM -->
+    <div class="section" id="draft-system">
+      <h2>Draft System</h2>
+      <p>The editor uses Payload's native draft system. The plugin automatically enables drafts on the pages collection. You can also enable it manually:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>{
+  slug: <span class="hl-string">'pages'</span>,
+  versions: {
+    drafts: <span class="hl-const">true</span>,
+  },
+}</code></pre>
+      <p>The editor header provides:</p>
+      <ul>
+        <li><strong>Save</strong> &mdash; Saves as draft without publishing</li>
+        <li><strong>Publish</strong> &mdash; Publishes the page (sets <code>_status: 'published'</code>)</li>
+        <li><strong>Unpublish</strong> &mdash; Reverts a published page to draft status (appears only when published)</li>
+      </ul>
+    </div>
+
+    <!-- EDITOR ARCHITECTURE -->
+    <div class="section" id="editor-architecture">
+      <h2>Editor Architecture</h2>
+      <p>The plugin provides a single unified editor component:</p>
+      <ul>
+        <li><strong>PuckEditor</strong> &mdash; Primary public component for all editor use cases</li>
+        <li>Accepts <code>config</code> prop directly OR reads from <code>PuckConfigProvider</code> context</li>
+        <li>Built-in page-tree support via <code>hasPageTree</code> prop</li>
+        <li>Dynamic import internally to prevent hydration mismatches</li>
+        <li>Handles save/publish, unsaved changes tracking, viewport switching</li>
+      </ul>
+      <p>For Payload admin, the server component (<code>PuckEditorView</code>) detects page-tree via collection schema and passes <code>hasPageTree={true}</code> to PuckEditor when detected. Config comes from <code>PuckConfigProvider</code> context.</p>
+    </div>
+
+
+    <!-- COMPONENTS -->
+    <div class="section" id="components">
+      <h2>Built-in Components</h2>
+
+      <h3>Layout</h3>
+      <table>
+        <thead><tr><th>Component</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Container</strong></td><td>Content wrapper with max-width and background</td></tr>
+          <tr><td><strong>Flex</strong></td><td>Flexible box layout with direction and alignment</td></tr>
+          <tr><td><strong>Grid</strong></td><td>CSS Grid layout with responsive columns</td></tr>
+          <tr><td><strong>Section</strong></td><td>Two-layer: full-bleed section + constrained content area</td></tr>
+          <tr><td><strong>Spacer</strong></td><td>Vertical/horizontal spacing element</td></tr>
+          <tr><td><strong>Template</strong></td><td>Save/load reusable component arrangements</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Typography</h3>
+      <table>
+        <thead><tr><th>Component</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Heading</strong></td><td>H1-H6 headings with size and alignment</td></tr>
+          <tr><td><strong>Text</strong></td><td>Paragraph text with styling options</td></tr>
+          <tr><td><strong>RichText</strong></td><td>Puck's native richtext editor with enhancements: font sizes, text colors with opacity, highlights, superscript/subscript, and inline editing on canvas</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Media &amp; Interactive</h3>
+      <table>
+        <thead><tr><th>Component</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Image</strong></td><td>Responsive image with alt text</td></tr>
+          <tr><td><strong>Button</strong></td><td>Styled button/link with variants</td></tr>
+          <tr><td><strong>Card</strong></td><td>Content card with optional image</td></tr>
+          <tr><td><strong>Divider</strong></td><td>Horizontal rule with styles</td></tr>
+          <tr><td><strong>Accordion</strong></td><td>Expandable content sections (first item opens by default)</td></tr>
+        </tbody>
+      </table>
+
+      <details>
+        <summary>Semantic HTML Elements</summary>
+        <div class="details-body">
+          <p>Layout components support semantic HTML output for better SEO and accessibility:</p>
+          <table>
+            <thead><tr><th>Component</th><th>Available Elements</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Section</strong></td><td><code>section</code>, <code>article</code>, <code>aside</code>, <code>nav</code>, <code>header</code>, <code>footer</code>, <code>main</code>, <code>div</code></td></tr>
+              <tr><td><strong>Flex</strong></td><td><code>div</code>, <code>nav</code>, <code>ul</code>, <code>ol</code>, <code>aside</code>, <code>section</code></td></tr>
+              <tr><td><strong>Container</strong></td><td><code>div</code>, <code>article</code>, <code>aside</code>, <code>section</code></td></tr>
+              <tr><td><strong>Grid</strong></td><td><code>div</code>, <code>ul</code>, <code>ol</code></td></tr>
+            </tbody>
+          </table>
+          <p>Select the appropriate HTML element in the component's sidebar to output semantic markup.</p>
+        </div>
+      </details>
+
+      <p><strong>Responsive Controls:</strong> Layout components support per-breakpoint customization for dimensions, padding/margin, and visibility. The editor provides Mobile, Tablet, Desktop, and Full Width viewport preview options.</p>
+    </div>
+
+    <!-- CUSTOM FIELDS -->
+    <div class="section" id="custom-fields">
+      <h2>Custom Fields</h2>
+      <p>All fields are imported from <code>@delmaredigital/payload-puck/fields</code>.</p>
+
+      <h3>Field Reference</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>MediaField</code></td><td>Payload media library integration</td></tr>
+          <tr><td><code>RichTextField</code></td><td>Puck's native richtext with enhancements (colors, font sizes, highlights)</td></tr>
+          <tr><td><code>ColorPickerField</code></td><td>Color picker with opacity and presets</td></tr>
+          <tr><td><code>BackgroundField</code></td><td>Solid colors, gradients, images</td></tr>
+          <tr><td><code>PaddingField / MarginField</code></td><td>Visual spacing editors</td></tr>
+          <tr><td><code>BorderField</code></td><td>Border width, style, color, radius</td></tr>
+          <tr><td><code>DimensionsField</code></td><td>Width/height with constraints</td></tr>
+          <tr><td><code>AlignmentField</code></td><td>Text alignment (left, center, right)</td></tr>
+          <tr><td><code>ContentAlignmentField</code></td><td>Visual 3x3 grid selector for positioning (d-pad style)</td></tr>
+          <tr><td><code>SizeField</code></td><td>Preset sizes (sm, default, lg) with custom mode</td></tr>
+          <tr><td><code>AnimationField</code></td><td>Entrance animations</td></tr>
+          <tr><td><code>ResponsiveVisibilityField</code></td><td>Show/hide per breakpoint</td></tr>
+          <tr><td><code>FolderPickerField</code></td><td>Hierarchical folder selection (page-tree)</td></tr>
+          <tr><td><code>PageSegmentField</code></td><td>URL segment with slugification (page-tree)</td></tr>
+          <tr><td><code>SlugPreviewField</code></td><td>Read-only computed slug (page-tree)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Usage Example</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">createMediaField</span>, <span class="hl-func">createBackgroundField</span>, <span class="hl-func">backgroundValueToCSS</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/fields'</span>
+
+<span class="hl-keyword">const</span> HeroConfig = {
+  fields: {
+    image: <span class="hl-func">createMediaField</span>({ label: <span class="hl-string">'Background Image'</span> }),
+    background: <span class="hl-func">createBackgroundField</span>({ label: <span class="hl-string">'Overlay'</span> }),
+  },
+  render: ({ image, background }) =&gt; (
+    &lt;section style={{ background: <span class="hl-func">backgroundValueToCSS</span>(background) }}&gt;
+      <span class="hl-comment">{/* content */}</span>
+    &lt;/section&gt;
+  ),
+}</code></pre>
+
+      <h3>CSS Helper Functions</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> {
+  backgroundValueToCSS,
+  dimensionsValueToCSS,
+  animationValueToCSS,
+  visibilityValueToCSS,
+  alignmentToFlexCSS,
+  alignmentToGridCSS,
+  sizeValueToCSS,
+  getSizeClasses,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/fields'</span></code></pre>
+
+      <details>
+        <summary>ContentAlignmentField example</summary>
+        <div class="details-body">
+          <p>The ContentAlignmentField provides a visual 3x3 grid selector for content positioning:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> {
+  <span class="hl-func">createContentAlignmentField</span>,
+  <span class="hl-func">alignmentToFlexCSS</span>,
+  <span class="hl-func">alignmentToGridCSS</span>,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/fields'</span>
+
+<span class="hl-keyword">const</span> BannerConfig = {
+  fields: {
+    contentPosition: <span class="hl-func">createContentAlignmentField</span>({ label: <span class="hl-string">'Content Position'</span> }),
+  },
+  render: ({ contentPosition }) =&gt; (
+    &lt;div style={{
+      display: <span class="hl-string">'flex'</span>,
+      minHeight: <span class="hl-string">'400px'</span>,
+      ...<span class="hl-func">alignmentToFlexCSS</span>(contentPosition),
+    }}&gt;
+      &lt;div&gt;Positioned content&lt;/div&gt;
+    &lt;/div&gt;
+  ),
+}</code></pre>
+          <p>Helper functions:</p>
+          <ul>
+            <li><code>alignmentToFlexCSS()</code> &mdash; For Flexbox containers (<code>justify-content</code> + <code>align-items</code>)</li>
+            <li><code>alignmentToGridCSS()</code> &mdash; For Grid containers (<code>justify-content</code> + <code>align-content</code>)</li>
+            <li><code>alignmentToPlaceSelfCSS()</code> &mdash; For individual grid items (<code>place-self</code>)</li>
+            <li><code>alignmentToTailwind()</code> &mdash; Returns Tailwind classes (<code>justify-* items-*</code>)</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+
+    <!-- BUILDING CUSTOM COMPONENTS -->
+    <div class="section" id="building-custom">
+      <h2>Building Custom Components</h2>
+      <p>The plugin exports individual component configs and field factories for building custom Puck configurations.</p>
+
+      <h3>Cherry-Picking Components</h3>
+      <p>Import only the components you need:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> {
+  <span class="hl-type">SectionConfig</span>,
+  <span class="hl-type">HeadingConfig</span>,
+  <span class="hl-type">TextConfig</span>,
+  <span class="hl-type">ImageConfig</span>,
+  <span class="hl-type">ButtonConfig</span>,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/components'</span>
+
+<span class="hl-keyword">export const</span> puckConfig: <span class="hl-type">Config</span> = {
+  components: {
+    Section: <span class="hl-type">SectionConfig</span>,
+    Heading: <span class="hl-type">HeadingConfig</span>,
+    Text: <span class="hl-type">TextConfig</span>,
+    Image: <span class="hl-type">ImageConfig</span>,
+    Button: <span class="hl-type">ButtonConfig</span>,
+  },
+  categories: {
+    layout: { components: [<span class="hl-string">'Section'</span>] },
+    content: { components: [<span class="hl-string">'Heading'</span>, <span class="hl-string">'Text'</span>, <span class="hl-string">'Image'</span>, <span class="hl-string">'Button'</span>] },
+  },
+}</code></pre>
+
+      <h3>Using Field Factories</h3>
+      <p>Build custom components with pre-built fields:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import type</span> { <span class="hl-type">ComponentConfig</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@puckeditor/core'</span>
+<span class="hl-keyword">import</span> {
+  <span class="hl-func">createMediaField</span>,
+  <span class="hl-func">createBackgroundField</span>,
+  <span class="hl-func">createPaddingField</span>,
+  backgroundValueToCSS,
+  paddingValueToCSS,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/fields'</span>
+
+<span class="hl-keyword">export const</span> HeroConfig: <span class="hl-type">ComponentConfig</span> = {
+  label: <span class="hl-string">'Hero'</span>,
+  fields: {
+    image: <span class="hl-func">createMediaField</span>({ label: <span class="hl-string">'Background Image'</span> }),
+    overlay: <span class="hl-func">createBackgroundField</span>({ label: <span class="hl-string">'Overlay'</span> }),
+    padding: <span class="hl-func">createPaddingField</span>({ label: <span class="hl-string">'Padding'</span> }),
+  },
+  defaultProps: {
+    image: <span class="hl-const">null</span>,
+    overlay: <span class="hl-const">null</span>,
+    padding: { top: <span class="hl-const">80</span>, bottom: <span class="hl-const">80</span>, left: <span class="hl-const">24</span>, right: <span class="hl-const">24</span>, unit: <span class="hl-string">'px'</span>, linked: <span class="hl-const">false</span> },
+  },
+  render: ({ image, overlay, padding }) =&gt; (
+    &lt;section
+      style={{
+        background: <span class="hl-func">backgroundValueToCSS</span>(overlay),
+        padding: <span class="hl-func">paddingValueToCSS</span>(padding),
+      }}
+    &gt;
+      <span class="hl-comment">{/* Hero content */}</span>
+    &lt;/section&gt;
+  ),
+}</code></pre>
+
+      <h3>Server vs Editor Variants</h3>
+      <p>For <code>PageRenderer</code> (frontend), components need server-safe configs without React hooks:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Import server variants for PageRenderer</span>
+<span class="hl-keyword">import</span> {
+  <span class="hl-type">SectionServerConfig</span>,
+  <span class="hl-type">HeadingServerConfig</span>,
+  <span class="hl-type">TextServerConfig</span>,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/components'</span>
+
+&lt;<span class="hl-type">PageRenderer</span>
+  config={{ components: { Section: <span class="hl-type">SectionServerConfig</span>, ... } }}
+  data={page.puckData}
+/&gt;</code></pre>
+      <p>For custom components, create two files:</p>
+      <ul>
+        <li><code>MyComponent.tsx</code> &mdash; Full editor version with fields and interactivity</li>
+        <li><code>MyComponent.server.tsx</code> &mdash; Server-safe version (no hooks, no 'use client')</li>
+      </ul>
+    </div>
+
+    <!-- EXTENDING CONFIGS -->
+    <div class="section" id="extending-configs">
+      <h2>Extending Configs</h2>
+      <p>Use <code>extendConfig()</code> to add custom components to the built-in configs:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">extendConfig</span>, fullConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config/editor'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">HeroConfig</span> } <span class="hl-keyword">from</span> <span class="hl-string">'./components/Hero'</span>
+
+<span class="hl-keyword">export const</span> puckConfig = <span class="hl-func">extendConfig</span>({
+  base: fullConfig,
+  components: {
+    Hero: <span class="hl-type">HeroConfig</span>,
+  },
+  categories: {
+    custom: { title: <span class="hl-string">'Custom'</span>, components: [<span class="hl-string">'Hero'</span>] },
+  },
+})</code></pre>
+
+      <div class="callout callout-note">
+        <p><strong>Note:</strong> Use <code>fullConfig</code> from <code>/config/editor</code> for extending the editor. For server-side rendering, use <code>baseConfig</code> from <code>/config</code>.</p>
+      </div>
+
+      <h3>Using Custom Config with Provider</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// components/admin/PuckProvider.tsx</span>
+<span class="hl-string">'use client'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">PuckConfigProvider</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/client'</span>
+<span class="hl-keyword">import</span> { puckConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@/puck/config.editor'</span>
+<span class="hl-keyword">import</span> { siteLayouts } <span class="hl-keyword">from</span> <span class="hl-string">'@/lib/puck-layouts'</span>
+
+<span class="hl-keyword">export default function</span> <span class="hl-func">PuckProvider</span>({ children }: { children: <span class="hl-type">React.ReactNode</span> }) {
+  <span class="hl-keyword">return</span> (
+    &lt;<span class="hl-type">PuckConfigProvider</span> config={puckConfig} layouts={siteLayouts}&gt;
+      {children}
+    &lt;/<span class="hl-type">PuckConfigProvider</span>&gt;
+  )
+}</code></pre>
+
+      <p>For Payload admin, register the provider in your Payload config:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// payload.config.ts</span>
+<span class="hl-keyword">export default</span> <span class="hl-func">buildConfig</span>({
+  admin: {
+    components: {
+      providers: [<span class="hl-string">'@/components/admin/PuckProvider'</span>],
+    },
+  },
+  <span class="hl-comment">// ...</span>
+})</code></pre>
+
+      <details>
+        <summary>Available Field Factories</summary>
+        <div class="details-body">
+          <table>
+            <thead><tr><th>Factory</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>createMediaField()</code></td><td>Payload media library picker</td></tr>
+              <tr><td><code>createBackgroundField()</code></td><td>Solid, gradient, or image backgrounds</td></tr>
+              <tr><td><code>createColorPickerField()</code></td><td>Color picker with opacity</td></tr>
+              <tr><td><code>createPaddingField()</code></td><td>Visual padding editor</td></tr>
+              <tr><td><code>createMarginField()</code></td><td>Visual margin editor</td></tr>
+              <tr><td><code>createBorderField()</code></td><td>Border styling</td></tr>
+              <tr><td><code>createDimensionsField()</code></td><td>Width/height constraints</td></tr>
+              <tr><td><code>createAnimationField()</code></td><td>Entrance animations</td></tr>
+              <tr><td><code>createAlignmentField()</code></td><td>Text alignment (left, center, right)</td></tr>
+              <tr><td><code>createContentAlignmentField()</code></td><td>Visual 3x3 grid positioning selector</td></tr>
+              <tr><td><code>createSizeField()</code></td><td>Size presets with custom mode</td></tr>
+              <tr><td><code>createRichTextField()</code></td><td>Puck's native richtext with colors, font sizes, highlights</td></tr>
+              <tr><td><code>createResponsiveVisibilityField()</code></td><td>Show/hide per breakpoint</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <details>
+        <summary>CSS Helper Functions</summary>
+        <div class="details-body">
+          <p>Convert field values to CSS:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> {
+  backgroundValueToCSS,
+  paddingValueToCSS,
+  marginValueToCSS,
+  borderValueToCSS,
+  dimensionsValueToCSS,
+  colorValueToCSS,
+  alignmentToFlexCSS,
+  alignmentToGridCSS,
+  sizeValueToCSS,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/fields'</span>
+
+<span class="hl-keyword">const</span> style = {
+  background: <span class="hl-func">backgroundValueToCSS</span>(props.background),
+  padding: <span class="hl-func">paddingValueToCSS</span>(props.padding),
+  ...<span class="hl-func">dimensionsValueToCSS</span>(props.dimensions),
+  ...<span class="hl-func">alignmentToFlexCSS</span>(props.contentAlignment),
+  ...<span class="hl-func">sizeValueToCSS</span>(props.size),
+}</code></pre>
+        </div>
+      </details>
+    </div>
+
+
+    <!-- THEMING -->
+    <div class="section" id="theming">
+      <h2>Theming</h2>
+      <p>Customize button styles, color presets, and focus rings:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">PageRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">ThemeProvider</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/theme'</span>
+
+&lt;<span class="hl-type">ThemeProvider</span> theme={{
+  buttonVariants: {
+    default: { classes: <span class="hl-string">'bg-primary text-white hover:bg-primary/90'</span> },
+    secondary: { classes: <span class="hl-string">'bg-secondary text-foreground hover:bg-secondary/90'</span> },
+  },
+  focusRingColor: <span class="hl-string">'focus:ring-primary'</span>,
+  colorPresets: [
+    { hex: <span class="hl-string">'#3b82f6'</span>, label: <span class="hl-string">'Brand Blue'</span> },
+    { hex: <span class="hl-string">'#10b981'</span>, label: <span class="hl-string">'Success'</span> },
+  ],
+}}&gt;
+  &lt;<span class="hl-type">PageRenderer</span> config={baseConfig} data={page.puckData} /&gt;
+&lt;/<span class="hl-type">ThemeProvider</span>&gt;</code></pre>
+
+      <p>Access theme values in custom components with <code>useTheme()</code>:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">useTheme</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/theme'</span>
+
+<span class="hl-keyword">function</span> <span class="hl-func">CustomButton</span>({ variant }) {
+  <span class="hl-keyword">const</span> theme = <span class="hl-func">useTheme</span>()
+  <span class="hl-keyword">const</span> classes = theme.buttonVariants[variant]?.classes
+  <span class="hl-keyword">return</span> &lt;button className={classes}&gt;...&lt;/button&gt;
+}</code></pre>
+    </div>
+
+    <!-- LAYOUTS -->
+    <div class="section" id="layouts">
+      <h2>Layouts</h2>
+      <p>Define page layouts with headers, footers, and styling:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// lib/puck-layouts.ts</span>
+<span class="hl-keyword">import type</span> { <span class="hl-type">LayoutDefinition</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/layouts'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">SiteHeader</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@/components/header'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">SiteFooter</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@/components/footer'</span>
+
+<span class="hl-keyword">export const</span> siteLayouts: <span class="hl-type">LayoutDefinition</span>[] = [
+  {
+    value: <span class="hl-string">'default'</span>,
+    label: <span class="hl-string">'Default'</span>,
+    description: <span class="hl-string">'Standard page with header and footer'</span>,
+    maxWidth: <span class="hl-string">'1200px'</span>,
+    header: <span class="hl-type">SiteHeader</span>,
+    footer: <span class="hl-type">SiteFooter</span>,
+    stickyHeaderHeight: <span class="hl-const">80</span>,
+  },
+  {
+    value: <span class="hl-string">'landing'</span>,
+    label: <span class="hl-string">'Landing'</span>,
+    description: <span class="hl-string">'Full-width landing page'</span>,
+    fullWidth: <span class="hl-const">true</span>,
+  },
+]</code></pre>
+
+      <p>Pass layouts to the <code>PuckConfigProvider</code>:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>&lt;<span class="hl-type">PuckConfigProvider</span> config={editorConfig} layouts={siteLayouts}&gt;
+  {children}
+&lt;/<span class="hl-type">PuckConfigProvider</span>&gt;</code></pre>
+
+      <p>And use them with <code>PageRenderer</code>:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">LayoutWrapper</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/layouts'</span>
+
+<span class="hl-keyword">const</span> layout = siteLayouts.<span class="hl-func">find</span>(l =&gt; l.value === page.puckData?.root?.props?.pageLayout)
+
+&lt;<span class="hl-type">LayoutWrapper</span> layout={layout}&gt;
+  &lt;<span class="hl-type">PageRenderer</span> config={baseConfig} data={page.puckData} /&gt;
+&lt;/<span class="hl-type">LayoutWrapper</span>&gt;</code></pre>
+
+      <details>
+        <summary>Avoiding Double Headers/Footers</summary>
+        <div class="details-body">
+          <p>When your host app already provides a global header/footer via its root layout (e.g., Next.js <code>layout.tsx</code>), use <code>createRenderLayouts()</code> to strip them from Puck layouts:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">HybridPageRenderer</span>, <span class="hl-func">createRenderLayouts</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
+<span class="hl-keyword">import</span> { siteLayouts } <span class="hl-keyword">from</span> <span class="hl-string">'@/lib/puck-layouts'</span>
+
+<span class="hl-comment">// Strip header/footer for rendering (host app layout provides them)</span>
+<span class="hl-keyword">const</span> renderLayouts = <span class="hl-func">createRenderLayouts</span>(siteLayouts)
+
+<span class="hl-keyword">export function</span> <span class="hl-func">PageRenderer</span>({ page }) {
+  <span class="hl-keyword">const</span> layout = renderLayouts.<span class="hl-func">find</span>(l =&gt; l.value === page.puckData?.root?.props?.pageLayout)
+
+  <span class="hl-keyword">return</span> (
+    &lt;<span class="hl-type">LayoutWrapper</span> layout={layout}&gt;
+      &lt;<span class="hl-type">HybridPageRenderer</span> page={page} config={baseConfig} /&gt;
+    &lt;/<span class="hl-type">LayoutWrapper</span>&gt;
+  )
+}</code></pre>
+          <p>This pattern keeps header/footer in your editor layouts for realistic preview, but avoids double headers when rendering.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- DARK MODE -->
+    <div class="section" id="dark-mode">
+      <h2>Dark Mode Support</h2>
+      <p>The Puck editor automatically detects PayloadCMS dark mode and applies CSS overrides to ensure visibility. It also provides a preview toggle to test how pages look in both light and dark modes.</p>
+
+      <h3>How It Works</h3>
+      <ol>
+        <li><strong>Editor UI:</strong> Automatically detects dark mode via <code>.dark</code> class (PayloadCMS) or <code>prefers-color-scheme</code> (OS preference), then injects Puck CSS variable overrides</li>
+        <li><strong>Preview Iframe:</strong> A sun/moon toggle lets you switch the preview content between light and dark modes independently from the editor UI</li>
+      </ol>
+
+      <h3>Configuration</h3>
+      <p>Dark mode is enabled by default. You can customize via props on <code>PuckEditor</code>:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>&lt;<span class="hl-type">PuckEditor</span>
+  autoDetectDarkMode={<span class="hl-const">true</span>}           <span class="hl-comment">// Auto-detect PayloadCMS dark mode (default: true)</span>
+  showPreviewDarkModeToggle={<span class="hl-const">true</span>}    <span class="hl-comment">// Show light/dark toggle in header (default: true)</span>
+  initialPreviewDarkMode={<span class="hl-const">false</span>}      <span class="hl-comment">// Start preview in light mode (default: false)</span>
+/&gt;</code></pre>
+
+      <details>
+        <summary>Using Components Directly</summary>
+        <div class="details-body">
+          <p>For custom editor implementations:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> {
+  <span class="hl-type">DarkModeStyles</span>,
+  <span class="hl-type">PreviewModeToggle</span>,
+  <span class="hl-func">useDarkMode</span>,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/editor'</span>
+
+<span class="hl-keyword">function</span> <span class="hl-func">CustomEditor</span>() {
+  <span class="hl-keyword">const</span> { isDarkMode, source } = <span class="hl-func">useDarkMode</span>()
+  <span class="hl-keyword">const</span> [previewDark, setPreviewDark] = <span class="hl-func">useState</span>(<span class="hl-const">false</span>)
+
+  <span class="hl-keyword">return</span> (
+    &lt;&gt;
+      &lt;<span class="hl-type">DarkModeStyles</span> /&gt;
+      &lt;<span class="hl-type">PreviewModeToggle</span>
+        isDarkMode={previewDark}
+        onToggle={setPreviewDark}
+      /&gt;
+      &lt;Puck ... /&gt;
+    &lt;/&gt;
+  )
+}</code></pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>Detecting Theme in Puck Components</summary>
+        <div class="details-body">
+          <p>If your Puck components need to dynamically adjust JavaScript-controlled styles based on the preview theme, use the <code>usePuckPreviewTheme()</code> hook:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">usePuckPreviewTheme</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/editor'</span>
+<span class="hl-keyword">import</span> { useEffect, useState } <span class="hl-keyword">from</span> <span class="hl-string">'react'</span>
+
+<span class="hl-keyword">function</span> <span class="hl-func">useDetectTheme</span>() {
+  <span class="hl-keyword">const</span> puckTheme = <span class="hl-func">usePuckPreviewTheme</span>()
+
+  <span class="hl-comment">// For frontend (non-editor), read from DOM</span>
+  <span class="hl-keyword">const</span> [domTheme, setDomTheme] = <span class="hl-func">useState</span>(() =&gt;
+    <span class="hl-keyword">typeof</span> document !== <span class="hl-string">'undefined'</span>
+      ? document.documentElement.<span class="hl-func">getAttribute</span>(<span class="hl-string">'data-theme'</span>) === <span class="hl-string">'dark'</span>
+      : <span class="hl-const">false</span>
+  )
+
+  <span class="hl-comment">// In editor: use context. On frontend: use DOM.</span>
+  <span class="hl-keyword">return</span> puckTheme !== <span class="hl-const">null</span> ? puckTheme : domTheme
+}</code></pre>
+          <p>CSS dark mode variants (like Tailwind's <code>dark:</code> classes) work automatically via the <code>data-theme</code> attribute. However, if you need to conditionally render different JavaScript values (like overlay colors), those won't update reactively when the preview toggle changes. The context provides reactive updates.</p>
+        </div>
+      </details>
+    </div>
+
+
+    <!-- PAGE-TREE INTEGRATION -->
+    <div class="section" id="page-tree">
+      <h2>Page-Tree Integration</h2>
+      <p>When <code>@delmaredigital/payload-page-tree</code> is detected, the plugin automatically adds folder management to the Puck sidebar.</p>
+
+      <h3>How It Works</h3>
+      <p>The plugin checks if your collection has a <code>pageSegment</code> field (page-tree's signature). When detected:</p>
+      <ol>
+        <li><strong>Folder Picker</strong> &mdash; Select a folder from the hierarchy</li>
+        <li><strong>Page Segment</strong> &mdash; Edit the page's URL segment</li>
+        <li><strong>Slug Preview</strong> &mdash; See the computed slug (folder path + segment)</li>
+      </ol>
+
+      <h3>Plugin Configuration</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  <span class="hl-comment">// Auto-detect (default)</span>
+  pageTreeIntegration: <span class="hl-const">undefined</span>,
+
+  <span class="hl-comment">// Explicitly enable with custom config</span>
+  pageTreeIntegration: {
+    folderSlug: <span class="hl-string">'payload-folders'</span>,
+    pageSegmentFieldName: <span class="hl-string">'pageSegment'</span>,
+  },
+
+  <span class="hl-comment">// Explicitly disable</span>
+  pageTreeIntegration: <span class="hl-const">false</span>,
+})</code></pre>
+
+      <h3>Custom Editor UI</h3>
+      <p>For custom editor implementations outside Payload admin, use the <code>hasPageTree</code> prop:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">PuckEditor</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/client'</span>
+<span class="hl-keyword">import</span> { editorConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config/editor'</span>
+
+&lt;<span class="hl-type">PuckEditor</span>
+  config={editorConfig}
+  pageId={page.id}
+  initialData={page.puckData}
+  pageTitle={page.title}
+  pageSlug={page.slug}
+  apiEndpoint=<span class="hl-string">"/api/puck/pages"</span>
+  hasPageTree={<span class="hl-const">true</span>}
+  folder={page.folder}
+  pageSegment={page.pageSegment}
+/&gt;</code></pre>
+
+      <div class="callout callout-tip">
+        <p><strong>Performance:</strong> Detection is instant &mdash; it reads the in-memory collection config, no database queries.</p>
+      </div>
+    </div>
+
+    <!-- HYBRID INTEGRATION -->
+    <div class="section" id="hybrid-integration">
+      <h2>Hybrid Integration</h2>
+      <p>Add Puck to existing collections with legacy blocks.</p>
+
+      <h3>Automatic (Recommended)</h3>
+      <p>If you already have a <code>pages</code> collection, the plugin adds only the Puck-specific fields:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// payload.config.ts</span>
+<span class="hl-keyword">export default</span> <span class="hl-func">buildConfig</span>({
+  collections: [
+    {
+      slug: <span class="hl-string">'pages'</span>,
+      fields: [
+        { name: <span class="hl-string">'title'</span>, type: <span class="hl-string">'text'</span>, required: <span class="hl-const">true</span> },
+        { name: <span class="hl-string">'layout'</span>, type: <span class="hl-string">'blocks'</span>, blocks: [HeroBlock, CTABlock] },
+      ],
+    },
+  ],
+  plugins: [
+    <span class="hl-func">createPuckPlugin</span>({ pagesCollection: <span class="hl-string">'pages'</span> }),
+  ],
+})</code></pre>
+      <p>The <code>editorVersion</code> field auto-detects whether pages use legacy blocks or Puck.</p>
+
+      <details>
+        <summary>Manual with getPuckCollectionConfig() (recommended)</summary>
+        <div class="details-body">
+          <p>When you need the <code>isHomepage</code> field, use <code>getPuckCollectionConfig()</code> which returns both fields AND hooks:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">getPuckCollectionConfig</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck'</span>
+
+<span class="hl-keyword">const</span> { fields: puckFields, hooks: puckHooks } = <span class="hl-func">getPuckCollectionConfig</span>({
+  includeSEO: <span class="hl-const">true</span>,
+  includeEditorVersion: <span class="hl-const">true</span>,
+  includePageLayout: <span class="hl-const">true</span>,
+  includeIsHomepage: <span class="hl-const">true</span>,
+})
+
+<span class="hl-keyword">export const</span> Pages: <span class="hl-type">CollectionConfig</span> = {
+  slug: <span class="hl-string">'pages'</span>,
+  hooks: {
+    beforeChange: [
+      ...(puckHooks.beforeChange ?? []),
+    ],
+  },
+  fields: [
+    { name: <span class="hl-string">'title'</span>, type: <span class="hl-string">'text'</span> },
+    { name: <span class="hl-string">'layout'</span>, type: <span class="hl-string">'blocks'</span>, blocks: [...] },
+    ...puckFields,
+  ],
+}</code></pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>Manual with getPuckFields() (fields only)</summary>
+        <div class="details-body">
+          <p>If you don't need <code>isHomepage</code> or want to configure hooks manually:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">getPuckFields</span>, <span class="hl-func">createIsHomepageUniqueHook</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck'</span>
+
+<span class="hl-keyword">export const</span> Pages: <span class="hl-type">CollectionConfig</span> = {
+  slug: <span class="hl-string">'pages'</span>,
+  hooks: {
+    beforeChange: [<span class="hl-func">createIsHomepageUniqueHook</span>()],
+  },
+  fields: [
+    { name: <span class="hl-string">'title'</span>, type: <span class="hl-string">'text'</span> },
+    { name: <span class="hl-string">'layout'</span>, type: <span class="hl-string">'blocks'</span>, blocks: [...] },
+    ...<span class="hl-func">getPuckFields</span>({
+      includeSEO: <span class="hl-const">true</span>,
+      includeEditorVersion: <span class="hl-const">true</span>,
+      includePageLayout: <span class="hl-const">true</span>,
+      includeIsHomepage: <span class="hl-const">true</span>,
+    }),
+  ],
+}</code></pre>
+        </div>
+      </details>
+
+      <h3>Rendering Hybrid Pages</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">HybridPageRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
+<span class="hl-keyword">import</span> { <span class="hl-type">LegacyBlockRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@/components/LegacyBlockRenderer'</span>
+
+&lt;<span class="hl-type">HybridPageRenderer</span>
+  page={page}
+  config={puckConfig}
+  legacyRenderer={(blocks) =&gt; &lt;<span class="hl-type">LegacyBlockRenderer</span> blocks={blocks} /&gt;}
+/&gt;</code></pre>
+    </div>
+
+
+    <!-- AI INTEGRATION -->
+    <div class="section" id="ai-integration">
+      <h2>AI Integration</h2>
+      <div class="callout callout-warn">
+        <p><strong>Early Preview:</strong> While Puck's AI features are powerful, this plugin's implementation is still in early stages and under active development. Expect changes as we refine the integration.</p>
+      </div>
+      <p>The plugin integrates with <a href="https://puckeditor.com/docs/integrating-puck/ai">Puck AI</a> to enable AI-assisted page generation. Users can describe what they want in natural language, and the AI builds complete page layouts using your components.</p>
+
+      <h3>Requirements</h3>
+      <ul>
+        <li><code>PUCK_API_KEY</code> environment variable (from <a href="https://puckeditor.com">Puck Cloud</a>)</li>
+        <li>AI features require <code>@puckeditor/plugin-ai</code> and <code>@puckeditor/cloud-client</code> (bundled with the plugin)</li>
+      </ul>
+
+      <h3>Quick Start</h3>
+      <p>Enable AI in your plugin configuration:</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  pagesCollection: <span class="hl-string">'pages'</span>,
+  ai: {
+    enabled: <span class="hl-const">true</span>,
+    context: <span class="hl-string">'We are Acme Corp, a B2B SaaS company. Use professional language.'</span>,
+  },
+})</code></pre>
+      <p>This automatically registers the AI chat endpoint, adds the AI chat plugin to the editor, and applies comprehensive component instructions for better generation quality.</p>
+
+      <details>
+        <summary>Dynamic Business Context</summary>
+        <div class="details-body">
+          <p>Instead of hardcoding context in your config, you can manage it through Payload admin:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  ai: {
+    enabled: <span class="hl-const">true</span>,
+    contextCollection: <span class="hl-const">true</span>,  <span class="hl-comment">// Creates puck-ai-context collection</span>
+  },
+})</code></pre>
+          <p>This creates a <code>puck-ai-context</code> collection where you can add entries for brand guidelines, tone of voice, product information, industry context, technical requirements, and page patterns. Context entries can be enabled/disabled and ordered.</p>
+        </div>
+      </details>
+
+      <p><strong>Context Editor Plugin:</strong> When <code>contextCollection: true</code>, a "Context" panel appears in the Puck plugin rail. Users can view, create, edit, and toggle context entries directly in the editor.</p>
+
+      <details>
+        <summary>Prompt Management</summary>
+        <div class="details-body">
+          <p>Store reusable prompts in Payload:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  ai: {
+    enabled: <span class="hl-const">true</span>,
+    promptsCollection: <span class="hl-const">true</span>,  <span class="hl-comment">// Creates puck-ai-prompts collection</span>
+    examplePrompts: [
+      { label: <span class="hl-string">'Landing page'</span>, prompt: <span class="hl-string">'Create a landing page for...'</span> },
+    ],
+  },
+})</code></pre>
+          <p>Prompts from the collection appear in the AI chat interface. A "Prompts" panel in the plugin rail allows in-editor prompt management.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Custom Tools</summary>
+        <div class="details-body">
+          <p>Enable the AI to query your data:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { z } <span class="hl-keyword">from</span> <span class="hl-string">'zod'</span>
+
+<span class="hl-func">createPuckPlugin</span>({
+  ai: {
+    enabled: <span class="hl-const">true</span>,
+    tools: {
+      getProducts: {
+        description: <span class="hl-string">'Get products from the database'</span>,
+        inputSchema: z.<span class="hl-func">object</span>({ category: z.<span class="hl-func">string</span>() }),
+        mode: <span class="hl-string">'preload'</span>,
+        execute: <span class="hl-keyword">async</span> ({ category }, { payload }) =&gt; {
+          <span class="hl-keyword">return await</span> payload.<span class="hl-func">find</span>({
+            collection: <span class="hl-string">'products'</span>,
+            where: { category: { equals: category } },
+          })
+        },
+      },
+    },
+  },
+})</code></pre>
+          <p>Tools receive a context object with the Payload instance and authenticated user. Properties: <code>description</code>, <code>inputSchema</code> (Zod), <code>outputSchema</code> (optional), <code>mode</code> (<code>"auto"</code> | <code>"preload"</code> | <code>"inline"</code>), and <code>execute</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Usage Tracking with onFinish</summary>
+        <div class="details-body">
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  ai: {
+    enabled: <span class="hl-const">true</span>,
+    onFinish: ({ totalCost, tokenUsage }) =&gt; {
+      console.<span class="hl-func">log</span>(<span class="hl-string">`Cost: $${totalCost}`</span>)
+      console.<span class="hl-func">log</span>(<span class="hl-string">`Tokens: ${tokenUsage.totalTokens}`</span>)
+      <span class="hl-comment">// tokenUsage also includes: inputTokens, outputTokens,</span>
+      <span class="hl-comment">// reasoningTokens, cachedInputTokens</span>
+    },
+  },
+})</code></pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>Request Interception with prepareRequest</summary>
+        <div class="details-body">
+          <p>Modify outgoing AI requests before they're sent:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>&lt;<span class="hl-type">PuckEditor</span>
+  enableAi={<span class="hl-const">true</span>}
+  aiOptions={{
+    prepareRequest: (opts) =&gt; ({
+      ...opts,
+      headers: { ...opts.headers, <span class="hl-string">'X-Tenant-ID'</span>: tenantId },
+    }),
+    scrollTracking: <span class="hl-const">true</span>,
+  }}
+/&gt;</code></pre>
+        </div>
+      </details>
+
+      <h3>AI Configuration Options</h3>
+      <table>
+        <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>enabled</code></td><td><code>false</code></td><td>Enable AI features</td></tr>
+          <tr><td><code>context</code></td><td><code>undefined</code></td><td>Static system context for the AI</td></tr>
+          <tr><td><code>contextCollection</code></td><td><code>false</code></td><td>Create <code>puck-ai-context</code> collection for dynamic context</td></tr>
+          <tr><td><code>promptsCollection</code></td><td><code>false</code></td><td>Create <code>puck-ai-prompts</code> collection for reusable prompts</td></tr>
+          <tr><td><code>examplePrompts</code></td><td><code>[]</code></td><td>Static example prompts for the chat interface</td></tr>
+          <tr><td><code>tools</code></td><td><code>undefined</code></td><td>Custom tools for AI to query your system</td></tr>
+          <tr><td><code>componentInstructions</code></td><td><code>undefined</code></td><td>Override default component AI instructions</td></tr>
+          <tr><td><code>onFinish</code></td><td><code>undefined</code></td><td>Callback with cost and token usage after generation</td></tr>
+        </tbody>
+      </table>
+
+      <details>
+        <summary>Component Instructions</summary>
+        <div class="details-body">
+          <p>The plugin includes comprehensive instructions for all built-in components. To customize or extend:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  ai: {
+    enabled: <span class="hl-const">true</span>,
+    componentInstructions: {
+      Heading: {
+        ai: { instructions: <span class="hl-string">'Use our brand voice: professional but approachable'</span> },
+        fields: {
+          text: {
+            ai: {
+              instructions: <span class="hl-string">'Keep under 8 words'</span>,
+              bind: <span class="hl-string">'heading'</span>,
+              stream: <span class="hl-const">true</span>,
+            },
+          },
+        },
+      },
+      <span class="hl-comment">// Exclude a component from AI generation entirely</span>
+      InternalWidget: {
+        ai: { exclude: <span class="hl-const">true</span> },
+      },
+      <span class="hl-comment">// Configure default zone behavior</span>
+      Section: {
+        ai: {
+          defaultZone: {
+            allow: [<span class="hl-string">'Text'</span>, <span class="hl-string">'Heading'</span>, <span class="hl-string">'Button'</span>],
+            disallow: [<span class="hl-string">'Section'</span>],
+          },
+        },
+      },
+    },
+  },
+})</code></pre>
+          <p><strong>Component-level AI options:</strong> <code>instructions</code>, <code>exclude</code>, <code>defaultZone</code> (with <code>allow</code>, <code>disallow</code>, <code>disabled</code>).</p>
+          <p><strong>Field-level AI options:</strong> <code>instructions</code>, <code>required</code>, <code>exclude</code>, <code>bind</code>, <code>stream</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Standalone API Routes</summary>
+        <div class="details-body">
+          <p>For custom implementations outside the plugin:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// app/api/puck/[...all]/route.ts</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">createPuckAiApiRoutes</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/ai'</span>
+<span class="hl-keyword">import</span> config <span class="hl-keyword">from</span> <span class="hl-string">'@payload-config'</span>
+
+<span class="hl-keyword">export const</span> POST = <span class="hl-func">createPuckAiApiRoutes</span>({
+  payloadConfig: config,
+  auth: {
+    authenticate: <span class="hl-keyword">async</span> (request) =&gt; {
+      <span class="hl-keyword">return</span> { user: { id: <span class="hl-string">'...'</span> } }
+    },
+  },
+  ai: {
+    context: <span class="hl-string">'Your business context...'</span>,
+  },
+})</code></pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>AI Exports</summary>
+        <div class="details-body">
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> {
+  <span class="hl-comment">// Plugins</span>
+  createAiPlugin,
+  createPromptEditorPlugin,
+  createContextEditorPlugin,
+
+  <span class="hl-comment">// Hooks</span>
+  useAiPrompts,
+  useAiContext,
+
+  <span class="hl-comment">// Config utilities</span>
+  injectAiConfig,
+  comprehensiveComponentAiConfig,
+  pagePatternSystemContext,
+
+  <span class="hl-comment">// API routes</span>
+  createPuckAiApiRoutes,
+  createAiGenerate,
+} <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/ai'</span></code></pre>
+        </div>
+      </details>
+    </div>
+
+
+    <!-- PLUGIN ORDER -->
+    <div class="section" id="plugin-order">
+      <h2>Plugin Order</h2>
+      <p>When using <code>autoGenerateCollection: true</code> (the default) with <code>@delmaredigital/payload-page-tree</code>, <strong>plugin order matters</strong>.</p>
+
+      <h3>The Issue</h3>
+      <p>The page-tree plugin validates configured collections when it initializes. If Puck hasn't created the collection yet, page-tree won't see it and will skip adding its fields (folder relationships, slug generation, etc.).</p>
+
+      <h3>Correct Order</h3>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// CORRECT: Puck creates the collection before page-tree runs</span>
+<span class="hl-keyword">export const</span> plugins = [
+  <span class="hl-func">createPuckPlugin</span>({ pagesCollection: <span class="hl-string">'pages'</span> }),  <span class="hl-comment">// Creates Pages first</span>
+  <span class="hl-func">pageTreePlugin</span>({ collections: [<span class="hl-string">'pages'</span>] }),      <span class="hl-comment">// Now sees Pages</span>
+]
+
+<span class="hl-comment">// WRONG: page-tree runs before Pages exists</span>
+<span class="hl-keyword">export const</span> plugins = [
+  <span class="hl-func">pageTreePlugin</span>({ collections: [<span class="hl-string">'pages'</span>] }),      <span class="hl-comment">// Pages doesn't exist!</span>
+  <span class="hl-func">createPuckPlugin</span>({ pagesCollection: <span class="hl-string">'pages'</span> }),  <span class="hl-comment">// Creates Pages too late</span>
+]</code></pre>
+
+      <details>
+        <summary>When Order Doesn't Matter</summary>
+        <div class="details-body">
+          <p>If you define your collection manually (with <code>autoGenerateCollection: false</code>), order doesn't matter because the collection already exists in your config:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">export default</span> <span class="hl-func">buildConfig</span>({
+  collections: [Pages],  <span class="hl-comment">// Collection exists before plugins run</span>
+  plugins: [
+    <span class="hl-func">pageTreePlugin</span>({ collections: [<span class="hl-string">'pages'</span>] }),
+    <span class="hl-func">createPuckPlugin</span>({ pagesCollection: <span class="hl-string">'pages'</span>, autoGenerateCollection: <span class="hl-const">false</span> }),
+  ],
+})</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- PLUGIN OPTIONS -->
+    <div class="section" id="plugin-options">
+      <h2>Plugin Options</h2>
+      <table>
+        <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>pagesCollection</code></td><td><code>'pages'</code></td><td>Collection slug to use for pages</td></tr>
+          <tr><td><code>autoGenerateCollection</code></td><td><code>true</code></td><td>Create the collection if it doesn't exist, or add Puck fields to existing</td></tr>
+          <tr><td><code>enableEndpoints</code></td><td><code>true</code></td><td>Register API endpoints at <code>/api/puck/:collection</code> for the editor</td></tr>
+          <tr><td><code>enableAdminView</code></td><td><code>true</code></td><td>Register the Puck editor view in Payload admin</td></tr>
+          <tr><td><code>adminViewPath</code></td><td><code>'/puck-editor'</code></td><td>Path for the editor (full: <code>/admin/puck-editor/:collection/:id</code>)</td></tr>
+          <tr><td><code>pageTreeIntegration</code></td><td>auto-detect</td><td>Integration with <code>@delmaredigital/payload-page-tree</code></td></tr>
+          <tr><td><code>layouts</code></td><td><code>undefined</code></td><td>Layout definitions for page templates</td></tr>
+          <tr><td><code>editorStylesheet</code></td><td><code>undefined</code></td><td>Path to CSS file for editor iframe styling</td></tr>
+          <tr><td><code>editorStylesheetCompiled</code></td><td><code>undefined</code></td><td>Path to pre-compiled CSS for production</td></tr>
+          <tr><td><code>editorStylesheetUrls</code></td><td><code>[]</code></td><td>Additional stylesheet URLs for the editor (e.g., Google Fonts)</td></tr>
+          <tr><td><code>previewUrl</code></td><td><code>undefined</code></td><td>URL for "View" button &mdash; string or function receiving page data</td></tr>
+        </tbody>
+      </table>
+
+      <details>
+        <summary>Preview URL examples</summary>
+        <div class="details-body">
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Simple static URL pattern</span>
+<span class="hl-func">createPuckPlugin</span>({
+  previewUrl: <span class="hl-string">'/preview'</span>,
+})
+
+<span class="hl-comment">// Dynamic prefix based on page data</span>
+<span class="hl-func">createPuckPlugin</span>({
+  previewUrl: (page) =&gt; <span class="hl-string">`/${page.slug || ''}`</span>,
+})
+
+<span class="hl-comment">// Organization-scoped pages (multi-tenant)</span>
+<span class="hl-func">createPuckPlugin</span>({
+  previewUrl: (page) =&gt; {
+    <span class="hl-keyword">const</span> orgSlug = page.organization?.slug || <span class="hl-string">'default'</span>
+    <span class="hl-keyword">return</span> (slug) =&gt; slug ? <span class="hl-string">`/${orgSlug}/${slug}`</span> : <span class="hl-string">`/${orgSlug}`</span>
+  },
+})</code></pre>
+          <p>When <code>previewUrl</code> is a function, the page document is fetched with <code>depth: 1</code> so relationship fields are populated.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- EDITOR STYLESHEET -->
+    <div class="section" id="editor-stylesheet">
+      <h2>Editor Stylesheet</h2>
+      <p>The Puck editor renders page content in an iframe. By default, this iframe doesn't have access to your frontend's CSS (Tailwind utilities, CSS variables, fonts). The <code>editorStylesheet</code> option solves this by compiling and serving your CSS.</p>
+
+      <details>
+        <summary>Development (Runtime Compilation)</summary>
+        <div class="details-body">
+          <p>In development, CSS is compiled at runtime for hot reload support:</p>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  pagesCollection: <span class="hl-string">'pages'</span>,
+  editorStylesheet: <span class="hl-string">'src/app/(frontend)/globals.css'</span>,
+  editorStylesheetUrls: [
+    <span class="hl-string">'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap'</span>
+  ],
+})</code></pre>
+          <p>The plugin creates an endpoint at <code>/api/puck/styles</code>. On first request, the CSS is compiled with PostCSS/Tailwind and cached. The iframe loads this compiled CSS.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Production (Build-Time Compilation)</summary>
+        <div class="details-body">
+          <p>Runtime compilation fails on serverless platforms (Vercel, Netlify, etc.) because source CSS files aren't deployed. Use <code>withPuckCSS()</code> to compile CSS at build time:</p>
+          <h4>Step 1: Wrap your Next.js config</h4>
+          <pre><span class="lang-tag">js</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// next.config.js</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">withPuckCSS</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/next'</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">withPayload</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@payloadcms/next/withPayload'</span>
+
+<span class="hl-keyword">const</span> nextConfig = {
+  <span class="hl-comment">// your config...</span>
+}
+
+<span class="hl-keyword">export default</span> <span class="hl-func">withPuckCSS</span>({
+  cssInput: <span class="hl-string">'src/app/(frontend)/globals.css'</span>,
+})(<span class="hl-func">withPayload</span>(nextConfig))</code></pre>
+          <h4>Step 2: Add the compiled path to your plugin config</h4>
+          <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-func">createPuckPlugin</span>({
+  pagesCollection: <span class="hl-string">'pages'</span>,
+  editorStylesheet: <span class="hl-string">'src/app/(frontend)/globals.css'</span>,      <span class="hl-comment">// For dev (runtime)</span>
+  editorStylesheetCompiled: <span class="hl-string">'/puck-editor-styles.css'</span>,     <span class="hl-comment">// For prod (static)</span>
+  editorStylesheetUrls: [
+    <span class="hl-string">'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap'</span>
+  ],
+})</code></pre>
+          <table>
+            <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>cssInput</code></td><td>(required)</td><td>Path to source CSS file</td></tr>
+              <tr><td><code>cssOutput</code></td><td><code>'puck-editor-styles.css'</code></td><td>Output filename in <code>public/</code></td></tr>
+              <tr><td><code>skipInDev</code></td><td><code>true</code></td><td>Skip compilation in development</td></tr>
+            </tbody>
+          </table>
+          <p><strong>Requirements:</strong> <code>postcss</code> must be installed in your project. For Tailwind v4: <code>@tailwindcss/postcss</code>. For Tailwind v3: <code>tailwindcss</code>.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CUSTOM API ROUTES -->
+    <div class="section" id="custom-api-routes">
+      <h2>Custom API Routes</h2>
+      <p>The built-in endpoints handle most use cases. Only disable them if you need custom authentication or middleware. Three route factories are available:</p>
+      <table>
+        <thead><tr><th>Factory</th><th>Route Pattern</th><th>Methods</th></tr></thead>
+        <tbody>
+          <tr><td><code>createPuckApiRoutes</code></td><td><code>/api/puck/[collection]</code></td><td>GET (list), POST (create)</td></tr>
+          <tr><td><code>createPuckApiRoutesWithId</code></td><td><code>/api/puck/[collection]/[id]</code></td><td>GET, PATCH, DELETE</td></tr>
+          <tr><td><code>createPuckApiRoutesVersions</code></td><td><code>/api/puck/[collection]/[id]/versions</code></td><td>GET, POST (restore)</td></tr>
+        </tbody>
+      </table>
+      <p>See the JSDoc in <code>@delmaredigital/payload-puck/api</code> for usage examples.</p>
+    </div>
+
+    <!-- EXPORT REFERENCE -->
+    <div class="section" id="export-reference">
+      <h2>Export Reference</h2>
+      <table>
+        <thead><tr><th>Export Path</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>@delmaredigital/payload-puck</code></td><td>Plugin creation, field utilities</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/plugin</code></td><td><code>createPuckPlugin</code></td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/config</code></td><td><code>baseConfig</code>, <code>createConfig()</code>, <code>extendConfig()</code></td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/config/editor</code></td><td><code>editorConfig</code> for editing</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/client</code></td><td><code>PuckEditor</code>, <code>PuckConfigProvider</code>, page-tree utilities</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/editor</code></td><td><code>PuckEditor</code>, <code>HeaderActions</code>, editor hooks</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/rsc</code></td><td><code>PuckEditorView</code> for Payload admin views</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/render</code></td><td><code>PageRenderer</code>, <code>HybridPageRenderer</code></td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/fields</code></td><td>Custom Puck fields and CSS helpers</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/components</code></td><td>Component configs for custom configurations</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/theme</code></td><td><code>ThemeProvider</code>, theme utilities</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/layouts</code></td><td>Layout definitions, <code>LayoutWrapper</code></td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/api</code></td><td>API route factories (for custom implementations)</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/ai</code></td><td>AI plugins, hooks, config utilities, API routes</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/next</code></td><td><code>withPuckCSS</code> Next.js config wrapper for build-time CSS</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/admin/client</code></td><td><code>EditWithPuckButton</code>, <code>EditWithPuckCell</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="border-top: 1px solid var(--border-subtle); padding-top: 32px; margin-top: 48px; color: var(--text-muted); font-size: 13px;">
+      <p>MIT License &mdash; <a href="https://github.com/delmaredigital/payload-puck" style="color: var(--accent); text-decoration: none;">@delmaredigital/payload-puck</a></p>
+    </div>
+
+  </main>
+</div>
+
+<!-- SEARCH RESULTS -->
+<div class="search-results" id="searchResults">
+  <div class="search-results-inner" id="searchResultsInner"></div>
+</div>
+
+<!-- SCROLL TO TOP -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0})">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<script>
+// -- Sidebar toggle (mobile) --
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+
+// Close sidebar on nav click (mobile)
+document.querySelectorAll('.nav-link').forEach(function(link) {
+  link.addEventListener('click', function() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+  });
+});
+
+// -- Active nav tracking --
+var sections = document.querySelectorAll('.section, .step');
+var navLinks = document.querySelectorAll('.nav-link');
+
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      var id = entry.target.id;
+      navLinks.forEach(function(link) {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+
+sections.forEach(function(s) { if (s.id) observer.observe(s); });
+
+// -- Copy buttons --
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--success)';
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+function copyBlock(btn) {
+  var pre = btn.closest('pre');
+  var code = pre.querySelector('code');
+  copyText(code.textContent, btn);
+}
+
+// -- HTML escaping for safe DOM insertion --
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.textContent;
+}
+
+// -- Search --
+var searchInput = document.getElementById('searchInput');
+var searchResults = document.getElementById('searchResults');
+var searchResultsInner = document.getElementById('searchResultsInner');
+
+// Build search index from sections
+var searchIndex = [];
+document.querySelectorAll('.section').forEach(function(section) {
+  var id = section.id;
+  var h2 = section.querySelector('h2');
+  var h3 = section.querySelector('h3');
+  var title = h2 ? h2.textContent : (h3 ? h3.textContent : '');
+  var text = section.textContent.substring(0, 500);
+  searchIndex.push({ id: id, title: title, text: text });
+});
+
+searchInput.addEventListener('input', function() {
+  var query = this.value.trim().toLowerCase();
+  if (query.length < 2) {
+    searchResults.classList.remove('active');
+    return;
+  }
+
+  var results = searchIndex.filter(function(item) {
+    return item.title.toLowerCase().indexOf(query) !== -1 ||
+           item.text.toLowerCase().indexOf(query) !== -1;
+  });
+
+  // Clear previous results
+  searchResultsInner.textContent = '';
+
+  if (results.length === 0) {
+    var noResults = document.createElement('div');
+    noResults.className = 'search-no-results';
+    noResults.textContent = 'No results found';
+    searchResultsInner.appendChild(noResults);
+  } else {
+    results.forEach(function(r) {
+      var link = document.createElement('a');
+      link.className = 'search-result-item';
+      link.href = '#' + r.id;
+      link.addEventListener('click', closeSearch);
+
+      var titleDiv = document.createElement('div');
+      titleDiv.className = 'result-title';
+      titleDiv.textContent = r.title;
+      link.appendChild(titleDiv);
+
+      var idx = r.text.toLowerCase().indexOf(query);
+      if (idx >= 0) {
+        var previewDiv = document.createElement('div');
+        previewDiv.className = 'result-preview';
+        var start = Math.max(0, idx - 40);
+        var end = Math.min(r.text.length, idx + query.length + 60);
+
+        if (start > 0) previewDiv.appendChild(document.createTextNode('...'));
+        previewDiv.appendChild(document.createTextNode(r.text.substring(start, idx)));
+        var mark = document.createElement('mark');
+        mark.textContent = r.text.substring(idx, idx + query.length);
+        previewDiv.appendChild(mark);
+        previewDiv.appendChild(document.createTextNode(r.text.substring(idx + query.length, end)));
+        if (end < r.text.length) previewDiv.appendChild(document.createTextNode('...'));
+
+        link.appendChild(previewDiv);
+      }
+
+      searchResultsInner.appendChild(link);
+    });
+  }
+
+  searchResults.classList.add('active');
+});
+
+function closeSearch() {
+  searchResults.classList.remove('active');
+  searchInput.value = '';
+}
+
+// Keyboard shortcut: / to focus search
+document.addEventListener('keydown', function(e) {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'Escape') {
+    closeSearch();
+    searchInput.blur();
+  }
+});
+
+// -- Scroll to top button --
+var scrollTopBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', function() {
+  scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+}, { passive: true });
+</script>
+</body>
+</html>
