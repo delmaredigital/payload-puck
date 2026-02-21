@@ -16,7 +16,9 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
 
 ## Documentation
 
-**Full documentation:** [https://delmaredigital.github.io/payload-puck/](Documentation) | [DeepWiki](https://deepwiki.com/delmaredigital/payload-puck)
+**[Full documentation &rarr;](https://delmaredigital.github.io/payload-puck/)**
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/delmaredigital/payload-puck)
 
 Covers installation, configuration, components, custom fields, theming, layouts, dark mode, page-tree integration, hybrid integration, AI integration, and more.
 
@@ -122,7 +124,7 @@ That's it! The plugin registers the editor view, API endpoints, and "Edit with P
 
 ## Documentation
 
-For everything else — components, custom fields, theming, layouts, dark mode, page-tree integration, hybrid integration, AI integration, advanced configuration, and the full export reference — see the [full documentation](docs/index.html).
+For everything else — components, custom fields, theming, layouts, dark mode, page-tree integration, hybrid integration, AI integration, advanced configuration, and the full export reference — see the [full documentation](https://delmaredigital.github.io/payload-puck/).
 
 ---
 
