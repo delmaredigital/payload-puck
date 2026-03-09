@@ -795,6 +795,7 @@ details .details-body > :first-child { margin-top: 0; }
       <div class="nav-section-title">Advanced</div>
       <a class="nav-link" href="#hybrid-integration">Hybrid Integration</a>
       <a class="nav-link" href="#ai-integration">AI Integration</a>
+      <a class="nav-link" href="#email-builder">Email Builder</a>
       <a class="nav-link" href="#plugin-order">Plugin Order</a>
       <a class="nav-link" href="#plugin-options">Plugin Options</a>
       <a class="nav-link" href="#editor-stylesheet">Editor Stylesheet</a>
@@ -2045,6 +2046,110 @@ module.exports = {
     </div>
 
 
+    <!-- EMAIL BUILDER -->
+    <div class="section" id="email-builder">
+      <h2>Email Builder</h2>
+      <p>Build email templates visually with Puck using 12 email-safe components. All components render table-based HTML with inline styles for maximum email client compatibility.</p>
+
+      <h3>Quick Start</h3>
+      <p>Use the email editor config with Puck for visual editing, and the renderer for producing HTML output:</p>
+
+      <pre><span class="lang-tag">tsx</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Visual editor — use emailEditorConfig</span>
+<span class="hl-keyword">import</span> { emailEditorConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/email'</span>
+
+&lt;<span class="hl-func">PuckEditor</span> config={emailEditorConfig} <span class="hl-comment">/* ...other props */</span> /&gt;</code></pre>
+
+      <pre><span class="lang-tag">tsx</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Server-side rendering — produce email HTML string</span>
+<span class="hl-keyword">import</span> { renderToEmailHtml } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/email'</span>
+
+<span class="hl-keyword">const</span> html = <span class="hl-func">renderToEmailHtml</span>(puckData, {
+  subject: <span class="hl-string">'Welcome!'</span>,
+  previewText: <span class="hl-string">'Thanks for signing up'</span>,
+  backgroundColor: <span class="hl-string">'#f4f4f4'</span>,
+})</code></pre>
+
+      <h3>Dual Config Architecture</h3>
+      <p>Email configs follow the same server/client split as web page configs:</p>
+      <table>
+        <thead><tr><th>Config</th><th>Import</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><code>emailBaseConfig</code></td><td><code>@delmaredigital/payload-puck/email</code></td><td>Server-side rendering with <code>EmailRenderer</code> or <code>renderToEmailHtml()</code></td></tr>
+          <tr><td><code>emailEditorConfig</code></td><td><code>@delmaredigital/payload-puck/email</code></td><td>Puck visual editor with interactive fields</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Email Components</h3>
+      <table>
+        <thead><tr><th>Component</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><strong>EmailWrapper</strong></td><td>Full-width outer container with background color/image and VML Outlook support</td></tr>
+          <tr><td><strong>EmailSection</strong></td><td>Centered content area with max-width, padding, and background color</td></tr>
+          <tr><td><strong>EmailColumns</strong></td><td>2 or 3 column table layout with configurable gap</td></tr>
+          <tr><td><strong>EmailHeading</strong></td><td>Heading text (H1-H4 sizes) with color, alignment, and font family</td></tr>
+          <tr><td><strong>EmailText</strong></td><td>Rich text via TipTap, converted to inline-styled email HTML on render</td></tr>
+          <tr><td><strong>EmailButton</strong></td><td>Bulletproof button pattern (table + anchor) for Outlook compatibility</td></tr>
+          <tr><td><strong>EmailImage</strong></td><td>Responsive image with optional link, pulled from Payload media library</td></tr>
+          <tr><td><strong>EmailSpacer</strong></td><td>Vertical spacing with configurable height</td></tr>
+          <tr><td><strong>EmailDivider</strong></td><td>Horizontal rule with color and thickness options</td></tr>
+          <tr><td><strong>EmailHeader</strong></td><td>Logo image with optional title text</td></tr>
+          <tr><td><strong>EmailFooter</strong></td><td>Company name, address, and unsubscribe link</td></tr>
+          <tr><td><strong>EmailSocial</strong></td><td>Social media icon links with configurable platforms</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Rendering Pipeline</h3>
+      <p>Three levels of rendering are available depending on your needs:</p>
+      <table>
+        <thead><tr><th>Export</th><th>Returns</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><code>renderToEmailHtml(data, options?)</code></td><td>Complete HTML document string</td><td>Send via email API (Resend, SendGrid, etc.)</td></tr>
+          <tr><td><code>EmailRenderer</code></td><td>React element</td><td>Embed in a larger React email component</td></tr>
+          <tr><td><code>getEmailDocumentParts(options)</code></td><td><code>{ before, after }</code> HTML strings</td><td>Custom wrapping around rendered content</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Root Fields</h3>
+      <p>The email editor config includes root-level fields that control the overall email:</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>subject</code></td><td>text</td><td>Email subject line</td></tr>
+          <tr><td><code>previewText</code></td><td>textarea</td><td>Preview text shown in inbox before opening</td></tr>
+          <tr><td><code>backgroundColor</code></td><td>color picker</td><td>Body background color</td></tr>
+          <tr><td><code>fontFamily</code></td><td>select</td><td>Web-safe font family for the email</td></tr>
+          <tr><td><code>maxWidth</code></td><td>number</td><td>Maximum content width (400-900px, default 600)</td></tr>
+        </tbody>
+      </table>
+
+      <details>
+        <summary>Email Design Constraints</summary>
+        <div class="details-body">
+          <p>Email components are intentionally limited compared to web components due to email client rendering:</p>
+          <ul>
+            <li><strong>Table-based layouts only</strong> &mdash; no flexbox, grid, or div layouts</li>
+            <li><strong>Inline styles only</strong> &mdash; email clients strip CSS classes and <code>&lt;style&gt;</code> blocks</li>
+            <li><strong>Web-safe fonts only</strong> &mdash; no custom font loading</li>
+            <li><strong>No JavaScript</strong> &mdash; all interactivity is removed</li>
+            <li><strong>VML fallbacks</strong> &mdash; background images use conditional comments for Outlook</li>
+          </ul>
+          <p>The plugin handles all of these constraints automatically. You design visually in Puck, and the server-side renderer produces compatible HTML.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Building Custom Email Components</summary>
+        <div class="details-body">
+          <p>Follow the same dual-config pattern. Each component needs three files in a subfolder under <code>src/components/email/</code>:</p>
+          <ol>
+            <li><code>MyEmail.types.ts</code> &mdash; Props interface</li>
+            <li><code>MyEmail.server.tsx</code> &mdash; Table-based render (all <code>&lt;table&gt;</code> elements must have <code>&lt;tbody&gt;</code>)</li>
+            <li><code>MyEmail.editor.tsx</code> &mdash; Extends server config, adds field definitions</li>
+          </ol>
+          <p>Server components must use <code>TABLE_ATTRS</code> from <code>../utils.js</code> and inline styles only. Import email CSS converters (<code>colorValueToEmailCSS</code>, <code>paddingValueToEmailCSS</code>) from <code>@delmaredigital/payload-puck/fields</code>.</p>
+        </div>
+      </details>
+    </div>
+
     <!-- PLUGIN ORDER -->
     <div class="section" id="plugin-order">
       <h2>Plugin Order</h2>
@@ -2219,6 +2324,8 @@ module.exports = {
           <tr><td><code>@delmaredigital/payload-puck/layouts</code></td><td>Layout definitions, <code>LayoutWrapper</code></td></tr>
           <tr><td><code>@delmaredigital/payload-puck/api</code></td><td>API route factories (for custom implementations)</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/ai</code></td><td>AI plugins, hooks, config utilities, API routes</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/email</code></td><td><code>EmailRenderer</code>, <code>renderToEmailHtml</code>, <code>emailBaseConfig</code>, <code>emailEditorConfig</code></td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/email/components</code></td><td>Individual email component configs (server, editor, types)</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/next</code></td><td><code>withPuckCSS</code> Next.js config wrapper for build-time CSS</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/admin/client</code></td><td><code>EditWithPuckButton</code>, <code>EditWithPuckCell</code></td></tr>
         </tbody>

@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.17] - 2026-03-09
+
+### Added
+
+#### Email Builder
+
+First-class email building with Puck. 12 email-safe components using table-based layouts with inline styles for maximum client compatibility.
+
+**New export paths:**
+- `@delmaredigital/payload-puck/email` — `EmailRenderer`, `renderToEmailHtml()`, `getEmailDocumentParts()`, `emailBaseConfig`, `emailEditorConfig`
+- `@delmaredigital/payload-puck/email/components` — Individual email component configs (server, editor, and types)
+
+**Email components:** EmailWrapper, EmailSection, EmailColumns, EmailHeading, EmailText, EmailButton, EmailImage, EmailSpacer, EmailDivider, EmailHeader, EmailFooter, EmailSocial
+
+**Dual config system:** `emailBaseConfig` (server-safe, for rendering) and `emailEditorConfig` (interactive, for Puck editor) — mirrors the existing web page config architecture.
+
+**Rendering pipeline:**
+- `EmailRenderer` — React component wrapping Puck's `<Render>` with `emailBaseConfig`
+- `renderToEmailHtml(data, options?)` — Produces complete email HTML document string via `renderToStaticMarkup`
+- `getEmailDocumentParts(options)` — Returns `{ before, after }` HTML shell for custom wrapping
+
+**Email CSS converters** added to `src/fields/shared.ts`:
+- `colorValueToEmailCSS()` — Hex-only output, bakes opacity by blending with white
+- `paddingValueToEmailCSS()` — Always outputs px values
+- `backgroundValueToEmailCSS()` — Solid color only (gradients fall back to first stop)
+
+**Utilities** in `src/components/email/utils.ts`:
+- `tiptapHtmlToEmailHtml()` — Converts TipTap HTML to inline-styled email-safe HTML
+- `vmlBackgroundOpen()` / `vmlBackgroundClose()` — Outlook VML background image support
+- `TABLE_ATTRS`, `FULL_WIDTH_TABLE_STYLE`, `centeredTableStyle()` — Table layout helpers
+- `WEB_SAFE_FONTS` — Font stack options for email
+
 ## [0.6.15] - 2026-02-19
 
 ### Changed
