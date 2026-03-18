@@ -8,6 +8,7 @@
 import type { PayloadHandler, CollectionSlug } from 'payload'
 import { APIError } from 'payload'
 import { unsetHomepage, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
+import { resolveLocale } from '../utils/locale.js'
 
 export interface PuckEndpointOptions {
   collections: string[]
@@ -31,11 +32,16 @@ export function createListHandler(options: PuckEndpointOptions): PayloadHandler 
         )
       }
 
+      const body = await req.json?.()
+      const { _locale, ...data } = body || {}
+      const locale = resolveLocale(req, _locale)
+
       const result = await req.payload.find({
         collection: collection as CollectionSlug,
         draft: true,
         depth: 0,
         limit: 100,
+        ...(locale ? { locale: locale.toString() } : {}),
       })
 
       return Response.json(result)
@@ -68,11 +74,19 @@ export function createCreateHandler(options: PuckEndpointOptions): PayloadHandle
       }
 
       const body = await req.json?.()
+      const { _locale, ...data } = body || {}
+      let locale = resolveLocale(req, _locale)
+      const referrer = req.headers.get('referer');
+      if(referrer && !locale){
+          const { searchParams } = new URL(referrer);
+          locale = searchParams.get('locale') || undefined;
+      }
 
       const doc = await req.payload.create({
         collection: collection as CollectionSlug,
-        data: body,
+        data,
         draft: true,
+        ...(locale ? { locale: locale.toString() } : {}),
       })
 
       return Response.json({ doc })
@@ -104,12 +118,16 @@ export function createGetHandler(options: PuckEndpointOptions): PayloadHandler {
           { status: 400 }
         )
       }
+      const body = await req.json?.()
+      const { _locale, ...data } = body || {}
+      const locale = resolveLocale(req, _locale)
 
       const doc = await req.payload.findByID({
         collection: collection as CollectionSlug,
         id,
         draft: true,
         depth: 0,
+        ...(locale ? { locale: locale.toString() } : {}),
       })
 
       return Response.json({ doc })
@@ -143,7 +161,13 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
       }
 
       const body = await req.json?.()
-      const { _status, swapHomepage, ...data } = body || {}
+      const { _status, _locale, swapHomepage, ...data } = body || {}
+      let locale = resolveLocale(req, _locale);
+      const referrer = req.headers.get('referer');
+      if(referrer && !locale){
+          const { searchParams } = new URL(referrer);
+          locale = searchParams.get('locale') || undefined;
+      }
 
       // Determine if this is a publish or draft save
       const shouldPublish = _status === 'published'
@@ -163,12 +187,13 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
           },
           limit: 1,
           depth: 0,
+          ...(locale ? { locale: locale.toString() } : {}),
         })
 
         // Unset the existing homepage if found
         if (existingHomepage.docs.length > 0) {
           const existingId = String(existingHomepage.docs[0].id)
-          await unsetHomepage(req.payload, collection, existingId)
+          await unsetHomepage(req.payload, collection, existingId, locale)
         }
       }
 
@@ -182,6 +207,7 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
         draft: !shouldPublish,
         // Skip the isHomepage hook if we've already handled the swap
         context: swapHomepage ? { skipIsHomepageHook: true } : undefined,
+        ...(locale ? { locale: locale.toString() } : {}),
       })
 
       return Response.json({ doc, published: shouldPublish })
@@ -202,11 +228,8 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
       // Handle other APIErrors
       if (error instanceof APIError) {
         return Response.json(
-          {
-            error: error.message,
-            data: error.data,
-          },
-          { status: error.status || 500 }
+            { error: error.message, data: error.data },
+            { status: error.status || 500 }
         )
       }
 
@@ -261,6 +284,7 @@ export function createVersionsHandler(options: PuckEndpointOptions): PayloadHand
   const { collections } = options
 
   return async (req) => {
+      const locale = resolveLocale(req)
     try {
       const collection = req.routeParams?.collection as string
       const id = req.routeParams?.id as string
@@ -279,6 +303,7 @@ export function createVersionsHandler(options: PuckEndpointOptions): PayloadHand
         },
         sort: '-updatedAt',
         limit: 20,
+        ...(locale ? { locale: locale.toString(), fallbackLocale: false} : {}),
       })
 
       return Response.json({ versions: versions.docs })
@@ -312,7 +337,7 @@ export function createRestoreHandler(options: PuckEndpointOptions): PayloadHandl
       }
 
       const body = await req.json?.()
-      const { versionId } = body || {}
+      const { versionId, locale } = body || {}
 
       if (!versionId) {
         return Response.json(
@@ -324,6 +349,7 @@ export function createRestoreHandler(options: PuckEndpointOptions): PayloadHandl
       const doc = await req.payload.restoreVersion({
         collection: collection as CollectionSlug,
         id: versionId,
+        ...(locale ? { locale: locale.toString() } : {}),
       })
 
       return Response.json({ doc })

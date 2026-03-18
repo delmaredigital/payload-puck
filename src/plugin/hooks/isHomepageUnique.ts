@@ -1,5 +1,6 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 import { APIError } from 'payload'
+import { resolveLocale } from '../../utils/locale'
 
 /**
  * Information about an existing homepage page
@@ -81,10 +82,14 @@ export function createIsHomepageUniqueHook(
     }
 
     const collectionSlug = options.collectionSlug || collection.slug
+    const body = await req.json?.()
+    const { _locale } = body || {}
+    const locale = resolveLocale(req, _locale)
 
     // Query for existing homepage (excluding current document)
     const existingHomepage = await req.payload.find({
       collection: collectionSlug,
+      ...(locale ? { locale: locale.toString() } : {}),
       where: {
         and: [
           { isHomepage: { equals: true } },
@@ -121,7 +126,8 @@ export function createIsHomepageUniqueHook(
 export async function unsetHomepage(
   payload: any,
   collectionSlug: string,
-  pageId: string
+  pageId: string,
+  locale?: string
 ): Promise<void> {
   await payload.update({
     collection: collectionSlug,
@@ -133,5 +139,6 @@ export async function unsetHomepage(
     context: {
       skipIsHomepageHook: true,
     },
+    ...(locale ? { locale: locale.toString() } : {}),
   })
 }
