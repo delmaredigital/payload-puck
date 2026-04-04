@@ -81,10 +81,13 @@ export function createIsHomepageUniqueHook(
     }
 
     const collectionSlug = options.collectionSlug || collection.slug
+    // Use locale from context (passed by endpoint handler) or fall back to req.locale
+    const locale = context?.locale || req.locale
 
     // Query for existing homepage (excluding current document)
     const existingHomepage = await req.payload.find({
       collection: collectionSlug,
+      ...(locale ? { locale: locale.toString() } : {}),
       where: {
         and: [
           { isHomepage: { equals: true } },
@@ -121,7 +124,8 @@ export function createIsHomepageUniqueHook(
 export async function unsetHomepage(
   payload: any,
   collectionSlug: string,
-  pageId: string
+  pageId: string,
+  locale?: string
 ): Promise<void> {
   await payload.update({
     collection: collectionSlug,
@@ -133,5 +137,6 @@ export async function unsetHomepage(
     context: {
       skipIsHomepageHook: true,
     },
+    ...(locale ? { locale: locale.toString() } : {}),
   })
 }

@@ -88,12 +88,17 @@ export async function PuckEditorView({
   let error: string | null = null
   const needsRelationships = typeof previewUrlConfig === 'function'
 
+  // Read locale from searchParams (e.g. ?locale=bg)
+  const resolvedSearch = await searchParams
+  const locale = (resolvedSearch?.locale as string | undefined) || req.locale
+
   try {
     page = await payload.findByID({
       collection: collection as any,
       id: pageId,
       draft: true, // Always get draft for editing
       depth: needsRelationships ? 1 : 0,
+      locale,
     })
   } catch (err) {
     console.error('[PuckEditorView] Error fetching page:', err)
