@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, memo, type CSSProperties } from 'react'
 import { createUsePuck, type Data } from '@puckeditor/core'
-import { Loader2, Check, RotateCcw, AlertCircle, CaseUpper } from 'lucide-react'
+import { Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
 import { useLocale } from '@payloadcms/ui';
 
 // Create usePuck hook for accessing editor state and dispatch

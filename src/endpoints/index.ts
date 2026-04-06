@@ -3,6 +3,9 @@
  *
  * These handlers are registered via config.endpoints in the plugin.
  * They provide CRUD operations for Puck-enabled collections.
+ *
+ * Access control: All handlers pass `overrideAccess: false` and `req` to
+ * Payload's local API, so collection-level access rules are enforced.
  */
 
 import type { PayloadHandler, CollectionSlug } from 'payload'
@@ -32,16 +35,16 @@ export function createListHandler(options: PuckEndpointOptions): PayloadHandler 
         )
       }
 
-      const body = await req.json?.()
-      const { _locale } = body || {}
-      const locale = resolveLocale(req, _locale)
+      const locale = resolveLocale(req)
 
       const result = await req.payload.find({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         draft: true,
         depth: 0,
         limit: 100,
-        ...(locale ? { locale: locale.toString() } : {}),
+        ...(locale ? { locale } : {}),
       })
 
       return Response.json(result)
@@ -75,18 +78,15 @@ export function createCreateHandler(options: PuckEndpointOptions): PayloadHandle
 
       const body = await req.json?.()
       const { _locale, ...data } = body || {}
-      let locale = resolveLocale(req, _locale)
-      const referrer = req.headers.get('referer');
-      if(referrer && !locale){
-          const { searchParams } = new URL(referrer);
-          locale = searchParams.get('locale') || undefined;
-      }
+      const locale = resolveLocale(req, _locale)
 
       const doc = await req.payload.create({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         data,
         draft: true,
-        ...(locale ? { locale: locale.toString() } : {}),
+        ...(locale ? { locale } : {}),
       })
 
       return Response.json({ doc })
@@ -118,16 +118,17 @@ export function createGetHandler(options: PuckEndpointOptions): PayloadHandler {
           { status: 400 }
         )
       }
-      const body = await req.json?.()
-      const { _locale } = body || {}
-      const locale = resolveLocale(req, _locale)
+
+      const locale = resolveLocale(req)
 
       const doc = await req.payload.findByID({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         id,
         draft: true,
         depth: 0,
-        ...(locale ? { locale: locale.toString() } : {}),
+        ...(locale ? { locale } : {}),
       })
 
       return Response.json({ doc })
@@ -162,12 +163,7 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
 
       const body = await req.json?.()
       const { _status, _locale, swapHomepage, ...data } = body || {}
-      let locale = resolveLocale(req, _locale);
-      const referrer = req.headers.get('referer');
-      if(referrer && !locale){
-          const { searchParams } = new URL(referrer);
-          locale = searchParams.get('locale') || undefined;
-      }
+      const locale = resolveLocale(req, _locale)
 
       // Determine if this is a publish or draft save
       const shouldPublish = _status === 'published'
@@ -179,6 +175,8 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
         // Find the current homepage
         const existingHomepage = await req.payload.find({
           collection: collection as CollectionSlug,
+          req,
+          overrideAccess: false,
           where: {
             and: [
               { isHomepage: { equals: true } },
@@ -187,7 +185,7 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
           },
           limit: 1,
           depth: 0,
-          ...(locale ? { locale: locale.toString() } : {}),
+          ...(locale ? { locale } : {}),
         })
 
         // Unset the existing homepage if found
@@ -199,6 +197,8 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
 
       const doc = await req.payload.update({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         id,
         data: {
           ...data,
@@ -207,11 +207,11 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
         draft: !shouldPublish,
         context: {
           // Skip the isHomepage hook if we've already handled the swap
-          ...((swapHomepage || locale) && { skipIsHomepageHook: swapHomepage }),
+          ...(swapHomepage && { skipIsHomepageHook: true }),
           // Pass locale to context so hooks can access it without re-reading body
           ...(locale && { locale }),
         },
-        ...(locale ? { locale: locale.toString() } : {}),
+        ...(locale ? { locale } : {}),
       })
 
       return Response.json({ doc, published: shouldPublish })
@@ -232,8 +232,8 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
       // Handle other APIErrors
       if (error instanceof APIError) {
         return Response.json(
-            { error: error.message, data: error.data },
-            { status: error.status || 500 }
+          { error: error.message, data: error.data },
+          { status: error.status || 500 }
         )
       }
 
@@ -266,6 +266,8 @@ export function createDeleteHandler(options: PuckEndpointOptions): PayloadHandle
 
       await req.payload.delete({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         id,
       })
 
@@ -288,10 +290,10 @@ export function createVersionsHandler(options: PuckEndpointOptions): PayloadHand
   const { collections } = options
 
   return async (req) => {
-      const locale = resolveLocale(req)
     try {
       const collection = req.routeParams?.collection as string
       const id = req.routeParams?.id as string
+      const locale = resolveLocale(req)
 
       if (!collections.includes(collection)) {
         return Response.json(
@@ -302,12 +304,14 @@ export function createVersionsHandler(options: PuckEndpointOptions): PayloadHand
 
       const versions = await req.payload.findVersions({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         where: {
           parent: { equals: id },
         },
         sort: '-updatedAt',
         limit: 20,
-        ...(locale ? { locale: locale.toString(), fallbackLocale: false} : {}),
+        ...(locale ? { locale, fallbackLocale: false } : {}),
       })
 
       return Response.json({ versions: versions.docs })
@@ -352,6 +356,8 @@ export function createRestoreHandler(options: PuckEndpointOptions): PayloadHandl
 
       const doc = await req.payload.restoreVersion({
         collection: collection as CollectionSlug,
+        req,
+        overrideAccess: false,
         id: versionId,
         ...(locale ? { locale: locale.toString() } : {}),
       })

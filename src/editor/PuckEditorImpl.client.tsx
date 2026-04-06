@@ -1,9 +1,9 @@
 'use client'
 
-import {useState, useCallback, useMemo, useRef, type ReactNode, createElement, useEffect} from 'react'
+import { useState, useCallback, useMemo, useRef, type ReactNode, createElement, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Puck, type Config as PuckConfig, type Data, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@puckeditor/core'
-import { useLocale } from "@payloadcms/ui";
+import { useLocale } from '@payloadcms/ui'
 import '@puckeditor/core/puck.css'
 import headingAnalyzer from '@puckeditor/plugin-heading-analyzer'
 import '@puckeditor/plugin-heading-analyzer/dist/index.css'

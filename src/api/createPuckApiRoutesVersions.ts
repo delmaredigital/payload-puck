@@ -5,7 +5,7 @@ import type {
   PuckApiVersionsRouteHandlers,
   RouteHandlerWithIdContext,
 } from './types.js'
-import {resolveLocaleFromNextRequest} from "../utils/locale";
+import { resolveLocaleFromNextRequest } from '../utils/locale.js'
 
 /**
  * Create API route handlers for /api/puck/pages/[id]/versions
@@ -90,9 +90,7 @@ export function createPuckApiRoutesVersions(
       const url = new URL(request.url)
       const limit = parseInt(url.searchParams.get('limit') || '20', 10)
       const page = parseInt(url.searchParams.get('page') || '1', 10)
-      const body = await request.json?.()
-      const { _locale } = body || {}
-      const locale = resolveLocaleFromNextRequest(request, _locale)
+      const locale = resolveLocaleFromNextRequest(request)
 
       // Fetch versions for this page
       const versions = await payload.findVersions({

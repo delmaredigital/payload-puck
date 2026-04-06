@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.23] - 2026-04-06
+
+### Fixed
+
+- **Security: API endpoints now enforce collection access control.** Previously, all Puck CRUD endpoints (`/api/puck/:collection/*`) bypassed collection-level access rules because they used Payload's local API with the default `overrideAccess: true`. The `access` config passed to `createPuckPlugin()` had no effect on these endpoints — unauthenticated users could read, create, update, and delete documents. All endpoint handlers now pass `overrideAccess: false` and forward `req` so Payload evaluates access rules against the current user. ([#7](https://github.com/delmaredigital/payload-puck/issues/7))
+
+### Added
+
+- **Locale-aware editing.** The Puck editor now propagates the active locale through save, publish, version history, and restore operations, enabling multi-language content management. Locale is resolved from the request body, query params, or Payload middleware. ([#6](https://github.com/delmaredigital/payload-puck/pull/6) — thanks [@georgisoft2020](https://github.com/georgisoft2020))
+- **Version restore endpoint fix.** The version history UI now correctly calls `/restore` instead of `/versions` for restore operations. ([#6](https://github.com/delmaredigital/payload-puck/pull/6))
+
 ## [0.6.22] - 2026-03-31
 
 ### Fixed
