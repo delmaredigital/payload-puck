@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect, memo, type CSSProperties } from 'react'
 import { createUsePuck, type Data } from '@puckeditor/core'
-import { Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
+import { Loader2, Check, RotateCcw, AlertCircle, CaseUpper } from 'lucide-react'
+import { useLocale } from '@payloadcms/ui';
 
 // Create usePuck hook for accessing editor state and dispatch
 const usePuck = createUsePuck()
@@ -231,13 +232,14 @@ export const VersionHistoryPanel = memo(function VersionHistoryPanel({
   const [error, setError] = useState<string | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const { code: currentLocale } = useLocale()
 
   // Fetch versions on mount
   const fetchVersions = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const url = `${apiEndpoint}/${pageId}/versions?limit=20`
+      const url = `${apiEndpoint}/${pageId}/versions?limit=20${currentLocale ? `&locale=${currentLocale}` : ''}`;
       const response = await fetch(url)
       if (!response.ok) {
         if (response.status === 404) {
@@ -275,10 +277,10 @@ export const VersionHistoryPanel = memo(function VersionHistoryPanel({
 
       try {
         // Call restore endpoint
-        const response = await fetch(`${apiEndpoint}/${pageId}/versions`, {
+        const response = await fetch(`${apiEndpoint}/${pageId}/restore`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ versionId: version.id }),
+          body: JSON.stringify({ versionId: version.id, locale: currentLocale }),
         })
 
         if (!response.ok) {
@@ -312,7 +314,7 @@ export const VersionHistoryPanel = memo(function VersionHistoryPanel({
         setIsRestoring(false)
       }
     },
-    [apiEndpoint, pageId, dispatch, onRestoreSuccess, fetchVersions]
+    [apiEndpoint, pageId, dispatch, onRestoreSuccess, fetchVersions, currentLocale]
   )
 
   // Format date for display

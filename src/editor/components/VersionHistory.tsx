@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, memo, type CSSProperties } from 'react'
+import { useLocale } from '@payloadcms/ui';
 import {
   History,
   Loader2,
@@ -242,12 +243,13 @@ export const VersionHistory = memo(function VersionHistory({
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { code: currentLocale } = useLocale();
 
   // Check if versions endpoint is available on mount
   useEffect(() => {
     async function checkAvailability() {
       try {
-        const response = await fetch(`${apiEndpoint}/${pageId}/versions?limit=1`, {
+        const response = await fetch(`${apiEndpoint}/${pageId}/versions?limit=1${currentLocale ? `&locale=${currentLocale}` : ''}`, {
           method: 'GET',
         })
         setIsAvailable(response.status !== 404)
@@ -274,7 +276,7 @@ export const VersionHistory = memo(function VersionHistory({
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${apiEndpoint}/${pageId}/versions?limit=20`)
+      const response = await fetch(`${apiEndpoint}/${pageId}/versions?limit=20${currentLocale ? `&locale=${currentLocale}` : ''}`)
       if (!response.ok) {
         throw new Error('Failed to fetch versions')
       }
@@ -304,10 +306,10 @@ export const VersionHistory = memo(function VersionHistory({
 
       setIsRestoring(true)
       try {
-        const response = await fetch(`${apiEndpoint}/${pageId}/versions`, {
+        const response = await fetch(`${apiEndpoint}/${pageId}/restore`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ versionId: version.id }),
+          body: JSON.stringify({ versionId: version.id, locale: currentLocale }),
         })
 
         if (!response.ok) {

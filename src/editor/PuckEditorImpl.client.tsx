@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useCallback, useMemo, useRef, type ReactNode, createElement } from 'react'
+import {useState, useCallback, useMemo, useRef, type ReactNode, createElement, useEffect} from 'react'
 import { useRouter } from 'next/navigation'
 import { Puck, type Config as PuckConfig, type Data, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@puckeditor/core'
+import { useLocale } from "@payloadcms/ui";
 import '@puckeditor/core/puck.css'
 import headingAnalyzer from '@puckeditor/plugin-heading-analyzer'
 import '@puckeditor/plugin-heading-analyzer/dist/index.css'
@@ -306,6 +307,17 @@ export function PuckEditorImpl({
   const [wasPublished, setWasPublished] = useState(initialStatus === 'published')
   const { hasUnsavedChanges, markClean, markDirty } = useUnsavedChanges()
 
+  // Get current locale code
+  const { code: currentLocale } = useLocale();
+  // Store the initial locale on mount
+  const initialLocale = useRef(currentLocale);
+  useEffect(() => {
+    // If the locale changes from what it was at load, force a hard refresh
+    if (initialLocale.current && currentLocale !== initialLocale.current) {
+      window.location.reload();
+    }
+  }, [currentLocale]);
+
   // Preview modal state
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
@@ -369,10 +381,10 @@ export function PuckEditorImpl({
   const makeSaveRequest = useCallback(
     async (
       data: Data,
-      options: { publish?: boolean; swapHomepage?: boolean } = {}
+      options: { publish?: boolean; swapHomepage?: boolean, currentLocale?: string } = {}
     ): Promise<Response> => {
       const typedData = data as PuckDataWithMeta
-      return fetch(`${apiEndpoint}/${pageId}`, {
+      return fetch(`${apiEndpoint}/${pageId}${currentLocale ? `?locale=${currentLocale}` : ''}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -388,7 +400,7 @@ export function PuckEditorImpl({
         }),
       })
     },
-    [apiEndpoint, pageId, pageTitle, pageSlug]
+    [apiEndpoint, pageId, pageTitle, pageSlug, currentLocale]
   )
 
   // Handle homepage conflict - prompt user to swap
@@ -406,14 +418,14 @@ export function PuckEditorImpl({
       }
 
       // Retry with swapHomepage flag
-      const response = await makeSaveRequest(data, { publish, swapHomepage: true })
+      const response = await makeSaveRequest(data, { publish, swapHomepage: true, currentLocale })
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || errorData.message || 'Failed to swap homepage')
       }
       return true
     },
-    [makeSaveRequest]
+    [makeSaveRequest, currentLocale]
   )
 
   // Handle save (as draft)
@@ -422,7 +434,7 @@ export function PuckEditorImpl({
       setIsSaving(true)
       const typedData = data as PuckDataWithMeta
       try {
-        const response = await makeSaveRequest(data, { publish: false })
+        const response = await makeSaveRequest(data, { publish: false, currentLocale})
 
         if (!response.ok) {
           const errorData = await response.json()
@@ -463,7 +475,7 @@ export function PuckEditorImpl({
         setIsSaving(false)
       }
     },
-    [makeSaveRequest, handleHomepageConflict, markClean, onSaveSuccess, onSaveError]
+    [makeSaveRequest, handleHomepageConflict, markClean, onSaveSuccess, onSaveError, currentLocale]
   )
 
   // Handle publish
