@@ -792,7 +792,7 @@ details .details-body > :first-child { margin-top: 0; }
   <div class="header-brand">
     <span>payload</span>-puck
   </div>
-  <span class="header-badge">v0.6.19</span>
+  <span class="header-badge">v0.6.26</span>
 
   <div class="search-wrap">
     <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1147,8 +1147,17 @@ module.exports = {
         <li>Add the plugin to <code>payload.config.ts</code></li>
         <li>Add <code>PuckConfigProvider</code> to your admin layout</li>
         <li><strong>Update your frontend page templates</strong> to render <code>puckData</code></li>
+        <li><strong>Regenerate Payload types</strong> so the injected fields are typed (see below)</li>
       </ol>
       <p>Without step 3, Puck pages will render blank because your existing routes only look for legacy block fields like <code>layout</code> or <code>hero</code>.</p>
+
+      <div class="callout callout-note">
+        <p><strong>TypeScript errors after install?</strong> The plugin injects fields (<code>puckData</code>, <code>editorVersion</code>, and any opt-in fields like <code>pageLayout</code>/<code>isHomepage</code>/<code>conversionTracking</code>) into your collection, so regenerate Payload's types — you don't need to hand-write a collection definition:</p>
+        <pre><span class="lang-tag">bash</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>payload generate:types
+<span class="hl-comment"># Payload 3.x — also regenerate the import map for the admin components the plugin registers:</span>
+payload generate:importmap</code></pre>
+        <p>Then import the generated <code>Page</code> type from your <code>payload-types</code> instead of defining your own. If you'd rather own the collection, set <code>autoGenerateCollection: false</code> and add the fields with <code>getPuckCollectionConfig()</code> or <code>getPuckFields()</code>.</p>
+      </div>
 
       <h3>Option A: Hybrid Rendering (recommended)</h3>
       <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-type">HybridPageRenderer</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/render'</span>
