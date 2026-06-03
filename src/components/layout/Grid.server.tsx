@@ -160,9 +160,12 @@ export const GridConfig: ComponentConfig = {
     // generating utility classes. Single column on mobile (children stacked);
     // switches to the multi-column track at >=768px via the scoped media query.
     // grid-template-columns is dynamic, so drive the column count from a CSS var.
+    // NOTE: grid-template-columns must NOT be set inline — an inline style would
+    // outrank the @media rule below (inline beats stylesheet, media queries
+    // included), pinning the layout to one column. Both the mobile base and the
+    // responsive override live in the scoped <style> so the media query can win.
     const gridStyles: React.CSSProperties = {
       display: 'grid',
-      gridTemplateColumns: '1fr',
       gap,
       ...dimensionsResult.baseStyles,
       '--grid-cols': numColumns,
@@ -180,6 +183,7 @@ export const GridConfig: ComponentConfig = {
         <Wrapper className={wrapperClass} style={wrapperStyles}>
           <ContentSlot className={contentClass} style={gridStyles} />
           <style>{`
+            .${contentClass} { grid-template-columns: 1fr; }
             @media (min-width: 768px) {
               .${contentClass} {
                 grid-template-columns: repeat(var(--grid-cols), 1fr);

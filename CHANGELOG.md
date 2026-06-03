@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.29] - 2026-06-03
+
+### Fixed
+
+- **`Grid`/`Columns` still stacked at all widths (incomplete `0.6.28` fix).** `0.6.28` set the mobile base `grid-template-columns: 1fr` as an **inline style**, which outranks the `@media (min-width: 768px)` rule in the scoped `<style>` block — inline styles beat stylesheet rules, media queries included — so the layout was pinned to a single column at every width (and this also regressed projects where the Tailwind-based layout previously worked). Both the mobile base and the responsive multi-column rule now live in the scoped `<style>` block, so the media query applies correctly. Verified in-browser: single column below 768px, multi-column (with the configured ratios) at and above 768px. ([#10](https://github.com/delmaredigital/payload-puck/issues/10))
+
 ## [0.6.28] - 2026-06-03
 
 ### Fixed

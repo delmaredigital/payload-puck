@@ -232,10 +232,13 @@ export const ColumnsConfig: ComponentConfig = {
     // Self-contained CSS grid — does NOT depend on the consumer's Tailwind
     // generating utility classes. Single column on mobile (stacked); switches to
     // the multi-column template at >=768px via the scoped media query below.
+    // NOTE: grid-template-columns must NOT be set inline — an inline style would
+    // outrank the @media rule below (inline beats stylesheet, media queries
+    // included), pinning the layout to one column. Both the mobile base and the
+    // responsive override live in the scoped <style> so the media query can win.
     const colsTemplate = resolveColumnsTemplate(safeCount, distribution)
     const gridStyles: React.CSSProperties = {
       display: 'grid',
-      gridTemplateColumns: '1fr',
       gap,
       ...dimensionsResult.baseStyles,
       '--cols-template': colsTemplate,
@@ -255,6 +258,7 @@ export const ColumnsConfig: ComponentConfig = {
             })}
           </div>
           <style>{`
+            .${contentClass} { grid-template-columns: 1fr; }
             @media (min-width: 768px) {
               .${contentClass} {
                 grid-template-columns: var(--cols-template);
