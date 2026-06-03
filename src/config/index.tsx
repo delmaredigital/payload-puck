@@ -13,6 +13,7 @@ import { DEFAULT_LAYOUTS, layoutsToOptions, type LayoutDefinition } from '../lay
 import { ContainerConfig } from '../components/layout/Container.server.js'
 import { FlexConfig } from '../components/layout/Flex.server.js'
 import { GridConfig } from '../components/layout/Grid.server.js'
+import { ColumnsConfig } from '../components/layout/Columns.server.js'
 import { SectionConfig } from '../components/layout/Section.server.js'
 import { SpacerConfig } from '../components/layout/Spacer.server.js'
 import { TemplateServerConfig } from '../components/layout/Template.server.js'
@@ -76,7 +77,7 @@ export function createConfig(layouts: LayoutDefinition[] = DEFAULT_LAYOUTS): Puc
     categories: {
       layout: {
         title: 'Layout',
-        components: ['Container', 'Flex', 'Grid', 'Section', 'Spacer', 'Template'],
+        components: ['Container', 'Flex', 'Grid', 'Columns', 'Section', 'Spacer', 'Template'],
         defaultExpanded: true,
       },
       typography: {
@@ -97,6 +98,7 @@ export function createConfig(layouts: LayoutDefinition[] = DEFAULT_LAYOUTS): Puc
       Container: ContainerConfig as ComponentConfig<any>,
       Flex: FlexConfig as ComponentConfig<any>,
       Grid: GridConfig as ComponentConfig<any>,
+      Columns: ColumnsConfig as ComponentConfig<any>,
       Section: SectionConfig as ComponentConfig<any>,
       Spacer: SpacerConfig as ComponentConfig<any>,
       Template: TemplateServerConfig as ComponentConfig<any>,

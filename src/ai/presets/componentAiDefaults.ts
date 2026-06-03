@@ -171,6 +171,26 @@ export const defaultComponentAiConfig: ComponentAiOverrides = {
     },
   },
 
+  Columns: {
+    ai: {
+      instructions:
+        'Use when content must be targeted into specific columns (each column is its own drop zone), e.g. a text column beside an image column. For content that just flows across equal cells, prefer Grid.',
+    },
+    fields: {
+      count: {
+        ai: {
+          instructions: 'Number of columns, 2-4.',
+        },
+      },
+      distribution: {
+        ai: {
+          instructions:
+            "Column width split. 'equal' for even columns, or an fr ratio like '2:1' / '1:2' / '1:1:2' for asymmetric layouts (must match the column count).",
+        },
+      },
+    },
+  },
+
   // Content Components
   Card: {
     ai: {

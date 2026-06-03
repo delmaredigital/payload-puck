@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.27] - 2026-06-03
+
+### Added
+
+- **`Columns` layout component with independent per-column drop zones.** Unlike `Grid` (a single CSS-grid slot where dropped components auto-place into cells and share one drop zone), `Columns` exposes a separate slot per column, so components can be targeted into a specific column. Supports 2–4 columns and width-distribution presets (equal, or `fr` ratios like `2:1`, `1:2`, `1:1:2`), stacks vertically on mobile, and switches to a CSS grid at ≥768px. Reuses the shared field set (background, padding, margin, border, gap, visibility, animation) for parity with `Grid`. ([#10](https://github.com/delmaredigital/payload-puck/issues/10))
+
 ## [0.6.26] - 2026-06-03
 
 ### Fixed

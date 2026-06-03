@@ -19,6 +19,7 @@ import { lockedSlugField, lockedHomepageField } from '../fields/LockedField.js'
 import { ContainerConfig } from '../components/layout/Container.js'
 import { FlexConfig } from '../components/layout/Flex.js'
 import { GridConfig } from '../components/layout/Grid.js'
+import { ColumnsConfig } from '../components/layout/Columns.js'
 import { SectionConfig } from '../components/layout/Section.js'
 import { SpacerConfig } from '../components/layout/Spacer.js'
 import { TemplateConfig } from '../components/layout/Template.js'
@@ -113,7 +114,7 @@ export const editorConfig = {
   categories: {
     layout: {
       title: 'Layout',
-      components: ['Container', 'Flex', 'Grid', 'Section', 'Spacer', 'Template'],
+      components: ['Container', 'Flex', 'Grid', 'Columns', 'Section', 'Spacer', 'Template'],
       defaultExpanded: true,
     },
     typography: {
@@ -134,6 +135,7 @@ export const editorConfig = {
     Container: ContainerConfig as ComponentConfig<any>,
     Flex: FlexConfig as ComponentConfig<any>,
     Grid: GridConfig as ComponentConfig<any>,
+    Columns: ColumnsConfig as ComponentConfig<any>,
     Section: SectionConfig as ComponentConfig<any>,
     Spacer: SpacerConfig as ComponentConfig<any>,
     Template: TemplateConfig as ComponentConfig<any>,

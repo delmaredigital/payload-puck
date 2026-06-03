@@ -31,6 +31,7 @@ import {
   ContainerConfig,
   FlexConfig,
   GridConfig,
+  ColumnsConfig,
   SectionConfig,
   SpacerConfig,
   TemplateConfig,
@@ -224,7 +225,7 @@ export const fullConfig = {
   categories: {
     layout: {
       title: 'Layout',
-      components: ['Container', 'Flex', 'Grid', 'Section', 'Spacer', 'Template'],
+      components: ['Container', 'Flex', 'Grid', 'Columns', 'Section', 'Spacer', 'Template'],
       defaultExpanded: true,
     },
     typography: {
@@ -245,6 +246,7 @@ export const fullConfig = {
     Container: ContainerConfig as ComponentConfig<any>,
     Flex: FlexConfig as ComponentConfig<any>,
     Grid: GridConfig as ComponentConfig<any>,
+    Columns: ColumnsConfig as ComponentConfig<any>,
     Section: SectionConfig as ComponentConfig<any>,
     Spacer: SpacerConfig as ComponentConfig<any>,
     Template: TemplateConfig as ComponentConfig<any>,
