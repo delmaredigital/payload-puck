@@ -10,7 +10,7 @@
 
 import type { PayloadHandler, CollectionSlug } from 'payload'
 import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
-import { unsetOtherHomepages, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
+import { isDraftOnlySave, unsetOtherHomepages, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
 import { resolveLocale } from '../utils/locale.js'
 import { payloadErrorStatus } from '../utils/payloadErrors.js'
 import { mapRootPropsToPayloadFields, deepMerge } from '../api/utils/mapRootProps.js'
@@ -218,7 +218,14 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
       // access control; only once it has succeeded is the previous homepage
       // unset (a privileged write). Both share one transaction, so a failure in
       // either rolls back the pair.
-      const isSwap = swapHomepage === true && updateData.isHomepage === true
+      //
+      // A draft save on a drafts-enabled collection never swaps: it does not
+      // touch the live document, so unsetting the live homepage would leave the
+      // site without one until the draft is published.
+      const isSwap =
+        swapHomepage === true &&
+        updateData.isHomepage === true &&
+        !isDraftOnlySave(req.payload.collections?.[collection]?.config, updateData._status)
       const ownsTransaction = isSwap ? await initTransaction(req) : false
 
       let doc

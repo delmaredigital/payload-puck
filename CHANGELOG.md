@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.4] - 2026-10-08
+
+### Fixed
+
+- **Saving a draft no longer changes the live homepage.** Marking a draft as the homepage made the uniqueness hook prompt for a swap on every draft save, and accepting it unset the current homepage immediately, even though the draft stayed unpublished, which left the site with no live homepage until it was. On a drafts-enabled collection, the hook now skips draft saves (Payload leaves the live document untouched on them), and the swap runs only when the page is published, which is when the editor now offers it. Applies to the built-in `/api/puck/*` endpoint, `createPuckApiRoutesWithId`, and Payload's own admin. Collections without drafts are unchanged: every save there is live, so the check and swap still apply on each one.
 
 ### Security
 

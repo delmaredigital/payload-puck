@@ -496,3 +496,52 @@ describe('Payload access denials map to 403', () => {
     expect(res.status).toBe(500)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Homepage swap and drafts
+// ---------------------------------------------------------------------------
+
+describe('createPuckApiRoutesWithId homepage swap', () => {
+  const swap = (extra: Record<string, unknown>) =>
+    jsonReq(
+      {
+        puckData: { root: { props: {} }, content: [], zones: {} },
+        swapHomepage: true,
+        isHomepage: true,
+        ...extra,
+      },
+      'http://localhost/api/puck/pages/p1'
+    )
+
+  function withDrafts() {
+    const mocked = mockPayload({ find: { docs: [{ id: 'old-home' }], totalDocs: 1 } })
+    Object.assign(mocked.payload, {
+      collections: { pages: { config: { versions: { drafts: true } } } },
+    })
+    return mocked
+  }
+
+  it('does not unset the live homepage on a draft save', async () => {
+    const { calls } = withDrafts()
+
+    await createPuckApiRoutesWithId(baseConfig()).PATCH(swap({ draft: true }), ctx())
+
+    expect(calls.map((c) => `${c.op}:${c.args.id ?? ''}`)).toEqual(['update:p1'])
+    expect(calls[0].args.draft).toBe(true)
+  })
+
+  it('unsets the previous homepage when publishing', async () => {
+    const { calls } = withDrafts()
+
+    await createPuckApiRoutesWithId(baseConfig()).PATCH(
+      swap({ draft: true, _status: 'published' }),
+      ctx()
+    )
+
+    expect(calls.map((c) => `${c.op}:${c.args.id ?? ''}`)).toEqual([
+      'find:',
+      'update:old-home',
+      'update:p1',
+    ])
+  })
+})

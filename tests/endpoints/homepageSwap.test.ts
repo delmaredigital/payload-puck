@@ -19,7 +19,7 @@ type RecordedCall = { op: string; args: Record<string, unknown> }
 
 function fakeRequest(
   body: Record<string, unknown>,
-  opts: { rejectTargetUpdate?: boolean; failUnset?: boolean } = {}
+  opts: { rejectTargetUpdate?: boolean; failUnset?: boolean; drafts?: boolean } = {}
 ) {
   const calls: RecordedCall[] = []
   const tx = { begun: 0, committed: 0, rolledBack: 0 }
@@ -29,6 +29,9 @@ function fakeRequest(
     routeParams: { collection: 'pages', id: 'target' },
     json: async () => body,
     payload: {
+      collections: {
+        pages: { config: { versions: opts.drafts ? { drafts: true } : false } },
+      },
       find: vi.fn(async (args: Record<string, unknown>) => {
         calls.push({ op: 'find', args })
         return { docs: [{ id: 'old-home' }], totalDocs: 1 }
@@ -124,5 +127,49 @@ describe('homepage swap on the Puck update endpoint', () => {
     expect(calls).toHaveLength(1)
     expect(calls[0].args.context).not.toHaveProperty('skipIsHomepageHook')
     expect(tx.begun).toBe(0)
+  })
+})
+
+describe('homepage swap on a drafts-enabled collection', () => {
+  it('does not swap on a draft save, so the live homepage stays live', async () => {
+    const { req, calls, tx } = fakeRequest(swapBody, { drafts: true })
+
+    const res = await handler(req)
+
+    expect(res.status).toBe(200)
+    // Only the draft write: no lookup, no unset of the published homepage.
+    expect(calls).toHaveLength(1)
+    expect(calls[0].args).toMatchObject({ id: 'target', draft: true, overrideAccess: false })
+    expect(calls[0].args.context).not.toHaveProperty('skipIsHomepageHook')
+    expect(tx.begun).toBe(0)
+  })
+
+  it('swaps when the page is published', async () => {
+    const { req, calls, tx } = fakeRequest({ ...swapBody, _status: 'published' }, { drafts: true })
+
+    const res = await handler(req)
+
+    expect(res.status).toBe(200)
+    expect(calls.map((c) => `${c.op}:${c.args.id ?? ''}`)).toEqual([
+      'update:target',
+      'find:',
+      'update:old-home',
+    ])
+    expect(calls[0].args).toMatchObject({ draft: false })
+    expect(tx).toEqual({ begun: 1, committed: 1, rolledBack: 0 })
+  })
+})
+
+describe('homepage swap on a collection without drafts', () => {
+  it('swaps on every save, because every save is live', async () => {
+    const { req, calls } = fakeRequest(swapBody, { drafts: false })
+
+    await handler(req)
+
+    expect(calls.map((c) => `${c.op}:${c.args.id ?? ''}`)).toEqual([
+      'update:target',
+      'find:',
+      'update:old-home',
+    ])
   })
 })

@@ -13,6 +13,7 @@ import {
 } from './utils/access.js'
 import type { PayloadAccessArgs } from './utils/access.js'
 import { payloadErrorResponse } from '../utils/payloadErrors.js'
+import { isDraftOnlySave } from '../plugin/hooks/isHomepageUnique.js'
 
 /**
  * Create API route handlers for /api/puck/pages/[id]
@@ -220,7 +221,13 @@ export function createPuckApiRoutesWithId(
       // unset the existing homepage first
       const access = await resolveAccess(authResult, request)
 
-      if (swapHomepage && isHomepage === true) {
+      // A draft save never swaps: it leaves the live document untouched, so
+      // unsetting the live homepage now would leave the site without one.
+      const isDraftSave =
+        draft === true &&
+        isDraftOnlySave(payload.collections?.[collection]?.config, status)
+
+      if (swapHomepage && isHomepage === true && !isDraftSave) {
         const existingHomepage = await payload.find({
           collection,
           ...access(),

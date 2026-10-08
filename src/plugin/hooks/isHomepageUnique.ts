@@ -1,4 +1,9 @@
-import type { CollectionBeforeChangeHook, CollectionSlug, PayloadRequest } from 'payload'
+import type {
+  CollectionBeforeChangeHook,
+  CollectionSlug,
+  PayloadRequest,
+  SanitizedCollectionConfig,
+} from 'payload'
 import { APIError } from 'payload'
 
 /**
@@ -28,6 +33,20 @@ export class HomepageConflictError extends APIError {
     this.name = 'HomepageConflictError'
     this.existingHomepage = existingHomepage
   }
+}
+
+/**
+ * True when a save writes only a draft version: the collection has drafts
+ * enabled and the save is not a publish. Payload leaves the live document (and
+ * so the live homepage) untouched on such a save, so homepage uniqueness is
+ * enforced, and any swap performed, only when the draft is published.
+ */
+export function isDraftOnlySave(
+  collection: Pick<SanitizedCollectionConfig, 'versions'> | undefined,
+  status: unknown
+): boolean {
+  const versions = collection?.versions
+  return Boolean(versions && versions.drafts) && status !== 'published'
 }
 
 /**
@@ -68,6 +87,12 @@ export function createIsHomepageUniqueHook(
   return async ({ data, originalDoc, req, collection, context }) => {
     // Skip if explicitly bypassed (used during homepage swap)
     if (context?.skipIsHomepageHook) {
+      return data
+    }
+
+    // A draft save does not change the live homepage. The check runs when the
+    // draft is published, which is when the editor offers the swap.
+    if (isDraftOnlySave(collection, data?._status)) {
       return data
     }
 
