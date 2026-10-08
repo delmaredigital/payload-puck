@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.5] - 2026-10-08
+
+### Fixed
+
+- **Publishing a draft that is marked as homepage is checked for uniqueness again.** 0.9.4 let draft saves set `isHomepage` without a conflict, but the uniqueness hook still skipped any page whose previous state "was already the homepage", and Payload hands the hook the latest *version*, which is that draft. Publishing it therefore skipped the check, never offered the swap, and left two published homepages. The shortcut is gone: the hook always looks for *other* homepages, which a page that really is the only homepage passes.
+- **Live writes with no `_status` are checked again.** 0.9.4's draft exemption also covered saves with no `_status` on a drafts-enabled collection, but those are live writes (Local API, or REST without `?draft=true`) and could create a second published homepage. The exemption now applies only to `_status: 'draft'`, which Payload sets on every draft-only save.
+
+  **Action:** upgrade from 0.9.4. If a site saw a draft homepage published on 0.9.4, check for more than one page with `isHomepage` set and unset the extra. Earlier versions are not affected by these two issues.
+
 ## [0.9.4] - 2026-10-08
 
 ### Fixed

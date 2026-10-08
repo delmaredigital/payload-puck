@@ -13,7 +13,7 @@ import {
 } from './utils/access.js'
 import type { PayloadAccessArgs } from './utils/access.js'
 import { payloadErrorResponse } from '../utils/payloadErrors.js'
-import { isDraftOnlySave } from '../plugin/hooks/isHomepageUnique.js'
+import { collectionHasDrafts } from '../plugin/hooks/isHomepageUnique.js'
 
 /**
  * Create API route handlers for /api/puck/pages/[id]
@@ -225,7 +225,8 @@ export function createPuckApiRoutesWithId(
       // unsetting the live homepage now would leave the site without one.
       const isDraftSave =
         draft === true &&
-        isDraftOnlySave(payload.collections?.[collection]?.config, status)
+        status !== 'published' &&
+        collectionHasDrafts(payload.collections?.[collection]?.config)
 
       if (swapHomepage && isHomepage === true && !isDraftSave) {
         const existingHomepage = await payload.find({

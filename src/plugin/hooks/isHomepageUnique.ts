@@ -36,17 +36,16 @@ export class HomepageConflictError extends APIError {
 }
 
 /**
- * True when a save writes only a draft version: the collection has drafts
- * enabled and the save is not a publish. Payload leaves the live document (and
- * so the live homepage) untouched on such a save, so homepage uniqueness is
- * enforced, and any swap performed, only when the draft is published.
+ * True when the collection has Payload drafts enabled. On such a collection a
+ * draft-only save writes a version and leaves the live document (and so the
+ * live homepage) untouched, so homepage uniqueness is enforced, and any swap
+ * performed, only when the page is published.
  */
-export function isDraftOnlySave(
-  collection: Pick<SanitizedCollectionConfig, 'versions'> | undefined,
-  status: unknown
+export function collectionHasDrafts(
+  collection: Pick<SanitizedCollectionConfig, 'versions'> | undefined
 ): boolean {
   const versions = collection?.versions
-  return Boolean(versions && versions.drafts) && status !== 'published'
+  return Boolean(versions && versions.drafts)
 }
 
 /**
@@ -92,18 +91,24 @@ export function createIsHomepageUniqueHook(
 
     // A draft save does not change the live homepage. The check runs when the
     // draft is published, which is when the editor offers the swap.
-    if (isDraftOnlySave(collection, data?._status)) {
+    //
+    // Payload sets `_status: 'draft'` on every draft-only save before this hook
+    // runs. Match exactly that: a save with no `_status` on a drafts-enabled
+    // collection is a *live* write (Local API or REST without `draft: true`),
+    // and must still be checked.
+    if (collectionHasDrafts(collection) && data?._status === 'draft') {
       return data
     }
 
     // Only check if isHomepage is being set to true
-    const isSettingHomepage = data?.isHomepage === true
-    const wasHomepage = originalDoc?.isHomepage === true
-
-    // Skip if not setting as homepage, or if it was already homepage
-    if (!isSettingHomepage || wasHomepage) {
+    if (data?.isHomepage !== true) {
       return data
     }
+
+    // Deliberately no "already the homepage" shortcut on `originalDoc`: Payload
+    // passes the latest *version*, which may be a draft saved with isHomepage
+    // true, not the live document. The lookup below excludes this page anyway,
+    // so a page that really is the only homepage passes it.
 
     const collectionSlug = options.collectionSlug || collection.slug
     // Use locale from context (passed by endpoint handler) or fall back to req.locale

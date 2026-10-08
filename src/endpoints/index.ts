@@ -10,7 +10,7 @@
 
 import type { PayloadHandler, CollectionSlug } from 'payload'
 import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
-import { isDraftOnlySave, unsetOtherHomepages, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
+import { collectionHasDrafts, unsetOtherHomepages, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
 import { resolveLocale } from '../utils/locale.js'
 import { payloadErrorStatus } from '../utils/payloadErrors.js'
 import { mapRootPropsToPayloadFields, deepMerge } from '../api/utils/mapRootProps.js'
@@ -225,7 +225,7 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
       const isSwap =
         swapHomepage === true &&
         updateData.isHomepage === true &&
-        !isDraftOnlySave(req.payload.collections?.[collection]?.config, updateData._status)
+        !(!shouldPublish && collectionHasDrafts(req.payload.collections?.[collection]?.config))
       const ownsTransaction = isSwap ? await initTransaction(req) : false
 
       let doc
