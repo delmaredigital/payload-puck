@@ -827,6 +827,7 @@ details .details-body > :first-child { margin-top: 0; }
       <a class="nav-link sub" href="#step-3-route">Frontend Route</a>
       <a class="nav-link" href="#styling-setup">Styling Setup</a>
       <a class="nav-link" href="#adding-to-existing">Adding to Existing Projects</a>
+      <a class="nav-link" href="#upgrading">Upgrade Guide</a>
     </div>
 
     <div class="nav-section">
@@ -886,17 +887,8 @@ details .details-body > :first-child { margin-top: 0; }
     <div class="section" id="installation">
       <h2>Installation</h2>
 
-      <div class="callout callout-warn">
-        <p><strong>Upgrading to 0.8.0?</strong> Editor CSS is now built by your app instead of by this plugin.
-        <code>editorStylesheet</code>/<code>editorStylesheetCompiled</code>/<code>editorStylesheetUrls</code> collapse into
-        a single <code>editorStylesheets</code> array of URLs, and <code>withPuckCSS()</code> is removed &mdash; see
-        <a href="#editor-stylesheet">Editor Stylesheet</a>. This fixes the editor rendering unstyled in production on
-        Next.js 16 (Turbopack never ran the webpack plugin that produced the old file).</p>
-        <p><strong>Upgrading to 0.7.0?</strong> Two floors moved: <code>@puckeditor/core</code> now requires
-        <code>&ge; 0.23.0</code> (run <code>pnpm add @puckeditor/core@^0.23.0</code>), and Node 18 is no longer
-        supported (<code>node &ge; 20.9.0</code>). No exports, props, or config options were removed or renamed.
-        Note that Puck 0.23 ships a rewritten drag-and-drop engine and a redesigned outline, so the editing
-        experience changes visibly &mdash; worth a pass through your editor after upgrading.</p>
+      <div class="callout callout-note">
+        <p><strong>Upgrading from an earlier version?</strong> See the <a href="#upgrading">Upgrade Guide</a> for the steps each breaking or security release needs.</p>
       </div>
 
       <h3>Requirements</h3>
@@ -915,6 +907,10 @@ details .details-body > :first-child { margin-top: 0; }
 
       <div class="callout callout-note">
         <p><strong>Note:</strong> Puck 0.21+ moved from <code>@measured/puck</code> to <code>@puckeditor/core</code>. This plugin requires the new package scope.</p>
+      </div>
+
+      <div class="callout callout-warn">
+        <p><strong>Next.js security floor.</strong> If your app uses Next.js middleware (or <code>proxy.ts</code>) to protect dynamic routes, use <code>next</code> &ge; 15.5.16 / 16.2.5 to pick up the fix for <a href="https://github.com/vercel/next.js/security/advisories/GHSA-492v-c6pp-mqqv">CVE-2026-44574</a> (middleware bypass via dynamic route parameter injection). Turbopack users need &ge; 15.5.18 / 16.2.6.</p>
       </div>
 
       <h3>Install</h3>
@@ -1208,6 +1204,67 @@ payload generate:importmap</code></pre>
 
 <span class="hl-comment">// Fall back to legacy rendering</span>
 <span class="hl-keyword">return</span> &lt;<span class="hl-type">LegacyBlockRenderer</span> blocks={page.layout} /&gt;</code></pre>
+    </div>
+
+    <!-- UPGRADE GUIDE -->
+    <div class="section" id="upgrading">
+      <h2>Upgrade Guide</h2>
+      <p>What each breaking or security release asks of you. Releases not listed here need nothing beyond the version bump. If you are skipping versions, apply every step between your version and the latest, oldest first. Full detail for every release is in the <a href="https://github.com/delmaredigital/payload-puck/blob/main/CHANGELOG.md">changelog</a>.</p>
+
+      <h3>0.9.3 &mdash; security fix</h3>
+      <p><strong>No action needed; upgrade.</strong> On the built-in <code>/api/puck/*</code> update endpoint, a homepage swap could clear the site&rsquo;s current homepage on behalf of a user who was not allowed to make the edit (<a href="https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-cphw-vvv5-c8p7">GHSA-cphw-vvv5-c8p7</a>). The swap is now authorized first, and both writes run in one transaction.</p>
+
+      <h3>0.9.1 &mdash; security: pages collection write defaults</h3>
+      <p>The generated <code>pages</code> collection used to default <code>create</code>, <code>update</code> and <code>delete</code> to allow-all, so anonymous callers could write pages through Payload&rsquo;s REST and GraphQL APIs if you passed no <code>access</code> option. They now default to any authenticated user; <code>read</code> stays public so your frontend can render published pages.</p>
+      <ul>
+        <li><strong>Already pass <code>access</code>?</strong> Nothing to do &mdash; anything you pass still wins.</li>
+        <li><strong>Relied on the default?</strong> Decide who may write pages and say so. If any untrusted users can sign in (public sign-up, customers), &ldquo;authenticated&rdquo; is not enough:</li>
+      </ul>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>createPuckPlugin({
+  access: {
+    create: ({ req }) =&gt; req.user?.role === 'admin',
+    update: ({ req }) =&gt; req.user?.role === 'admin',
+    delete: ({ req }) =&gt; req.user?.role === 'admin',
+  },
+})</code></pre>
+      <p>0.9.2 added <code>access.readVersions</code> and stopped <code>collectionOverrides</code> from replacing these merged access rules. See <a href="#plugin-options">Plugin Options</a>.</p>
+
+      <h3>0.9.0 &mdash; breaking, security: standalone route factories</h3>
+      <p><strong>Only affects apps that wired the route factories themselves</strong> (<code>createPuckApiRoutes</code>, <code>createPuckApiRoutesWithId</code>, <code>createPuckApiRoutesVersions</code> from <code>/api</code>, or <code>createPromptApiRoutes</code> from <code>/ai</code>). The built-in <code>/api/puck/*</code> endpoints are unchanged.</p>
+      <p>These factories now enforce Payload collection access control (<a href="https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-957g-hmmp-rchg">GHSA-957g-hmmp-rchg</a>), so they need to know which Payload user a request acts as:</p>
+      <ol>
+        <li>Build <code>authenticate</code> on <code>payload.auth({ headers: request.headers })</code>. This works for every auth system, including Better Auth, Clerk and custom strategies.</li>
+        <li>Do <strong>not</strong> return your auth library&rsquo;s session user, and do not map a session back to a user by email.</li>
+        <li>Expect denials as <code>403</code> rather than <code>500</code>, and check that any access rule reading request headers still behaves as intended, since headers are now forwarded.</li>
+      </ol>
+      <p>Full recipe, the <code>toPayloadUser</code> escape hatch, fail-closed behaviour and the emergency opt-out: <a href="#custom-api-routes">Custom API Routes &rarr; Access control</a>.</p>
+
+      <h3>0.8.0 &mdash; breaking: editor stylesheet</h3>
+      <p>Editor CSS is now built by your app, not by this plugin. This fixes the editor rendering unstyled in production on Next.js 16, where Turbopack never ran the webpack plugin that produced the old file.</p>
+      <ol>
+        <li>Add a <code>build:puck-css</code> step with Tailwind&rsquo;s CLI and gitignore its output, as in <a href="#editor-stylesheet">Editor Stylesheet &rarr; Step 1</a>.</li>
+        <li>Replace <code>editorStylesheet</code>, <code>editorStylesheetCompiled</code> and <code>editorStylesheetUrls</code> with a single <code>editorStylesheets</code> array of URLs.</li>
+        <li>Remove the <code>withPuckCSS</code> import and wrapper from <code>next.config</code>.</li>
+        <li>Drop any <code>editorStylesheets</code> prop on <code>PuckConfigProvider</code>; the plugin passes it through automatically.</li>
+        <li>Remove <code>postcss</code> and <code>postcss-load-config</code> if you installed them only for this plugin.</li>
+      </ol>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code>// before
+createPuckPlugin({
+  editorStylesheet: 'src/app/(frontend)/globals.css',
+  editorStylesheetCompiled: '/puck-editor-styles.css',
+  editorStylesheetUrls: ['https://fonts.googleapis.com/css2?family=Inter'],
+})
+
+// after
+createPuckPlugin({
+  editorStylesheets: ['/puck-editor-styles.css', 'https://fonts.googleapis.com/css2?family=Inter'],
+})</code></pre>
+
+      <h3>0.7.0 &mdash; breaking: version floors</h3>
+      <ul>
+        <li><strong><code>@puckeditor/core</code> &ge; 0.23.0</strong>: run <code>pnpm add @puckeditor/core@^0.23.0</code>. Puck 0.23 ships a rewritten drag-and-drop engine and a redesigned outline, so the editor looks and feels different even though no API you call changed. Worth a pass through your editor after upgrading.</li>
+        <li><strong>Node &ge; 20.9.0</strong>: Node 18 is no longer supported.</li>
+      </ul>
     </div>
 
     <!-- SERVER VS CLIENT CONFIG -->
