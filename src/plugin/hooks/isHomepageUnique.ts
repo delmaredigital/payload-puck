@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionSlug, PayloadRequest } from 'payload'
 import { APIError } from 'payload'
 
 /**
@@ -127,12 +127,17 @@ export function createIsHomepageUniqueHook(
 /**
  * Unsets isHomepage on the specified page.
  * Used when swapping homepages.
+ *
+ * This writes with `overrideAccess: true`, so callers must only invoke it *after*
+ * the edit that justifies it has passed access control. Pass `req` so the write
+ * joins the caller's transaction and rolls back with it.
  */
 export async function unsetHomepage(
   payload: any,
   collectionSlug: string,
   pageId: string,
-  locale?: string
+  locale?: string,
+  req?: PayloadRequest
 ): Promise<void> {
   // Deliberate, for the same reason as the uniqueness query above: unsetting the
   // previous homepage is invariant maintenance on behalf of an already-authorized
@@ -140,6 +145,7 @@ export async function unsetHomepage(
   await payload.update({
     collection: collectionSlug,
     overrideAccess: true,
+    ...(req ? { req } : {}),
     id: pageId,
     data: {
       isHomepage: false,
@@ -150,4 +156,42 @@ export async function unsetHomepage(
     },
     ...(locale ? { locale: locale.toString() } : {}),
   })
+}
+
+/**
+ * Completes a homepage swap: unsets isHomepage on every page other than
+ * `homepageId`.
+ *
+ * Call this only after `homepageId` itself has been updated under the caller's
+ * access control, and inside the same transaction. Running it first let an
+ * unauthorized swap request clear the site's homepage before its own update was
+ * rejected (GHSA-cphw-vvv5-c8p7).
+ */
+export async function unsetOtherHomepages(
+  req: PayloadRequest,
+  collectionSlug: string,
+  homepageId: string,
+  locale?: string
+): Promise<void> {
+  // `overrideAccess: true` is deliberate, as in the uniqueness hook: the previous
+  // homepage must be found even when the editor cannot read it, or the swap
+  // leaves two homepages behind.
+  const others = await req.payload.find({
+    collection: collectionSlug as CollectionSlug,
+    req,
+    overrideAccess: true,
+    where: {
+      and: [
+        { isHomepage: { equals: true } },
+        { id: { not_equals: homepageId } },
+      ],
+    },
+    pagination: false,
+    depth: 0,
+    ...(locale ? { locale: locale.toString() as any } : {}),
+  })
+
+  for (const doc of others.docs) {
+    await unsetHomepage(req.payload, collectionSlug, String(doc.id), locale, req)
+  }
 }

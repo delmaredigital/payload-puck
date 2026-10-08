@@ -9,8 +9,8 @@
  */
 
 import type { PayloadHandler, CollectionSlug } from 'payload'
-import { APIError } from 'payload'
-import { unsetHomepage, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
+import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
+import { unsetOtherHomepages, HomepageConflictError } from '../plugin/hooks/isHomepageUnique.js'
 import { resolveLocale } from '../utils/locale.js'
 import { payloadErrorStatus } from '../utils/payloadErrors.js'
 import { mapRootPropsToPayloadFields, deepMerge } from '../api/utils/mapRootProps.js'
@@ -210,50 +210,44 @@ export function createUpdateHandler(options: PuckEndpointOptions): PayloadHandle
       const updateData = applyRootPropsMapping(data, rootPropsMapping)
       updateData._status = shouldPublish ? 'published' : 'draft'
 
-      // Handle homepage swap if requested
-      // When swapHomepage is true and isHomepage is being set to true,
-      // we need to unset the current homepage first. Read the resolved value
-      // from updateData so this works whether isHomepage arrived as a top-level
-      // field or was mapped in from root.props.
-      if (swapHomepage && updateData.isHomepage === true) {
-        // Find the current homepage
-        const existingHomepage = await req.payload.find({
+      // Homepage swap: this page becomes the homepage and the previous one is
+      // unset. Read the resolved value from updateData so this works whether
+      // isHomepage arrived as a top-level field or was mapped in from root.props.
+      //
+      // Order matters. The page's own update runs first, under the caller's
+      // access control; only once it has succeeded is the previous homepage
+      // unset (a privileged write). Both share one transaction, so a failure in
+      // either rolls back the pair.
+      const isSwap = swapHomepage === true && updateData.isHomepage === true
+      const ownsTransaction = isSwap ? await initTransaction(req) : false
+
+      let doc
+      try {
+        doc = await req.payload.update({
           collection: collection as CollectionSlug,
           req,
           overrideAccess: false,
-          where: {
-            and: [
-              { isHomepage: { equals: true } },
-              { id: { not_equals: id } },
-            ],
+          id,
+          data: updateData,
+          draft: !shouldPublish,
+          context: {
+            // The swap below restores uniqueness, so the conflict check is moot
+            ...(isSwap && { skipIsHomepageHook: true }),
+            // Pass locale to context so hooks can access it without re-reading body
+            ...(locale && { locale }),
           },
-          limit: 1,
-          depth: 0,
           ...(locale ? { locale } : {}),
         })
 
-        // Unset the existing homepage if found
-        if (existingHomepage.docs.length > 0) {
-          const existingId = String(existingHomepage.docs[0].id)
-          await unsetHomepage(req.payload, collection, existingId, locale)
+        if (isSwap) {
+          await unsetOtherHomepages(req, collection, id, locale)
         }
-      }
 
-      const doc = await req.payload.update({
-        collection: collection as CollectionSlug,
-        req,
-        overrideAccess: false,
-        id,
-        data: updateData,
-        draft: !shouldPublish,
-        context: {
-          // Skip the isHomepage hook if we've already handled the swap
-          ...(swapHomepage && { skipIsHomepageHook: true }),
-          // Pass locale to context so hooks can access it without re-reading body
-          ...(locale && { locale }),
-        },
-        ...(locale ? { locale } : {}),
-      })
+        if (ownsTransaction) await commitTransaction(req)
+      } catch (error) {
+        if (ownsTransaction) await killTransaction(req)
+        throw error
+      }
 
       return Response.json({ doc, published: shouldPublish })
     } catch (error) {
