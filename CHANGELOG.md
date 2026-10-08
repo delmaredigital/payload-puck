@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2026-10-08
+
+### Security
+
+- **The homepage swap on the built-in update endpoint is now authorized before it changes anything ([GHSA-cphw-vvv5-c8p7](https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-cphw-vvv5-c8p7)).** For `PATCH /api/puck/:collection/:id` with `swapHomepage: true` and `isHomepage: true`, the handler unset the current homepage, a deliberate `overrideAccess: true` write made without the caller's `req`, *before* the target page's own update was checked against collection access. A user who could read pages but not edit the target could therefore clear the site's homepage: their update was rejected, but the unset had already committed, outside any transaction.
+
+  The target page's update now runs first, under the caller's access control. Only once it succeeds are other homepages unset, inside the same transaction, so a failure in either step rolls back both. The previous-homepage lookup now also finds pages the editor cannot read, so a swap can no longer leave two homepages. `swapHomepage` now only bypasses the uniqueness check when `isHomepage: true` is also sent. Regression tests pin all four behaviours.
+
+  **Who can swap the homepage** is unchanged: anyone allowed to set `isHomepage` on a page they can edit. **Not affected:** the standalone `createPuckApiRoutesWithId` factory, which already ran both writes under the caller's access.
+
+  **Action:** upgrade. No configuration changes.
+
+### Changed
+
+- **Dev dependencies: `payload`, `@payloadcms/next` and `@payloadcms/ui` 3.88.0 → 3.90.0, `next` 16.3.0 → 16.3.3.** Dev-only; the published package is unaffected and peer floors are unchanged.
+- **pnpm is pinned via `packageManager` (`pnpm@10.9.0`).** Dependabot was regenerating `pnpm-lock.yaml` with a newer pnpm that dropped the `overrides` block, failing every dependency PR at install. CI and publish now read the same pin.
+
 ## [0.9.2] - 2026-09-09
 
 ### Fixed
