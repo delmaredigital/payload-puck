@@ -29,10 +29,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # pnpm version comes from package.json `packageManager`, which also pins
+      # Dependabot's pnpm so its lockfile updates keep the `overrides` block.
       - uses: pnpm/action-setup@v6
-        with:
-          # Matches the pnpm major used locally; the lockfile is v9.0 format.
-          version: 10
 
       - uses: actions/setup-node@v7
         with:
