@@ -2,7 +2,9 @@ version: 2
 
 updates:
   # Runtime + dev dependencies. Grouped so a routine refresh is one reviewable PR
-  # per ecosystem area instead of a dozen near-identical bumps.
+  # per ecosystem area instead of a dozen near-identical bumps. Groups take only
+  # minor/patch updates, so a major (e.g. TypeScript 7) arrives as its own PR
+  # and gets reviewed on its own rather than riding along with routine bumps.
   - package-ecosystem: npm
     directory: '/'
     schedule:
@@ -10,16 +12,20 @@ updates:
     open-pull-requests-limit: 5
     groups:
       puck:
+        update-types: ['minor', 'patch']
         patterns:
           - '@puckeditor/*'
       tiptap:
+        update-types: ['minor', 'patch']
         patterns:
           - '@tiptap/*'
       payload:
+        update-types: ['minor', 'patch']
         patterns:
           - 'payload'
           - '@payloadcms/*'
       dev-tooling:
+        update-types: ['minor', 'patch']
         patterns:
           - '@swc/*'
           - '@types/*'

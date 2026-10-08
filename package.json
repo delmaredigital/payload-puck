@@ -142,20 +142,20 @@
   },
   "dependencies": {
     "@puckeditor/cloud-client": "^0.8.2",
-    "@puckeditor/plugin-ai": "^0.8.2",
+    "@puckeditor/plugin-ai": "^0.8.3",
     "@puckeditor/plugin-heading-analyzer": "^0.23.0",
     "@radix-ui/react-popover": "^1.1.23",
-    "@tiptap/core": "^3.31.0",
-    "@tiptap/extension-color": "^3.31.0",
-    "@tiptap/extension-highlight": "^3.31.0",
-    "@tiptap/extension-link": "^3.31.0",
-    "@tiptap/extension-subscript": "^3.31.0",
-    "@tiptap/extension-superscript": "^3.31.0",
-    "@tiptap/extension-text-align": "^3.31.0",
-    "@tiptap/extension-text-style": "^3.31.0",
-    "@tiptap/extension-underline": "^3.31.0",
-    "@tiptap/react": "^3.31.0",
-    "@tiptap/starter-kit": "^3.31.0",
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-color": "^3.31.3",
+    "@tiptap/extension-highlight": "^3.31.3",
+    "@tiptap/extension-link": "^3.31.3",
+    "@tiptap/extension-subscript": "^3.31.3",
+    "@tiptap/extension-superscript": "^3.31.3",
+    "@tiptap/extension-text-align": "^3.31.3",
+    "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/extension-underline": "^3.31.3",
+    "@tiptap/react": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
     "html-react-parser": "^6.1.5",
     "lucide-react": "^1.39.0"
   },
@@ -168,14 +168,14 @@
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "copyfiles": "^2.4.1",
-    "next": "^16.3.3",
+    "next": "^16.4.0",
     "payload": "^3.90.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "keywords": [
     "payload",
@@ -213,6 +213,7 @@
       "nanoid@3": "^3.3.18",
       "piscina": "^4.9.3",
       "postcss": "^8.5.23",
+      "undici@7": "^7.29.1",
       "ws": "^8.21.0"
     }
   }

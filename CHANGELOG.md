@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+
+- **Raised dependency floors so installs resolve patched transitive packages.** `@tiptap/*` `^3.31.0` → `^3.31.3`, which requires `prosemirror-view` `^1.42.3` (XSS in paste handling). `@puckeditor/plugin-ai` `^0.8.2` → `^0.8.3`; current releases of the AI SDK it depends on have moved from `undici` 5 to the patched 6.28 line and no longer pull in `@fastify/busboy`. Compiled JavaScript and declaration output are byte-identical to 0.9.3.
+
+  **Action:** none. If your own lockfile predates these releases, `pnpm update @tiptap/pm prosemirror-view ai` (or your package manager's equivalent) picks up the fixes without waiting on this release.
+
+  **Still open upstream:** `uuid@3` arrives through `@puckeditor/plugin-ai` → `qler`, whose latest release still requires `uuid@^3`. The advisory concerns `v3`/`v5`/`v6` with a caller-supplied buffer. `undici@7.29.0` is pinned exactly by `payload` itself (including the latest, 3.90.2), so it is present in every Payload app regardless of this plugin; it is overridden here only for this repository's own dev environment.
+
+### Changed
+
+- **Dev dependencies refreshed** (`next` 16.4.0, `vitest` / `@vitest/coverage-v8` 4.1.11, `@swc/core`, `@types/*`), clearing this repository's development-only alerts. TypeScript stays on 5.9; the 7.0 rewrite will be evaluated on its own, since it generates the published declarations.
+- **Dependabot groups take only minor and patch updates,** so a major version arrives as its own PR.
+
 ## [0.9.3] - 2026-10-08
 
 ### Security
