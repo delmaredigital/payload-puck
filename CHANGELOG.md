@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Undo after moving or duplicating a block reverts it again.** `<Puck>` received a new `iframe` object on every render, and the editor re-renders when a document first becomes dirty. That re-ran Puck's canvas viewport effect, which, while undo history holds a single entry, overwrites that entry with the current state, so the "initial" entry already held the change and undo restored it. The config is now a module constant with a stable reference. Thanks to @georgisoft2020 (#48).
+
 ## [0.9.5] - 2026-10-08
 
 ### Fixed
