@@ -56,6 +56,17 @@ const DEFAULT_VIEWPORTS = [
 ]
 
 /**
+ * Iframe config for `<Puck>`. Module-level so its identity is stable across
+ * renders: Puck's canvas viewport effect depends on `iframe`, and while undo
+ * history holds a single entry, each run of that effect replaces the entry with
+ * the current app state. This component re-renders on every change (it marks
+ * the document dirty), so an inline object re-ran the effect after the first
+ * move or duplicate - before Puck recorded history - and undo then restored the
+ * already-changed state.
+ */
+const PUCK_IFRAME_CONFIG = { waitForStyles: true }
+
+/**
  * Extended Data type to include our root props
  */
 interface PuckDataWithMeta extends Data {
@@ -909,7 +920,7 @@ export function PuckEditorImpl({
           plugins={resolvedPlugins}
           viewports={enableViewports ? DEFAULT_VIEWPORTS : undefined}
           overrides={overrides}
-          iframe={{ waitForStyles: true }}
+          iframe={PUCK_IFRAME_CONFIG}
           _experimentalFullScreenCanvas={experimentalFullScreenCanvas}
         />
       </div>
