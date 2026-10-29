@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2026-10-29
+
+### Changed
+
+- **Dependency floors raised:** `@tiptap/*` `^3.31.3` → `^3.32.1` and `lucide-react` `^1.39.0` → `^1.64.0`, so installs pick up the current releases of the editor's bundled dependencies. Peer ranges are unchanged (`payload` and `@payloadcms/*` stay `>=3.69.0`, `@puckeditor/core` `>=0.24.0`).
+- **Dev dependencies refreshed** (`payload` / `@payloadcms/*` 3.92, `vitest` / `@vitest/coverage-v8` 4.1.12, `@swc/core`, `@types/node`), covering Dependabot #44–#47. TypeScript stays on 5.9 (#41); the 7.0 rewrite will be evaluated on its own, since it generates the published declarations.
+
 ## [0.10.0] - 2026-10-29
 
 ### Breaking
