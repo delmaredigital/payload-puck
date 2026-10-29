@@ -792,7 +792,7 @@ details .details-body > :first-child { margin-top: 0; }
   <div class="header-brand">
     <span>payload</span>-puck
   </div>
-  <span class="header-badge">v0.9.6</span>
+  <span class="header-badge">v0.10.0</span>
 
   <div class="search-wrap">
     <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -896,7 +896,7 @@ details .details-body > :first-child { margin-top: 0; }
         <thead><tr><th>Dependency</th><th>Version</th><th>Purpose</th></tr></thead>
         <tbody>
           <tr><td><code>node</code></td><td>&ge; 20.9.0</td><td>Runtime</td></tr>
-          <tr><td><code>@puckeditor/core</code></td><td>&ge; 0.23.0</td><td>Visual editor core</td></tr>
+          <tr><td><code>@puckeditor/core</code></td><td>&ge; 0.24.0</td><td>Visual editor core</td></tr>
           <tr><td><code>payload</code></td><td>&ge; 3.69.0</td><td>CMS backend</td></tr>
           <tr><td><code>@payloadcms/next</code></td><td>&ge; 3.69.0</td><td>Payload Next.js integration</td></tr>
           <tr><td><code>next</code></td><td>&ge; 15.4.8</td><td>React framework</td></tr>
@@ -1211,6 +1211,12 @@ payload generate:importmap</code></pre>
       <h2>Upgrade Guide</h2>
       <p>What each breaking or security release asks of you. Releases not listed here need nothing beyond the version bump. If you are skipping versions, apply every step between your version and the latest, oldest first. Full detail for every release is in the <a href="https://github.com/delmaredigital/payload-puck/blob/main/CHANGELOG.md">changelog</a>.</p>
 
+      <h3>0.10.0 &mdash; breaking: Puck 0.24</h3>
+      <ul>
+        <li><strong><code>@puckeditor/core</code> &ge; 0.24.0</strong>: run <code>pnpm add @puckeditor/core@^0.24.0</code>. The built-in components now arrange their sidebar fields in General / Style / Layout tabs, and the action bar shows a drag handle (turn it off with <code>dnd={{ enableDragHandle: <span class="hl-const">false</span> }}</code> on <code>PuckEditor</code>). Saved page data is unchanged.</li>
+        <li><strong>Custom component configs</strong> built by spreading a built-in one keep its tab layout; any fields you add appear in the first tab. To place them yourself, set your own <code>renderFields</code> with <code>createFieldLayout()</code>, or <code>renderFields: undefined</code> for Puck&rsquo;s default flat list.</li>
+      </ul>
+
       <h3>0.9.3 &mdash; security fix</h3>
       <p><strong>No action needed; upgrade.</strong> On the built-in <code>/api/puck/*</code> update endpoint, a homepage swap could clear the site&rsquo;s current homepage on behalf of a user who was not allowed to make the edit (<a href="https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-cphw-vvv5-c8p7">GHSA-cphw-vvv5-c8p7</a>). The swap is now authorized first, and both writes run in one transaction.</p>
 
@@ -1319,6 +1325,7 @@ createPuckPlugin({
         <li>Built-in page-tree support via <code>hasPageTree</code> prop</li>
         <li>Dynamic import internally to prevent hydration mismatches</li>
         <li>Handles save/publish, unsaved changes tracking, viewport switching</li>
+        <li>Shows a drag handle in the component action bar for moving blocks in nested layouts; pass <code>dnd={{ enableDragHandle: <span class="hl-const">false</span> }}</code> to hide it. Other <code>dnd</code> options are passed through to Puck</li>
       </ul>
       <p>For Payload admin, the server component (<code>PuckEditorView</code>) detects page-tree via collection schema and passes <code>hasPageTree={true}</code> to PuckEditor when detected. Config comes from <code>PuckConfigProvider</code> context.</p>
     </div>
@@ -1424,6 +1431,23 @@ createPuckPlugin({
       <span class="hl-comment">{/* content */}</span>
     &lt;/section&gt;
   ),
+}</code></pre>
+
+      <h3>Field Layout (tabs and groups)</h3>
+      <p><code>createFieldLayout()</code> arranges a component&rsquo;s sidebar fields into Puck 0.24 tabs and groups. It only affects the editor sidebar. Fields the layout doesn&rsquo;t mention are added to the first tab rather than hidden. Use the same tab labels across components and the open tab stays selected as editors move between them.</p>
+      <pre><span class="lang-tag">ts</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-keyword">import</span> { <span class="hl-func">createFieldLayout</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/fields'</span>
+
+<span class="hl-keyword">const</span> HeroConfig = {
+  fields: { <span class="hl-comment">/* _reset, heading, image, background, border, margin, ... */</span> },
+  renderFields: <span class="hl-func">createFieldLayout</span>({
+    pinned: [<span class="hl-string">'_reset'</span>],                  <span class="hl-comment">// shown above the tabs</span>
+    tabs: [
+      { label: <span class="hl-string">'General'</span>, fields: [<span class="hl-string">'heading'</span>, <span class="hl-string">'image'</span>] },
+      { label: <span class="hl-string">'Style'</span>, fields: [{ group: <span class="hl-string">'Box'</span>, fields: [<span class="hl-string">'background'</span>, <span class="hl-string">'border'</span>] }] },
+      { label: <span class="hl-string">'Layout'</span>, fields: [<span class="hl-string">'margin'</span>] },
+    ],
+  }),
+  render: <span class="hl-comment">/* ... */</span>,
 }</code></pre>
 
       <h3>CSS Helper Functions</h3>

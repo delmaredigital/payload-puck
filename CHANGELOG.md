@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-10-29
+
+### Breaking
+
+- **`@puckeditor/core` peer dependency floor raised from `>=0.23.0` to `>=0.24.0`.** The built-in components now lay out their sidebar fields with Puck 0.24's `FieldTab` and `FieldGroup`, which don't exist in 0.23. The bundled `@puckeditor/plugin-heading-analyzer` moves to `^0.24.0` in lockstep. **To upgrade:** `pnpm add @puckeditor/core@^0.24.0`. See the [Puck 0.24 release notes](https://puckeditor.com/blog/puck-024).
+
+### Added
+
+- **Tabbed sidebar for the built-in components.** Fields are split into **General**, **Style** and **Layout** tabs, with the reset button pinned above them; Section also groups its outer box and content area. Every component uses the same tab names, so the open tab stays put as you select different components. Spacer is left as-is, having only three fields. Only the editor sidebar changes: props, saved page data and rendering are untouched, so no migration is needed.
+- **`createFieldLayout()`** (from `@delmaredigital/payload-puck/fields`) builds a Puck `renderFields` function from a declarative tabs-and-groups layout, for your own components. Fields the layout doesn't mention are added to the first tab instead of being hidden, so extending a built-in component with extra fields keeps them visible.
+- **Drag handle in the component action bar, on by default.** Moving components in deeply nested layouts (Section → Flex → Columns) no longer means hunting for a clickable edge. `PuckEditor` takes a new `dnd` prop, passed to Puck's own; use `dnd={{ enableDragHandle: false }}` to turn the handle off.
+
+### Changed
+
+- **AnimationField and TransformField use Puck's `FieldGroup`** for their collapsible sections (Intensity, Transform Origin, Easing, Scroll Trigger, 3D Transforms) instead of hand-rolled toggles, so they match the native sidebar. Animation sections now remember whether they're open while you switch between components.
+
 ## [0.9.6] - 2026-10-20
 
 ### Fixed

@@ -10,7 +10,7 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdelmaredigital%2Fdd-starter&project-name=my-payload-site&build-command=pnpm%20run%20ci&env=PAYLOAD_SECRET,BETTER_AUTH_SECRET&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="32"></a>
 </p>
 
-> 🔒 **Upgrading to 0.9.3? Security fix — upgrade, no action needed.** The built-in update endpoint's homepage swap could clear the site's homepage on behalf of a user who wasn't allowed to make the edit ([GHSA-cphw-vvv5-c8p7](https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-cphw-vvv5-c8p7)). The swap is now authorized first and runs in one transaction. See the [CHANGELOG](./CHANGELOG.md#093---2026-10-08).
+> ⚠️ **Upgrading to 0.10.0? Breaking — requires `@puckeditor/core` 0.24.** Run `pnpm add @puckeditor/core@^0.24.0`. The built-in components now arrange their sidebar fields in General / Style / Layout tabs, and the action bar shows a drag handle (`dnd={{ enableDragHandle: false }}` on `PuckEditor` hides it). Saved page data is unchanged. See the [CHANGELOG](./CHANGELOG.md#0100---2026-10-29).
 >
 > Coming from an older version? The [Upgrade Guide](https://delmaredigital.github.io/payload-puck/#upgrading) lists what each breaking or security release needs.
 
@@ -37,7 +37,7 @@ pnpm add @delmaredigital/payload-puck @puckeditor/core
 | Dependency | Version |
 |------------|---------|
 | `node` | >= 20.9.0 |
-| `@puckeditor/core` | >= 0.23.0 |
+| `@puckeditor/core` | >= 0.24.0 |
 | `payload` | >= 3.69.0 |
 | `@payloadcms/next` | >= 3.69.0 |
 | `next` | >= 15.4.8 (see security note below) |
