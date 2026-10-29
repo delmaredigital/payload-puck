@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  // Source keeps `jsx: preserve` for consumers' bundlers; tests need a runtime
+  esbuild: { jsx: 'automatic' },
   test: {
     globals: true,
     environment: 'node',

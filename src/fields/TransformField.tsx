@@ -13,16 +13,14 @@
  * - Collapsible 3D section (perspective, rotateX, rotateY)
  */
 
-import React, { useCallback, memo, useState, type CSSProperties } from 'react'
-import type { CustomField } from '@puckeditor/core'
+import React, { useCallback, memo, type CSSProperties } from 'react'
+import { FieldGroup, type CustomField } from '@puckeditor/core'
 import {
   Link,
   Unlink,
   RotateCw,
   Maximize2,
   X,
-  ChevronDown,
-  ChevronRight,
   Box,
 } from 'lucide-react'
 import type { TransformValue, TransformOrigin } from './shared.js'
@@ -269,32 +267,10 @@ const styles = {
     color: 'var(--theme-elevation-500)',
     textTransform: 'capitalize',
   } as CSSProperties,
-  collapsible: {
-    border: '1px solid var(--theme-elevation-150)',
-    borderRadius: '6px',
-    overflow: 'hidden',
-  } as CSSProperties,
-  collapsibleHeader: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px',
-    border: 'none',
-    backgroundColor: 'var(--theme-elevation-50)',
-    cursor: 'pointer',
-  } as CSSProperties,
-  collapsibleTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  } as CSSProperties,
-  collapsibleContent: {
-    padding: '12px',
+  groupContent: {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    borderTop: '1px solid var(--theme-elevation-150)',
   } as CSSProperties,
   checkboxRow: {
     display: 'flex',
@@ -415,8 +391,6 @@ function TransformFieldInner({
   label,
   readOnly,
 }: TransformFieldProps) {
-  const [show3D, setShow3D] = useState(value?.enable3D ?? false)
-
   // Use default if no value
   const currentValue = value || DEFAULT_TRANSFORM
 
@@ -470,7 +444,6 @@ function TransformFieldInner({
   // Handle 3D toggle
   const handle3DToggle = useCallback(
     (enabled: boolean) => {
-      setShow3D(enabled)
       onChange({
         ...currentValue,
         enable3D: enabled,
@@ -655,26 +628,15 @@ function TransformFieldInner({
         </div>
       </div>
 
-      {/* 3D Section (Collapsible) */}
-      <div style={styles.collapsible}>
-        <button
-          type="button"
-          onClick={() => setShow3D(!show3D)}
-          style={styles.collapsibleHeader}
-        >
-          <div style={styles.collapsibleTitle}>
-            <Box style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
-            <label style={styles.sectionLabel}>3D Transforms</label>
-          </div>
-          {show3D ? (
-            <ChevronDown style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
-          ) : (
-            <ChevronRight style={{ width: '16px', height: '16px', color: 'var(--theme-elevation-500)' }} />
-          )}
-        </button>
-
-        {show3D && (
-          <div style={styles.collapsibleContent as CSSProperties}>
+      {/* 3D Section - starts open when 3D is already enabled */}
+      <FieldGroup
+        label="3D Transforms"
+        icon={<Box style={{ width: '16px', height: '16px' }} />}
+        variant="card"
+        defaultExpanded={currentValue.enable3D}
+      >
+        <FieldGroup.Item>
+          <div style={styles.groupContent as CSSProperties}>
             {/* Enable 3D checkbox */}
             <div style={styles.checkboxRow}>
               <input
@@ -732,8 +694,8 @@ function TransformFieldInner({
               </>
             )}
           </div>
-        )}
-      </div>
+        </FieldGroup.Item>
+      </FieldGroup>
     </div>
   )
 }

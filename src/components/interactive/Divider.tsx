@@ -28,6 +28,7 @@ import { createDimensionsField } from '../../fields/DimensionsField.js'
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createTransformField } from '../../fields/TransformField.js'
 import { createResetField } from '../../fields/ResetField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Default padding with standard horizontal spacing (replaces hardcoded px-4)
 const DEFAULT_PADDING: PaddingValue = {
@@ -72,6 +73,14 @@ export const DividerConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['style'] },
+      { label: 'Style', fields: ['color', 'transform', 'animation'] },
+      { label: 'Layout', fields: ['dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({ style, color, dimensions, margin, transform, animation, customPadding }) => {
     const dimensionsStyles = dimensionsValueToCSS(dimensions)

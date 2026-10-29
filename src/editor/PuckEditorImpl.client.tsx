@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, type ReactNode, createElement, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Puck, type Config as PuckConfig, type Data, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@puckeditor/core'
+import { Puck, type Config as PuckConfig, type Data, type DndConfig, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@puckeditor/core'
 import { useLocale } from '@payloadcms/ui'
 import '@puckeditor/core/puck.css'
 import headingAnalyzer from '@puckeditor/plugin-heading-analyzer'
@@ -238,6 +238,14 @@ export interface PuckEditorImplProps {
    */
   experimentalFullScreenCanvas?: boolean
 
+  /**
+   * Drag-and-drop options passed to Puck's `dnd` prop.
+   * The action-bar drag handle is on by default, which makes components in
+   * deeply nested layouts easier to move; pass `{ enableDragHandle: false }` to hide it.
+   * @default { enableDragHandle: true }
+   */
+  dnd?: DndConfig
+
   // Dark mode props
 
   /**
@@ -306,6 +314,7 @@ export function PuckEditorImpl({
   hasPromptsCollection = false,
   hasContextCollection = false,
   experimentalFullScreenCanvas = false,
+  dnd,
   autoDetectDarkMode = true,
   showPreviewDarkModeToggle = true,
   initialPreviewDarkMode = false,
@@ -681,6 +690,14 @@ export function PuckEditorImpl({
     }
   }, [apiEndpoint, pageId, pageTitle, pageSlug, markClean, onSaveSuccess, onSaveError])
 
+  // Keyed on the individual options so an inline `dnd` object from the caller
+  // doesn't hand <Puck> a new reference on every render
+  const dndConfig = useMemo<DndConfig>(
+    () => ({ enableDragHandle: true, ...dnd }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dnd?.enableDragHandle, dnd?.behavior, dnd?.disableAutoScroll, dnd?.disableOutlineDrag],
+  )
+
   // Memoized overrides
   const overrides = useMemo<Partial<PuckOverrides>>(
     () => ({
@@ -921,6 +938,7 @@ export function PuckEditorImpl({
           viewports={enableViewports ? DEFAULT_VIEWPORTS : undefined}
           overrides={overrides}
           iframe={PUCK_IFRAME_CONFIG}
+          dnd={dndConfig}
           _experimentalFullScreenCanvas={experimentalFullScreenCanvas}
         />
       </div>

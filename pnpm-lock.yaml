@@ -29,10 +29,10 @@ importers:
         version: 0.8.3
       '@puckeditor/plugin-ai':
         specifier: ^0.8.3
-        version: 0.8.3(@puckeditor/core@0.23.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0)))(@types/react@19.3.0)(react@19.3.0)(zod@4.6.5)
+        version: 0.8.3(@puckeditor/core@0.24.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0)))(@types/react@19.3.0)(react@19.3.0)(zod@4.6.5)
       '@puckeditor/plugin-heading-analyzer':
-        specifier: ^0.23.0
-        version: 0.23.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^0.24.0
+        version: 0.24.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@radix-ui/react-popover':
         specifier: ^1.1.23
         version: 1.2.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -92,8 +92,8 @@ importers:
         specifier: ^3.90.0
         version: 3.90.2(@types/react@19.3.0)(monaco-editor@0.55.1)(next@16.4.0(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(payload@3.90.2(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3)
       '@puckeditor/core':
-        specifier: ^0.23.0
-        version: 0.23.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
+        specifier: ^0.24.0
+        version: 0.24.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
       '@swc/cli':
         specifier: ^0.8.1
         version: 0.8.1(@swc/core@1.16.13(@swc/helpers@0.5.23))
@@ -890,8 +890,8 @@ packages:
   '@puckeditor/cloud-client@0.8.3':
     resolution: {integrity: sha512-bC2EfVDlu8wnCZ9Ed3ZJ7dFxrSqxMjdJXrld/VqHNRJOPtY2ZfR4bYh2vTwge3uIEBzYCrgCMCvkZZEfW0zVpg==}
 
-  '@puckeditor/core@0.23.0':
-    resolution: {integrity: sha512-sBnch+YIE3C6Bq+Z100GJs2y0rykxjcYW04m5iGJjMcBSqxQSmA3VKtDe742uPmPqQRJnKRBPrPuaiBmR2a78g==}
+  '@puckeditor/core@0.24.0':
+    resolution: {integrity: sha512-NxEYoGG9guV+oIiyf0lCf87yPvPlpErfsReojkIdpptDI/7Y8wusrPzHmWH3itW/tkIM0yShCR2Ctnc+T2Go7Q==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
@@ -902,8 +902,8 @@ packages:
       '@puckeditor/core': ^0
       react: ^18.0.0 || ^19.0.0
 
-  '@puckeditor/plugin-heading-analyzer@0.23.0':
-    resolution: {integrity: sha512-Q0Lwj4tgVig3yUM4uFBKJWkB79a+yqj6n0ADwisB1gyzCWoGBJ3Z0BHrcTHk5GiRP265xQRMJDalRfn0lxZ8Mg==}
+  '@puckeditor/plugin-heading-analyzer@0.24.0':
+    resolution: {integrity: sha512-Q509nD4iyidMtKbkDKoI+nlxvUMdGXv0kpr+aJqOiQPkZUNlmvDiS4MDbXk5LjMlPkO8vALPqQP2r8hLbRrVDg==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -4495,7 +4495,7 @@ snapshots:
 
   '@puckeditor/cloud-client@0.8.3': {}
 
-  '@puckeditor/core@0.23.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))':
+  '@puckeditor/core@0.24.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))':
     dependencies:
       '@dnd-kit/abstract': 0.4.0
       '@dnd-kit/dom': 0.4.0
@@ -4544,9 +4544,9 @@ snapshots:
       - use-sync-external-store
       - utf-8-validate
 
-  '@puckeditor/plugin-ai@0.8.3(@puckeditor/core@0.23.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0)))(@types/react@19.3.0)(react@19.3.0)(zod@4.6.5)':
+  '@puckeditor/plugin-ai@0.8.3(@puckeditor/core@0.24.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0)))(@types/react@19.3.0)(react@19.3.0)(zod@4.6.5)':
     dependencies:
-      '@puckeditor/core': 0.23.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
+      '@puckeditor/core': 0.24.0(@floating-ui/dom@1.8.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
       ai: 6.0.302(zod@4.6.5)
       domhandler: 6.0.1
       domutils: 4.0.2
@@ -4564,7 +4564,7 @@ snapshots:
       - supports-color
       - zod
 
-  '@puckeditor/plugin-heading-analyzer@0.23.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@puckeditor/plugin-heading-analyzer@0.24.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       react: 19.3.0
       react-from-json: 0.8.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)

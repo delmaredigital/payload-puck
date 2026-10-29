@@ -33,6 +33,7 @@ import { createAlignmentField, type Alignment } from '../../fields/AlignmentFiel
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createTransformField } from '../../fields/TransformField.js'
 import type { MediaReference } from '../../fields/MediaField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Default content padding for card (replaces hardcoded p-4)
 const DEFAULT_CONTENT_PADDING: PaddingValue = {
@@ -122,6 +123,14 @@ export const CardConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     contentPadding: createPaddingField({ label: 'Content Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['image', 'heading', 'text', 'link', 'openInNewTab'] },
+      { label: 'Style', fields: ['shadow', 'background', 'border', 'transform', 'animation'] },
+      { label: 'Layout', fields: ['dimensions', 'alignment', 'margin', 'contentPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({ image, heading, text, link, openInNewTab, shadow, background, dimensions, alignment, margin, border, transform, animation, contentPadding }) => {
     // Check if border has radius, if so don't apply rounded-lg

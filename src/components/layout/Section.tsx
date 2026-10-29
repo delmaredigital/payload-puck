@@ -45,6 +45,7 @@ import { createBackgroundField } from '../../fields/BackgroundField.js'
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createResponsiveField } from '../../fields/ResponsiveField.js'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Default padding (none) - used for margin fields
 const DEFAULT_PADDING: PaddingValue = {
@@ -181,6 +182,14 @@ export const SectionConfig: ComponentConfig = {
     // Animation
     animation: createAnimationField({ label: 'Animation' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['semanticElement', 'id'] },
+      { label: 'Style', fields: [{ group: 'Section', fields: ['sectionBackground', 'sectionBorder'] }, { group: 'Content Area', fields: ['contentBackground', 'contentBorder'] }, 'animation'] },
+      { label: 'Layout', fields: ['visibility', { group: 'Section', fields: ['sectionPadding', 'sectionMargin'] }, { group: 'Content Area', fields: ['contentDimensions', 'contentPadding'] }] },
+    ],
+  }),
   defaultProps,
   render: ({
     id,

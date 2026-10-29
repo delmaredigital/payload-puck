@@ -37,6 +37,7 @@ import { createMarginField } from '../../fields/MarginField.js'
 import { createDimensionsField } from '../../fields/DimensionsField.js'
 import { createResponsiveField } from '../../fields/ResponsiveField.js'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Default values for responsive fields
 const DEFAULT_PADDING: PaddingValue = {
@@ -118,6 +119,13 @@ export const TemplateConfig: ComponentConfig = {
       defaultValue: DEFAULT_PADDING,
     }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['templateId'] },
+      { label: 'Layout', fields: ['visibility', 'dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({ content: Content, dimensions, customPadding, margin, visibility }) => {
     // Generate unique IDs for CSS targeting

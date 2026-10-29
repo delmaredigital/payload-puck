@@ -41,6 +41,7 @@ import { createBackgroundField } from '../../fields/BackgroundField.js'
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createResponsiveField } from '../../fields/ResponsiveField.js'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 export const MAX_COLUMNS = 4
 
@@ -169,6 +170,14 @@ export const ColumnsConfig: ComponentConfig = {
       defaultValue: DEFAULT_PADDING,
     }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['count', 'distribution', 'gap'] },
+      { label: 'Style', fields: ['background', 'border', 'animation'] },
+      { label: 'Layout', fields: ['visibility', 'dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({
     column1: Column1,

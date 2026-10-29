@@ -38,6 +38,7 @@ import { createAnimationField } from '../../fields/AnimationField.js'
 import { createTransformField } from '../../fields/TransformField.js'
 import { createResetField } from '../../fields/ResetField.js'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Default padding with standard spacing (replaces hardcoded py-4 px-4)
 const DEFAULT_PADDING: PaddingValue = {
@@ -114,6 +115,14 @@ export const ImageConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['image', 'alt', 'aspectRatio', 'link', 'openInNewTab'] },
+      { label: 'Style', fields: ['border', 'transform', 'animation'] },
+      { label: 'Layout', fields: ['visibility', 'dimensions', 'alignment', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({ image, alt, aspectRatio, link, openInNewTab, dimensions, alignment, margin, border, transform, animation, customPadding, visibility }) => {
     // Generate unique ID for CSS targeting

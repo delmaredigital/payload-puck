@@ -35,6 +35,7 @@ import { createBackgroundField } from '../../fields/BackgroundField.js'
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createTransformField } from '../../fields/TransformField.js'
 import { createColorPickerField } from '../../fields/ColorPickerField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 interface AccordionItemData {
   title: string
@@ -294,6 +295,14 @@ export const AccordionConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['items', 'allowMultiple'] },
+      { label: 'Style', fields: ['textColor', 'background', 'transform', 'animation'] },
+      { label: 'Layout', fields: ['dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: (props) => (
     <AccordionRenderer

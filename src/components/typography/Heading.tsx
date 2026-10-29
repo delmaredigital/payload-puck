@@ -29,6 +29,7 @@ import { createAlignmentField, type Alignment } from '../../fields/AlignmentFiel
 import { createDimensionsField } from '../../fields/DimensionsField.js'
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createResetField } from '../../fields/ResetField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 export interface HeadingProps {
   text: string
@@ -69,6 +70,14 @@ export const HeadingConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['text', 'level'] },
+      { label: 'Style', fields: ['textColor', 'animation'] },
+      { label: 'Layout', fields: ['dimensions', 'alignment', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({ text, level, alignment, textColor, dimensions, animation, margin, customPadding }) => {
     const tag = level || 'h2'

@@ -43,6 +43,7 @@ import { createBackgroundField } from '../../fields/BackgroundField.js'
 import { createAnimationField } from '../../fields/AnimationField.js'
 import { createResponsiveField } from '../../fields/ResponsiveField.js'
 import { createResponsiveVisibilityField } from '../../fields/ResponsiveVisibilityField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Default values for responsive fields
 const DEFAULT_PADDING: PaddingValue = {
@@ -147,6 +148,14 @@ export const GridConfig: ComponentConfig = {
       defaultValue: DEFAULT_PADDING,
     }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['semanticElement', 'numColumns', 'gap'] },
+      { label: 'Style', fields: ['background', 'border', 'animation'] },
+      { label: 'Layout', fields: ['visibility', 'dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({
     content: Content,

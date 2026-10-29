@@ -52,6 +52,7 @@ import {
   type JustifyContent,
   type AlignItems,
 } from '../../fields/FlexAlignmentField.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 // Tailwind class mappings for flex properties
 const flexDirectionMap: Record<string, string> = {
@@ -191,6 +192,14 @@ export const FlexConfig: ComponentConfig = {
       defaultValue: DEFAULT_PADDING,
     }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['semanticElement', 'direction', 'justifyContent', 'alignItems', 'gap', 'wrap'] },
+      { label: 'Style', fields: ['background', 'border', 'animation'] },
+      { label: 'Layout', fields: ['visibility', 'dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({
     content: Content,

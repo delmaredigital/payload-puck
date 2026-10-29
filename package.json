@@ -114,7 +114,7 @@
   "peerDependencies": {
     "@payloadcms/next": ">=3.69.0",
     "@payloadcms/ui": ">=3.69.0",
-    "@puckeditor/core": ">=0.23.0",
+    "@puckeditor/core": ">=0.24.0",
     "@tailwindcss/postcss": ">=4.0.0",
     "next": ">=15.4.8",
     "payload": ">=3.69.0",
@@ -143,7 +143,7 @@
   "dependencies": {
     "@puckeditor/cloud-client": "^0.8.2",
     "@puckeditor/plugin-ai": "^0.8.3",
-    "@puckeditor/plugin-heading-analyzer": "^0.23.0",
+    "@puckeditor/plugin-heading-analyzer": "^0.24.0",
     "@radix-ui/react-popover": "^1.1.23",
     "@tiptap/core": "^3.31.3",
     "@tiptap/extension-color": "^3.31.3",
@@ -162,7 +162,7 @@
   "devDependencies": {
     "@payloadcms/next": "^3.90.0",
     "@payloadcms/ui": "^3.90.0",
-    "@puckeditor/core": "^0.23.0",
+    "@puckeditor/core": "^0.24.0",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.15.47",
     "@types/node": "^26.1.2",

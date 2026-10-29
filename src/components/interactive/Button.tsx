@@ -34,6 +34,7 @@ import {
   DEFAULT_FOCUS_RING,
   getVariantClasses,
 } from '../../theme/index.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 export interface ButtonProps {
   text: string
@@ -111,6 +112,14 @@ export const ButtonConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['text', 'link', 'openInNewTab', 'variant', 'size'] },
+      { label: 'Style', fields: ['customBackgroundColor', 'customTextColor', 'customBorder', 'transform', 'animation'] },
+      { label: 'Layout', fields: ['alignment', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: ({ text, link, variant, size, openInNewTab, alignment, margin, customBackgroundColor, customTextColor, customBorder, transform, animation, customPadding }) => {
     // Determine if custom styles should override preset variant/size styles

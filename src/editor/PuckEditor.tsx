@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import type { Config as PuckConfig, Data, Plugin as PuckPlugin, Overrides as PuckOverrides } from '@puckeditor/core'
+import type { Config as PuckConfig, Data, DndConfig, Plugin as PuckPlugin, Overrides as PuckOverrides } from '@puckeditor/core'
 import type { ReactNode } from 'react'
 import type { LayoutStyle } from './components/IframeWrapper.js'
 import type { ThemeConfig } from '../theme/index.js'
@@ -261,6 +261,14 @@ export interface PuckEditorProps {
    */
   experimentalFullScreenCanvas?: boolean
 
+  /**
+   * Drag-and-drop options passed to Puck's `dnd` prop.
+   * The action-bar drag handle is on by default, which makes components in
+   * deeply nested layouts easier to move; pass `{ enableDragHandle: false }` to hide it.
+   * @default { enableDragHandle: true }
+   */
+  dnd?: DndConfig
+
   // Dark mode props
 
   /**
@@ -372,6 +380,7 @@ export function PuckEditor({
   hasContextCollection = false,
   aiComponentInstructions,
   experimentalFullScreenCanvas = false,
+  dnd,
   // Dark mode props
   autoDetectDarkMode = true,
   showPreviewDarkModeToggle = true,
@@ -604,6 +613,7 @@ export function PuckEditor({
       hasPromptsCollection={hasPromptsCollection}
       hasContextCollection={hasContextCollection}
       experimentalFullScreenCanvas={experimentalFullScreenCanvas}
+      dnd={dnd}
       autoDetectDarkMode={autoDetectDarkMode}
       showPreviewDarkModeToggle={showPreviewDarkModeToggle}
       initialPreviewDarkMode={initialPreviewDarkMode}

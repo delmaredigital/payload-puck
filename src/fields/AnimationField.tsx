@@ -12,9 +12,9 @@
  * - Stagger support for child elements
  */
 
-import React, { useCallback, memo, useState, type CSSProperties } from 'react'
-import type { CustomField } from '@puckeditor/core'
-import { X, ChevronDown, ChevronRight } from 'lucide-react'
+import React, { useCallback, memo, type CSSProperties } from 'react'
+import { FieldGroup, type CustomField } from '@puckeditor/core'
+import { X } from 'lucide-react'
 import type {
   AnimationValue,
   AdvancedEasingFunction,
@@ -136,31 +136,10 @@ const styles = {
     backgroundColor: 'var(--theme-elevation-50)',
     borderRadius: '6px',
   } as CSSProperties,
-  collapsibleContainer: {
-    border: '1px solid var(--theme-elevation-100)',
-    borderRadius: '6px',
-    overflow: 'hidden',
-  } as CSSProperties,
-  collapsibleHeader: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '8px 12px',
-    backgroundColor: 'var(--theme-elevation-50)',
-    border: 'none',
-    cursor: 'pointer',
-  } as CSSProperties,
-  collapsibleTitle: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: 'var(--theme-elevation-500)',
-  } as CSSProperties,
-  collapsibleContent: {
+  groupContent: {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    padding: '12px',
   } as CSSProperties,
   sliderRow: {
     display: 'flex',
@@ -270,25 +249,22 @@ interface CollapsibleSectionProps {
   children: React.ReactNode
 }
 
+/**
+ * Puck's FieldGroup, so sections match the native sidebar. The stable id keeps
+ * each section's expanded state while switching between components.
+ */
 function CollapsibleSection({ title, defaultOpen = false, children }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-
   return (
-    <div style={styles.collapsibleContainer}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        style={styles.collapsibleHeader}
-      >
-        <span style={styles.collapsibleTitle}>{title}</span>
-        {isOpen ? (
-          <ChevronDown style={{ width: '14px', height: '14px', color: 'var(--theme-elevation-500)' }} />
-        ) : (
-          <ChevronRight style={{ width: '14px', height: '14px', color: 'var(--theme-elevation-500)' }} />
-        )}
-      </button>
-      {isOpen && <div style={styles.collapsibleContent as CSSProperties}>{children}</div>}
-    </div>
+    <FieldGroup
+      id={`payload-puck-animation-${title.toLowerCase().replace(/\s+/g, '-')}`}
+      label={title}
+      variant="card"
+      defaultExpanded={defaultOpen}
+    >
+      <FieldGroup.Item>
+        <div style={styles.groupContent}>{children}</div>
+      </FieldGroup.Item>
+    </FieldGroup>
   )
 }
 

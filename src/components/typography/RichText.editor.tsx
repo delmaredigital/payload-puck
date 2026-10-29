@@ -27,6 +27,7 @@ import { createPaddingField } from '../../fields/PaddingField.js'
 import { createDimensionsField } from '../../fields/DimensionsField.js'
 import { createResetField } from '../../fields/ResetField.js'
 import { createRichTextField } from '../../fields/richtext/index.js'
+import { createFieldLayout } from '../../fields/fieldLayout.js'
 
 export interface RichTextEditorProps {
   content: React.ReactNode // Puck richtext returns React elements for contentEditable
@@ -104,6 +105,13 @@ export const RichTextEditorConfig: ComponentConfig = {
     margin: createMarginField({ label: 'Margin' }),
     customPadding: createPaddingField({ label: 'Padding' }),
   },
+  renderFields: createFieldLayout({
+    pinned: ['_reset'],
+    tabs: [
+      { label: 'General', fields: ['content'] },
+      { label: 'Layout', fields: ['dimensions', 'margin', 'customPadding'] },
+    ],
+  }),
   defaultProps,
   render: (props) => (
     <RichTextRender

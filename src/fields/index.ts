@@ -200,3 +200,15 @@ export {
   createLockedPageSegmentField,
 } from './PageSegmentField.js'
 export { SlugPreviewField, createSlugPreviewField } from './SlugPreviewField.js'
+
+// =============================================================================
+// Field Layout (tabs and groups in the sidebar)
+// =============================================================================
+
+export { createFieldLayout, getFieldLayoutNames } from './fieldLayout.js'
+export type {
+  FieldLayout,
+  FieldLayoutTab,
+  FieldLayoutEntry,
+  FieldLayoutGroup,
+} from './fieldLayout.js'
