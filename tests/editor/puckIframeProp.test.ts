@@ -40,4 +40,13 @@ describe('PuckEditorImpl — <Puck> iframe prop', () => {
     expect(expr).toMatch(/^[A-Za-z_$][\w$]*$/)
     expect(source).toMatch(new RegExp(`^const ${expr}\\b`, 'm'))
   })
+
+  // Puck mirrors every host stylesheet and the host <html>/<body> attributes
+  // into the canvas by default. Inside Payload admin that leaked the admin CSS
+  // and its data-theme into the page preview.
+  it('does not sync host styles into the canvas', () => {
+    const [expr] = iframeProps
+    const declaration = source.match(new RegExp(`^const ${expr} = (\\{[^}]*\\})`, 'm'))?.[1]
+    expect(declaration).toMatch(/\bsyncHostStyles:\s*false\b/)
+  })
 })

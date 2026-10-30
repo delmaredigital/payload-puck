@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The admin editor is full-screen.** `/admin/puck-editor/:collection/:id` no longer renders inside Payload's `DefaultTemplate` (nav and header). Puck lays out its panels and auto-zooms the canvas against the space it's given. Inside the admin chrome that space was too narrow, so the canvas zoomed far below 100% and the component action bar, which Puck keeps at a constant screen size, came out oversized and clipped behind the left panel. The editor now fills the viewport (`100dvh`). It stays under `/admin`, so Payload's session and access handling are unchanged, and the editor's **Back** button returns to the document. "Edit with Puck" links need no changes.
+- **The canvas no longer inherits the admin page's CSS.** Puck mirrors every host-page stylesheet, plus the host `<html>`/`<body>` attributes, into the canvas iframe by default. In Payload admin that put the admin CSS, its `data-theme`, and the editor's dark-mode overrides into the page preview. The editor now passes `iframe={{ syncHostStyles: false }}`, so the canvas gets exactly your `editorStylesheets` and `editorCss`. **If your preview was relying on a stylesheet loaded into the admin page rather than listed in `editorStylesheets`, add it there.**
+
+### Fixed
+
+- **Editor dark-mode detection follows Payload's theme setting.** `useDarkMode` (and so `DarkModeStyles`) now reads Payload's `data-theme` attribute, so choosing dark or light in Payload's account settings is honoured even when it differs from the OS preference. Previously only a `.dark` class or the OS preference counted. `DarkModeSource` gains an `'attribute'` value.
+
 ## [0.10.1] - 2026-10-29
 
 ### Changed

@@ -1,15 +1,19 @@
 /**
  * PuckEditorView - React Server Component for Payload Admin
  *
- * This is the admin view that wraps the Puck editor within Payload's admin layout.
- * It fetches page data server-side and passes it to the client component.
+ * Renders the Puck editor full-viewport under the admin route, without Payload's
+ * admin chrome (nav, header). Puck lays out its own panels and auto-zooms the
+ * canvas against the space it is given, so wrapping it in `DefaultTemplate`
+ * starved the canvas and produced nested scroll contexts. Staying under /admin
+ * keeps Payload's session, `req` and access handling; the editor's Back button
+ * returns to the document.
  *
- * Registered as a custom view via config.admin.components.views
+ * Registered as a custom view via config.admin.components.views. Payload renders
+ * custom views without a template unless the view adds one.
  */
 
-import type { AdminViewProps, Locale } from 'payload'
-import { DefaultTemplate } from '@payloadcms/next/templates'
-import { getVisibleEntities } from '@payloadcms/ui/shared'
+import type { CSSProperties, ReactNode } from 'react'
+import type { AdminViewProps } from 'payload'
 import { PuckEditor } from '../editor/PuckEditor.js'
 import { mapPayloadFieldsToRootProps } from '../api/utils/mapRootProps.js'
 import type { RootPropsMapping } from '../api/types.js'
@@ -44,33 +48,11 @@ export async function PuckEditorView({
 
   if (!pageId) {
     return (
-      <DefaultTemplate
-        i18n={req.i18n}
-        locale={req.locale as Locale | undefined}
-        params={params}
-        payload={payload}
-        permissions={initPageResult.permissions}
-        searchParams={searchParams}
-        user={req.user ?? undefined}
-        visibleEntities={getVisibleEntities({ req })}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '50vh',
-            color: 'var(--theme-elevation-500)',
-          }}
-        >
-          <p>No page ID provided. Please navigate from the collection view.</p>
-        </div>
-      </DefaultTemplate>
+      <EditorMessage backUrl={`${adminRoute}/collections/${collection}`}>
+        No page ID provided. Please navigate from the collection view.
+      </EditorMessage>
     )
   }
-
-  // Get visible entities for the sidebar navigation
-  const visibleEntities = getVisibleEntities({ req })
 
   // Get puck config from plugin custom settings
   const puckConfig = (payload.config as any).custom?.puck?.config
@@ -214,61 +196,71 @@ export async function PuckEditorView({
     }
   }
 
+  if (error) {
+    return (
+      <EditorMessage backUrl={`${adminRoute}/collections/${collection}`} isError>
+        Error: {error}
+      </EditorMessage>
+    )
+  }
+
   return (
-    <DefaultTemplate
-      i18n={req.i18n}
-      locale={req.locale as Locale | undefined}
-      params={params}
-      payload={payload}
-      permissions={initPageResult.permissions}
-      searchParams={searchParams}
-      user={req.user ?? undefined}
-      visibleEntities={visibleEntities}
-    >
-      {error ? (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '50vh',
-            color: 'var(--theme-error-500)',
-          }}
-        >
-          <p>Error: {error}</p>
-        </div>
-      ) : (
-        <div
-          style={{
-            // Take up full available height within the admin template
-            height: 'calc(100vh - 60px)',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <PuckEditor
-            pageId={pageId}
-            initialData={initialData}
-            pageTitle={page?.title || 'Untitled'}
-            pageSlug={page?.slug || ''}
-            apiEndpoint={`/api/puck/${collection}`}
-            initialStatus={page?._status}
-            backUrl={backUrl}
-            previewUrlPrefix={previewUrlPrefix}
-            layouts={layouts}
-            hasPageTree={!!pageTreeConfig}
-            folder={pageTreeConfig ? (typeof page?.folder === 'object' ? page?.folder?.id : page?.folder) : undefined}
-            pageSegment={pageTreeConfig ? page?.pageSegment : undefined}
-            enableAi={aiConfig?.enabled}
-            aiExamplePrompts={aiExamplePrompts}
-            hasPromptsCollection={!!aiConfig?.promptsCollection}
-            hasContextCollection={!!aiConfig?.contextCollection}
-            aiComponentInstructions={aiConfig?.componentInstructions}
-            editorStylesheets={editorStylesheets}
-          />
-        </div>
-      )}
-    </DefaultTemplate>
+    <PuckEditor
+      pageId={pageId}
+      initialData={initialData}
+      pageTitle={page?.title || 'Untitled'}
+      pageSlug={page?.slug || ''}
+      apiEndpoint={`/api/puck/${collection}`}
+      initialStatus={page?._status}
+      backUrl={backUrl}
+      previewUrlPrefix={previewUrlPrefix}
+      layouts={layouts}
+      hasPageTree={!!pageTreeConfig}
+      folder={pageTreeConfig ? (typeof page?.folder === 'object' ? page?.folder?.id : page?.folder) : undefined}
+      pageSegment={pageTreeConfig ? page?.pageSegment : undefined}
+      enableAi={aiConfig?.enabled}
+      aiExamplePrompts={aiExamplePrompts}
+      hasPromptsCollection={!!aiConfig?.promptsCollection}
+      hasContextCollection={!!aiConfig?.contextCollection}
+      aiComponentInstructions={aiConfig?.componentInstructions}
+      editorStylesheets={editorStylesheets}
+    />
+  )
+}
+
+/**
+ * Full-viewport message with a way back, for states where the editor can't load.
+ * There is no admin chrome on this route, so the link is the only navigation.
+ * Payload v4 renames `--theme-text` to `--color-text`; prefer the new name and
+ * fall back so this reads correctly on both.
+ */
+function EditorMessage({
+  backUrl,
+  children,
+  isError = false,
+}: {
+  backUrl: string
+  children: ReactNode
+  isError?: boolean
+}) {
+  const style: CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '16px',
+    height: '100dvh',
+    padding: '24px',
+    textAlign: 'center',
+    color: isError ? 'var(--theme-error-500, #b91c1c)' : 'var(--color-text, var(--theme-text))',
+  }
+  return (
+    <div style={style}>
+      <p>{children}</p>
+      <a href={backUrl} style={{ color: 'var(--color-text, var(--theme-text))' }}>
+        &larr; Back
+      </a>
+    </div>
   )
 }
 

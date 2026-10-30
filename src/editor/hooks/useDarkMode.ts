@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 /**
  * Source of dark mode detection
  */
-export type DarkModeSource = 'class' | 'media-query' | 'none'
+export type DarkModeSource = 'attribute' | 'class' | 'media-query' | 'none'
 
 /**
  * Return type for useDarkMode hook
@@ -25,10 +25,13 @@ export interface UseDarkModeReturn {
  * Detects dark mode state from PayloadCMS admin or OS preferences.
  *
  * Detection priority:
- * 1. `.dark` class on `document.documentElement` (PayloadCMS admin)
- * 2. `prefers-color-scheme: dark` media query (OS preference)
+ * 1. `data-theme` on `document.documentElement`. Payload admin always sets it
+ *    (resolving its "auto" setting against the OS), so when present it is
+ *    authoritative in both directions.
+ * 2. `.dark` class on `document.documentElement` (class-based themes)
+ * 3. `prefers-color-scheme: dark` media query (OS preference)
  *
- * Uses MutationObserver to track class changes in real-time.
+ * Uses MutationObserver to track `data-theme`/class changes in real-time.
  *
  * @example
  * ```tsx
@@ -45,6 +48,12 @@ export function useDarkMode(): UseDarkModeReturn {
     source: 'none',
   })
 
+  // Payload's theme attribute: 'dark' | 'light', or null when absent
+  const readThemeAttribute = useCallback((): string | null => {
+    if (typeof document === 'undefined') return null
+    return document.documentElement.getAttribute('data-theme')
+  }, [])
+
   // Check for dark mode class on document element
   const checkDarkModeClass = useCallback((): boolean => {
     if (typeof document === 'undefined') return false
@@ -59,39 +68,37 @@ export function useDarkMode(): UseDarkModeReturn {
 
   // Compute current dark mode state
   const computeState = useCallback((): UseDarkModeReturn => {
-    // Priority 1: Check for .dark class (PayloadCMS)
+    // Priority 1: Payload's data-theme attribute
+    const themeAttribute = readThemeAttribute()
+    if (themeAttribute === 'dark' || themeAttribute === 'light') {
+      return { isDarkMode: themeAttribute === 'dark', source: 'attribute' }
+    }
+
+    // Priority 2: Check for .dark class
     if (checkDarkModeClass()) {
       return { isDarkMode: true, source: 'class' }
     }
 
-    // Priority 2: Check OS preference
+    // Priority 3: Check OS preference
     if (checkMediaQuery()) {
       return { isDarkMode: true, source: 'media-query' }
     }
 
     return { isDarkMode: false, source: 'none' }
-  }, [checkDarkModeClass, checkMediaQuery])
+  }, [readThemeAttribute, checkDarkModeClass, checkMediaQuery])
 
   useEffect(() => {
     // Set initial state
     setState(computeState())
 
-    // Watch for class changes on document element
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'class'
-        ) {
-          setState(computeState())
-          break
-        }
-      }
+    // Watch for theme attribute/class changes on document element
+    const observer = new MutationObserver(() => {
+      setState(computeState())
     })
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ['data-theme', 'class'],
     })
 
     // Watch for OS preference changes

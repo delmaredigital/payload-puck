@@ -63,8 +63,15 @@ const DEFAULT_VIEWPORTS = [
  * the document dirty), so an inline object re-ran the effect after the first
  * move or duplicate - before Puck recorded history - and undo then restored the
  * already-changed state.
+ *
+ * `syncHostStyles: false` stops Puck from cloning every host-document stylesheet
+ * (and the host `<html>`/`<body>` attributes) into the canvas. Inside Payload
+ * admin the host is the admin page, so the default leaked Payload's admin CSS,
+ * its `data-theme`, and our own `DarkModeStyles` into the page preview. The
+ * canvas gets exactly `editorStylesheets` + `editorCss` (via `IframeWrapper`);
+ * Puck still injects its own overlay styles into the frame independently.
  */
-const PUCK_IFRAME_CONFIG = { waitForStyles: true }
+const PUCK_IFRAME_CONFIG = { waitForStyles: true, syncHostStyles: false }
 
 /**
  * Extended Data type to include our root props
@@ -927,7 +934,9 @@ export function PuckEditorImpl({
     <>
       {/* Dark mode CSS injection - automatically detects PayloadCMS dark mode */}
       {autoDetectDarkMode && <DarkModeStyles />}
-      <div className="h-screen">
+      {/* Puck lays out its panels and auto-zooms the canvas against this box, so
+          it must be the full viewport -- not a guess at what admin chrome leaves. */}
+      <div style={{ height: '100dvh' }}>
         <Puck
           config={config}
           data={dataWithSlug}

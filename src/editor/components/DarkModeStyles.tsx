@@ -146,8 +146,13 @@ export interface DarkModeStylesProps {
  * Injects dark mode CSS overrides for Puck when dark mode is detected.
  *
  * This component uses the useDarkMode hook to detect when PayloadCMS admin
- * is in dark mode (via .dark class) or when OS preference is dark mode.
- * It then injects/removes the CSS overrides accordingly.
+ * is in dark mode (via its `data-theme` attribute, a `.dark` class, or the OS
+ * preference). It then injects/removes the CSS overrides accordingly.
+ *
+ * Still needed with the chrome-free editor view: the editor runs in Payload's
+ * admin document, whose `data-theme="dark"` flips the `--theme-*` tokens that
+ * the plugin's custom fields use, while Puck's panels stay light. The overrides
+ * live in the host document only; the canvas iframe doesn't sync host styles.
  *
  * @example
  * ```tsx
