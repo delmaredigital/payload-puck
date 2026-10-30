@@ -78,6 +78,9 @@ export async function PuckEditorView({
   const resolvedSearch = await searchParams
   const locale = (resolvedSearch?.locale as string | undefined) || req.locale
 
+  // Read as the signed-in admin user. The Local API defaults to
+  // `overrideAccess: true`, which would hand any admin user the draft of a page
+  // the collection's read access denies them. Passing `req` carries the user.
   try {
     page = await payload.findByID({
       collection: collection as any,
@@ -85,6 +88,8 @@ export async function PuckEditorView({
       draft: true, // Always get draft for editing
       depth: needsRelationships ? 1 : 0,
       locale,
+      req,
+      overrideAccess: false,
     })
   } catch (err) {
     console.error('[PuckEditorView] Error fetching page:', err)
@@ -123,6 +128,8 @@ export async function PuckEditorView({
         collection: 'puck-ai-prompts' as any,
         sort: 'order',
         limit: 50,
+        req,
+        overrideAccess: false,
       })
       // Merge collection prompts with config prompts (collection prompts first)
       const collectionPrompts = promptsResult.docs.map((doc: any) => ({
@@ -131,7 +138,8 @@ export async function PuckEditorView({
       }))
       aiExamplePrompts = [...collectionPrompts, ...aiExamplePrompts]
     } catch (e) {
-      // Collection might not exist yet, that's ok
+      // Collection might not exist yet, or the user can't read it -- either
+      // way the editor works without the stored prompts
       console.warn('[PuckEditorView] Could not fetch AI prompts:', e)
     }
   }

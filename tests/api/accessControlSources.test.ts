@@ -37,6 +37,7 @@ const GUARDED_FILES = [
   'endpoints/prompts.ts',
   'ai/plugins/promptApiRoutes.ts',
   'ai/tools/index.ts',
+  'views/PuckEditorView.tsx',
 ]
 
 /**
@@ -135,12 +136,12 @@ describe('access-control invariant across all request-facing sources', () => {
     // found the fourth route factory (ai/plugins/promptApiRoutes.ts) and the
     // AI tool reads, neither of which any advisory named.
     const discovered: string[] = []
-    for (const dir of ['api', 'endpoints', 'ai', 'plugin']) {
+    for (const dir of ['api', 'endpoints', 'ai', 'plugin', 'views']) {
       const walk = (rel: string) => {
         for (const entry of readdirSync(join(SRC, rel), { withFileTypes: true })) {
           const next = `${rel}/${entry.name}`
           if (entry.isDirectory()) walk(next)
-          else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) {
+          else if (/\.tsx?$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
             discovered.push(next)
           }
         }

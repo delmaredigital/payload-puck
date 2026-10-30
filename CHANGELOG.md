@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **The admin editor view now applies the collection's read access.** `/admin/puck-editor/:collection/:id` read the page's draft through the Local API without an access posture, and the Local API defaults to `overrideAccess: true`. Any signed-in admin user could open the editor for a page the collection's `read` access denies them and see its draft content. Saving was never affected, because the save endpoints already enforce access. The view now reads as the signed-in user (`req`, `overrideAccess: false`), as does its read of the AI prompts collection. The static access-control guard now also covers `src/views`, and `.tsx` files.
+
 ### Changed
 
 - **The admin editor is full-screen.** `/admin/puck-editor/:collection/:id` no longer renders inside Payload's `DefaultTemplate` (nav and header). Puck lays out its panels and auto-zooms the canvas against the space it's given. Inside the admin chrome that space was too narrow, so the canvas zoomed far below 100% and the component action bar, which Puck keeps at a constant screen size, came out oversized and clipped behind the left panel. The editor now fills the viewport (`100dvh`). It stays under `/admin`, so Payload's session and access handling are unchanged, and the editor's **Back** button returns to the document. "Edit with Puck" links need no changes.
