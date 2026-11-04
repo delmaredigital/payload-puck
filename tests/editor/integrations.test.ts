@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import type { ComponentConfig, Config, Plugin } from '@puckeditor/core'
+import type { ComponentConfig, Config, Data, Plugin } from '@puckeditor/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PuckEditor, type PuckEditorProps } from '../../src/editor/PuckEditor.js'
 import { PuckConfigProvider, usePuckConfig, type PuckConfigContextValue } from '../../src/views/PuckConfigContext.js'
@@ -28,10 +28,11 @@ function render(
   editor: Partial<PuckEditorProps> = {},
   integrations?: readonly PuckIntegration[],
   plugins?: Plugin[],
+  providerConfig: Config = config,
 ) {
   act(() => {
     root.render(createElement(PuckConfigProvider, {
-      config, integrations, plugins,
+      config: providerConfig, integrations, plugins,
       children: [createElement(ContextReader, { key: 'context' }), createElement(PuckEditor, { ...props, ...editor, key: 'editor' })],
     }))
   })
@@ -39,6 +40,7 @@ function render(
 }
 
 beforeEach(() => {
+  capture.props = null
   vi.stubEnv('NODE_ENV', 'development')
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -55,6 +57,49 @@ afterEach(() => {
 })
 
 describe('editor integrations', () => {
+  it('passes provider integration components to the implementation with a context-only config', () => {
+    expect(config.components).not.toHaveProperty('DummyBlock')
+    const result = render({ config: undefined }, [{
+      name: 'dummy', components: { DummyBlock: dummy },
+    }])
+
+    expect(context.config).toBe(config)
+    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expect(config.components).not.toHaveProperty('DummyBlock')
+  })
+
+  it.each(['slot', 'zone'] as const)('resolves template content in a %s against the page editor config', (location) => {
+    const template: ComponentConfig<any> = {
+      fields: { content: { type: 'slot' } },
+      render: () => createElement('div'),
+    }
+    const hostConfig: Config = { components: { Template: template } }
+    const nested = { type: 'DummyBlock', props: { id: 'dummy-1' } }
+    const data: Data = {
+      root: { props: {} },
+      content: [{ type: 'Template', props: {
+        id: 'template-1', content: location === 'slot' ? [nested] : [],
+      } }],
+      ...(location === 'zone' ? { zones: { 'template-1:content': [nested] } } : {}),
+    }
+    const result = render({ config: undefined, initialData: data }, [{
+      name: 'dummy', components: { DummyBlock: dummy },
+    }], undefined, hostConfig)
+
+    expect(result.initialData).toBe(data)
+    expect(context.config).toBe(hostConfig)
+    expect(hostConfig.components).not.toHaveProperty('DummyBlock')
+    const parent = result.initialData.content[0]
+    const children = location === 'slot'
+      ? parent.props.content
+      : result.initialData.zones!['template-1:content']
+    expect(result.config?.components[parent.type]).toBe(template)
+    expect(children).toEqual([nested])
+    for (const child of children) {
+      expect(result.config?.components[child.type]).toBe(dummy)
+    }
+  })
+
   it('keeps prop, context, then integration plugin order and copies readonly inputs', () => {
     const prop: Plugin = { name: 'prop' }
     const fromContext: Plugin = { name: 'context' }
