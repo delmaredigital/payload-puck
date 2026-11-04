@@ -170,7 +170,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 }
 ```
 
-Create the integration array once at module scope: a new array per render rebuilds the editor config. `PuckEditor` also accepts `integrations` directly. Integration plugins follow prop and context plugins; named plugins keep the first occurrence. `plugins={false}` disables all plugins while integration components still apply.
+Create the integration array once at module scope: a new array per render rebuilds the editor config. `PuckEditor` also accepts `integrations` directly. Integration plugins follow prop and context plugins; named integration plugins are deduped against prop, context and earlier integration plugins. `plugins={false}` disables all plugins while integration components still apply.
+
+The editor applies integrations without `exclude`, so to opt out of an integration's component, omit that integration from the provider or define your own component under the same key, which wins.
 
 ## Running experiments on slots
 

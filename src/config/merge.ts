@@ -1,6 +1,20 @@
 import type { ComponentConfig, Config as PuckConfig, Plugin as PuckPlugin } from '@puckeditor/core'
 import type { MergeConfigOptions } from '../types/index.js'
 
+const warnedMessages = new Set<string>()
+
+/** Log each integration warning once in development, including across editor remounts. */
+export function warnOnce(message: string): void {
+  if (process.env.NODE_ENV === 'production' || warnedMessages.has(message)) return
+  warnedMessages.add(message)
+  console.warn(message)
+}
+
+/** @internal Test-only reset; not exported from package entry points. */
+export function resetIntegrationWarningsForTests(): void {
+  warnedMessages.clear()
+}
+
 /** A ready-made bundle of components, categories and optional editor plugins. */
 export interface PuckIntegration {
   name: string
@@ -20,17 +34,20 @@ export function applyIntegrations(
 
   const components = { ...config.components }
   const categories = { ...config.categories }
+  const componentOwners = new Map<string, string>()
 
   for (const integration of integrations) {
     for (const [key, component] of Object.entries(integration.components || {})) {
       if (exclude.includes(key)) continue
       if (Object.hasOwn(components, key)) {
-        if (components[key] !== component && process.env.NODE_ENV !== 'production') {
-          console.warn(`[payload-puck] integration "${integration.name}": component "${key}" already defined by the host; skipped`)
+        if (components[key] !== component) {
+          const owner = componentOwners.get(key)
+          warnOnce(`[payload-puck] integration "${integration.name}": component "${key}" already defined by ${owner === undefined ? 'the host' : `integration "${owner}"`}; skipped`)
         }
         continue
       }
       components[key] = component
+      componentOwners.set(key, integration.name)
     }
 
     for (const [key, category] of Object.entries(integration.categories || {})) {
@@ -40,6 +57,7 @@ export function applyIntegrations(
       for (const name of category.components || []) {
         if (!exclude.includes(String(name)) && !names.includes(name)) names.push(name)
       }
+      if (!hostCategory && names.length === 0) continue
       categories[key] = { ...category, ...hostCategory, components: names }
     }
   }

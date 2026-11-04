@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { createElement } from 'react'
 import type { ComponentConfig, Config } from '@puckeditor/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { applyIntegrations, mergeConfigs, type PuckIntegration } from '../../src/config/merge.js'
+import { applyIntegrations, mergeConfigs, resetIntegrationWarningsForTests, type PuckIntegration } from '../../src/config/merge.js'
 import { baseConfig, extendConfig, applyIntegrations as renderApply } from '../../src/config/index.js'
 import { editorConfig, applyIntegrations as editorApply } from '../../src/config/config.editor.js'
 import { fullConfig, minimalConfig } from '../../src/config/presets.js'
@@ -18,6 +18,7 @@ const integration: PuckIntegration = {
 }
 
 beforeEach(() => {
+  resetIntegrationWarningsForTests()
   vi.stubEnv('NODE_ENV', 'development')
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
@@ -81,7 +82,23 @@ describe('integration config helpers', () => {
     }])
     expect(result.components.DummyBlock).toBe(dummy)
     expect(console.warn).toHaveBeenCalledExactlyOnceWith(
-      '[payload-puck] integration "second": component "DummyBlock" already defined by the host; skipped',
+      '[payload-puck] integration "second": component "DummyBlock" already defined by integration "dummy"; skipped',
+    )
+  })
+
+  it('warns once per collision message across repeated merges', () => {
+    for (let i = 0; i < 2; i++) {
+      applyIntegrations({ components: { DummyBlock: host } }, [integration])
+      applyIntegrations({ components: {} }, [integration, {
+        name: 'second', components: { DummyBlock: host },
+      }])
+    }
+    expect(console.warn).toHaveBeenCalledTimes(2)
+    expect(console.warn).toHaveBeenCalledWith(
+      '[payload-puck] integration "dummy": component "DummyBlock" already defined by the host; skipped',
+    )
+    expect(console.warn).toHaveBeenCalledWith(
+      '[payload-puck] integration "second": component "DummyBlock" already defined by integration "dummy"; skipped',
     )
   })
 
@@ -91,8 +108,14 @@ describe('integration config helpers', () => {
       exclude: ['DummyBlock'], integrations: [integration],
     })
     expect(result.components).not.toHaveProperty('DummyBlock')
-    expect(result.categories?.custom?.components).toEqual([])
-    expect(applyIntegrations({ components: {} }, [integration], ['DummyBlock']).components).toEqual({})
+    expect(result.categories).not.toHaveProperty('custom')
+    const applied = applyIntegrations({ components: {} }, [integration], ['DummyBlock'])
+    expect(applied.components).toEqual({})
+    expect(applied.categories).not.toHaveProperty('custom')
+    const hostCategory = { title: 'Host', components: [] }
+    expect(applyIntegrations({
+      components: {}, categories: { custom: hostCategory },
+    }, [integration], ['DummyBlock']).categories?.custom).toEqual(hostCategory)
     expect(console.warn).not.toHaveBeenCalled()
   })
 

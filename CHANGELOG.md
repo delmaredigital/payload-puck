@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Integration bundles for config helpers and the editor.** `mergeConfigs` / `extendConfig`, `PuckConfigProvider` and `PuckEditor` accept `integrations` to add components, categories and optional editor plugins. Host components win, category names are appended without duplicates, and named editor plugins keep the first occurrence. `applyIntegrations` and the `PuckIntegration` type are exported from `/config`, `/config/editor` and `/client`. Existing configurations work unchanged without integrations.
+- **Integration bundles for config helpers and the editor.** `mergeConfigs` / `extendConfig`, `PuckConfigProvider` and `PuckEditor` accept `integrations` to add components, categories and optional editor plugins. Host components win, category names are appended without duplicates, and named integration plugins are deduped against prop, context and earlier integration plugins. `applyIntegrations` and the `PuckIntegration` type are exported from `/config`, `/config/editor` and `/client`. Existing configurations work unchanged without integrations.
 
 ## [0.10.2] - 2026-10-30
 

@@ -14,7 +14,7 @@ import { hasPageTreeFields } from './utils/detectPageTree.js'
 import { usePuckConfig } from '../views/PuckConfigContext.js'
 import { injectAiConfig, hasAiConfig } from '../ai/utils/injectAiConfig.js'
 import { comprehensiveComponentAiConfig } from '../ai/presets/index.js'
-import { applyIntegrations, type PuckIntegration } from '../config/merge.js'
+import { applyIntegrations, warnOnce, type PuckIntegration } from '../config/merge.js'
 
 // Dynamic import with ssr: false to prevent hydration mismatch
 // Puck generates random IDs for drag-and-drop that differ between server/client
@@ -78,7 +78,8 @@ export interface PuckEditorProps {
    * Additional Puck plugins to use.
    * Order: headingAnalyzer, prop plugins, context plugins, integration plugins
    * (context integrations before prop integrations), version history, then AI plugins.
-   * Named custom plugins are deduped by name, first wins; unnamed plugins stay.
+   * Named integration plugins are deduped against prop, context and earlier
+   * integration plugins; prop, context and unnamed plugins are always kept.
    * Set to `false` to disable all plugins, including integration plugins.
    */
   plugins?: PuckPlugin[] | false
@@ -411,32 +412,29 @@ export function PuckEditor({
   const mergedPlugins = useMemo(() => {
     const combinedIntegrations = [...(integrationsFromContext || []), ...(integrations || [])]
     if (plugins === false) {
-      if (process.env.NODE_ENV !== 'production') {
-        for (const integration of combinedIntegrations) {
-          if (integration.plugins?.length) {
-            console.warn(`[payload-puck] integration "${integration.name}": plugins disabled by plugins={false}; skipped`)
-          }
+      for (const integration of combinedIntegrations) {
+        if (integration.plugins?.length) {
+          warnOnce(`[payload-puck] integration "${integration.name}": plugins disabled by plugins={false}; skipped`)
         }
       }
       return false
     }
 
-    const combined: PuckPlugin[] = []
+    const combined: PuckPlugin[] = [...(plugins || []), ...(pluginsFromContext || [])]
     const names = new Set<string>()
-    const append = (plugin: PuckPlugin, integrationName?: string) => {
+    for (const plugin of combined) {
+      if (plugin.name !== undefined) names.add(plugin.name)
+    }
+    const append = (plugin: PuckPlugin, integrationName: string) => {
       if (plugin.name !== undefined) {
         if (names.has(plugin.name)) {
-          if (process.env.NODE_ENV !== 'production') {
-            const origin = integrationName === undefined ? '' : `integration "${integrationName}": `
-            console.warn(`[payload-puck] ${origin}plugin "${plugin.name}" duplicate; skipped`)
-          }
+          warnOnce(`[payload-puck] integration "${integrationName}": plugin "${plugin.name}" duplicate; skipped`)
           return
         }
         names.add(plugin.name)
       }
       combined.push(plugin)
     }
-    for (const plugin of [...(plugins || []), ...(pluginsFromContext || [])]) append(plugin)
     for (const integration of combinedIntegrations) {
       for (const plugin of [...(integration.plugins || [])]) append(plugin, integration.name)
     }

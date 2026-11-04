@@ -2,13 +2,13 @@
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { act, createElement } from 'react'
+import { act, createElement, StrictMode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import type { ComponentConfig, Config, Data, Plugin } from '@puckeditor/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PuckEditor, type PuckEditorProps } from '../../src/editor/PuckEditor.js'
 import { PuckConfigProvider, usePuckConfig, type PuckConfigContextValue } from '../../src/views/PuckConfigContext.js'
-import type { PuckIntegration } from '../../src/config/merge.js'
+import { applyIntegrations, resetIntegrationWarningsForTests, type PuckIntegration } from '../../src/config/merge.js'
 
 const capture = vi.hoisted(() => ({ props: null as PuckEditorProps | null }))
 vi.mock('next/dynamic', () => ({
@@ -31,15 +31,16 @@ function render(
   providerConfig: Config = config,
 ) {
   act(() => {
-    root.render(createElement(PuckConfigProvider, {
+    root.render(createElement(StrictMode, null, createElement(PuckConfigProvider, {
       config: providerConfig, integrations, plugins,
       children: [createElement(ContextReader, { key: 'context' }), createElement(PuckEditor, { ...props, ...editor, key: 'editor' })],
-    }))
+    })))
   })
   return capture.props!
 }
 
 beforeEach(() => {
+  resetIntegrationWarningsForTests()
   capture.props = null
   vi.stubEnv('NODE_ENV', 'development')
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
@@ -115,13 +116,23 @@ describe('editor integrations', () => {
     expect(console.warn).not.toHaveBeenCalled()
   })
 
-  it('dedupes named plugins, first wins, and warns', () => {
+  it('keeps prop and context plugins sharing a name without integrations or warnings', () => {
+    const prop: Plugin = { name: 'shared' }
+    const fromContext: Plugin = { name: 'shared' }
+    const result = render({ plugins: [prop] }, undefined, [fromContext])
+    expect(result.plugins).toHaveLength(2)
+    expect(result.plugins && result.plugins[0]).toBe(prop)
+    expect(result.plugins && result.plugins[1]).toBe(fromContext)
+    expect(console.warn).not.toHaveBeenCalled()
+  })
+
+  it('dedupes named integration plugins, first wins, and warns', () => {
     const first: Plugin = { name: 'shared' }
     const result = render({ plugins: [first] }, [{
       name: 'dummy', plugins: [{ name: 'shared' }, { name: 'unique' }, { name: 'unique' }],
     }], [{ name: 'shared' }])
-    expect(result.plugins).toEqual([first, { name: 'unique' }])
-    expect(console.warn).toHaveBeenCalledTimes(3)
+    expect(result.plugins).toEqual([first, { name: 'shared' }, { name: 'unique' }])
+    expect(console.warn).toHaveBeenCalledTimes(2)
     expect(console.warn).toHaveBeenCalledWith('[payload-puck] integration "dummy": plugin "shared" duplicate; skipped')
     expect(console.warn).toHaveBeenCalledWith('[payload-puck] integration "dummy": plugin "unique" duplicate; skipped')
   })
@@ -141,6 +152,33 @@ describe('editor integrations', () => {
     expect(result.plugins).toBe(false)
     expect(result.config?.components.DummyBlock).toBe(dummy)
     expect(console.warn).toHaveBeenCalledExactlyOnceWith(
+      '[payload-puck] integration "dummy": plugins disabled by plugins={false}; skipped',
+    )
+  })
+
+  it('shares warning suppression with config helpers across StrictMode memo recomputes and remounts', () => {
+    const host: ComponentConfig<any> = { render: () => createElement('div') }
+    const hostConfig: Config = { components: { DummyBlock: host } }
+    const integration: PuckIntegration = {
+      name: 'dummy', components: { DummyBlock: dummy }, plugins: [{ name: 'shared' }],
+    }
+    applyIntegrations(hostConfig, [integration])
+    for (let i = 0; i < 2; i++) {
+      render({ config: hostConfig, plugins: [{ name: 'shared' }] }, [integration])
+      render({ config: hostConfig, plugins: false }, [integration])
+    }
+    act(() => root.unmount())
+    root = createRoot(container)
+    render({ config: hostConfig, plugins: [{ name: 'shared' }] }, [integration])
+    render({ config: hostConfig, plugins: false }, [integration])
+    expect(console.warn).toHaveBeenCalledTimes(3)
+    expect(console.warn).toHaveBeenCalledWith(
+      '[payload-puck] integration "dummy": component "DummyBlock" already defined by the host; skipped',
+    )
+    expect(console.warn).toHaveBeenCalledWith(
+      '[payload-puck] integration "dummy": plugin "shared" duplicate; skipped',
+    )
+    expect(console.warn).toHaveBeenCalledWith(
       '[payload-puck] integration "dummy": plugins disabled by plugins={false}; skipped',
     )
   })
