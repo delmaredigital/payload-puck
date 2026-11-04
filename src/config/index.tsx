@@ -129,7 +129,8 @@ export function createConfig(layouts: LayoutDefinition[] = DEFAULT_LAYOUTS): Puc
 export const baseConfig = createConfig(DEFAULT_LAYOUTS)
 
 // Re-export merge utility and layout helpers
-export { mergeConfigs, mergeConfigs as extendConfig } from './merge.js'
+export { mergeConfigs, mergeConfigs as extendConfig, applyIntegrations } from './merge.js'
+export type { PuckIntegration } from './merge.js'
 export { DEFAULT_LAYOUTS, createLayout, type LayoutDefinition } from '../layouts/index.js'
 
 // Re-export server-specific types

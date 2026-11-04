@@ -13,6 +13,9 @@
  */
 
 // Main editor component
+export { applyIntegrations } from '../config/merge.js'
+export type { PuckIntegration } from '../config/merge.js'
+
 export { PuckEditor } from '../editor/PuckEditor.js'
 export type { PuckEditorProps } from '../editor/PuckEditor.js'
 

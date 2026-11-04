@@ -27,6 +27,7 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import type { Config as PuckConfig, Plugin as PuckPlugin } from '@puckeditor/core'
 import type { LayoutDefinition } from '../layouts/index.js'
 import type { ThemeConfig } from '../theme/index.js'
+import type { PuckIntegration } from '../config/merge.js'
 
 export interface PuckConfigContextValue {
   /**
@@ -57,6 +58,8 @@ export interface PuckConfigContextValue {
    * ```
    */
   plugins?: PuckPlugin[]
+  /** Bundles of components, categories and editor plugins. Keep the array stable. */
+  integrations?: readonly PuckIntegration[]
   /**
    * Stylesheet URLs to inject into the editor iframe.
    * Use this to provide your frontend CSS (Tailwind, CSS variables, etc.)
@@ -119,6 +122,8 @@ export interface PuckConfigProviderProps {
    * ```
    */
   plugins?: PuckPlugin[]
+  /** Bundles of components, categories and editor plugins. Keep the array stable. */
+  integrations?: readonly PuckIntegration[]
   /**
    * Stylesheet URLs to inject into the editor iframe.
    * Use this to provide your frontend CSS (Tailwind, CSS variables, etc.)
@@ -160,6 +165,7 @@ export function PuckConfigProvider({
   layouts,
   theme,
   plugins,
+  integrations,
   editorStylesheets,
   editorCss,
   children,
@@ -167,8 +173,8 @@ export function PuckConfigProvider({
   // Memoize context value to prevent unnecessary re-renders of consumers
   // when the provider re-renders but the values haven't changed
   const contextValue = useMemo<PuckConfigContextValue>(
-    () => ({ config, layouts, theme, plugins, editorStylesheets, editorCss }),
-    [config, layouts, theme, plugins, editorStylesheets, editorCss]
+    () => ({ config, layouts, theme, plugins, integrations, editorStylesheets, editorCss }),
+    [config, layouts, theme, plugins, integrations, editorStylesheets, editorCss]
   )
 
   return (

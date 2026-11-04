@@ -135,6 +135,48 @@ For everything else — components, custom fields, theming, layouts, dark mode, 
 
 ---
 
+## Integrations
+
+An integration bundles Puck components, categories and optional editor plugins. Host components and category fields win; integrations fill missing component keys and append category names. Config helpers ignore plugins.
+
+```tsx
+// Render config
+import { extendConfig, baseConfig, type PuckIntegration } from '@delmaredigital/payload-puck/config'
+
+const integrations: readonly PuckIntegration[] = [{
+  name: 'dummy',
+  components: { DummyBlock: { render: () => <div>Dummy block</div> } },
+  categories: { custom: { title: 'Custom', components: ['DummyBlock'] } },
+}]
+
+export const renderConfig = extendConfig({ base: baseConfig, integrations })
+```
+
+```tsx
+'use client'
+
+import { PuckConfigProvider, type PuckIntegration } from '@delmaredigital/payload-puck/client'
+import { editorConfig } from '@delmaredigital/payload-puck/config/editor'
+import type { ReactNode } from 'react'
+
+const integrations: readonly PuckIntegration[] = [{
+  name: 'dummy',
+  components: { DummyBlock: { render: () => <div>Dummy block</div> } },
+  categories: { custom: { title: 'Custom', components: ['DummyBlock'] } },
+}]
+
+export function EditorProvider({ children }: { children: ReactNode }) {
+  return <PuckConfigProvider config={editorConfig} integrations={integrations}>{children}</PuckConfigProvider>
+}
+```
+
+Create the integration array once at module scope: a new array per render rebuilds the editor config. `PuckEditor` also accepts `integrations` directly. Integration plugins follow prop and context plugins; named plugins keep the first occurrence. `plugins={false}` disables all plugins while integration components still apply.
+
+## Running experiments on slots
+
+Use [@delmaredigital/payload-experiments](https://www.npmjs.com/package/@delmaredigital/payload-experiments) to run experiments on Puck slots through an integration.
+Works with: payload-experiments ≥0.4.0 ↔ payload-puck ≥0.11.0.
+
 ## License
 
 MIT

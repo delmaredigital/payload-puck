@@ -4,6 +4,7 @@ import type { ThemeConfig } from '../theme/types.js'
 import type { LayoutDefinition, LayoutConfig } from '../layouts/types.js'
 import type { PuckPluginAiConfig, AiExamplePrompt } from '../ai/types.js'
 import type { RootPropsMapping } from '../api/types.js'
+import type { PuckIntegration } from '../config/merge.js'
 
 // =============================================================================
 // Plugin Configuration Types
@@ -433,6 +434,12 @@ export interface MergeConfigOptions {
   base: PuckConfig
 
   /**
+   * Bundles applied after the host merge. Fill missing component keys (first
+   * integration wins), append category names, and ignore editor-only plugins.
+   */
+  integrations?: readonly PuckIntegration[]
+
+  /**
    * Additional components to add
    */
   components?: PuckConfig['components']
@@ -448,7 +455,7 @@ export interface MergeConfigOptions {
   root?: Partial<PuckConfig['root']>
 
   /**
-   * Components to exclude from base
+   * Components to exclude from base and integrations
    */
   exclude?: string[]
 }

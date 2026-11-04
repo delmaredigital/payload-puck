@@ -154,7 +154,8 @@ export const editorConfig = {
 } satisfies PuckConfig
 
 // Re-export merge utility for convenience
-export { mergeConfigs } from './merge.js'
+export { mergeConfigs, applyIntegrations } from './merge.js'
+export type { PuckIntegration } from './merge.js'
 
 // Re-export presets for extending configs
 export {

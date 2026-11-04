@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Integration bundles for config helpers and the editor.** `mergeConfigs` / `extendConfig`, `PuckConfigProvider` and `PuckEditor` accept `integrations` to add components, categories and optional editor plugins. Host components win, category names are appended without duplicates, and named editor plugins keep the first occurrence. `applyIntegrations` and the `PuckIntegration` type are exported from `/config`, `/config/editor` and `/client`. Existing configurations work unchanged without integrations.
+
 ## [0.10.2] - 2026-10-30
 
 ### Security

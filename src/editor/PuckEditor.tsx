@@ -14,6 +14,7 @@ import { hasPageTreeFields } from './utils/detectPageTree.js'
 import { usePuckConfig } from '../views/PuckConfigContext.js'
 import { injectAiConfig, hasAiConfig } from '../ai/utils/injectAiConfig.js'
 import { comprehensiveComponentAiConfig } from '../ai/presets/index.js'
+import { applyIntegrations, type PuckIntegration } from '../config/merge.js'
 
 // Dynamic import with ssr: false to prevent hydration mismatch
 // Puck generates random IDs for drag-and-drop that differ between server/client
@@ -75,10 +76,14 @@ export interface PuckEditorProps {
   enableViewports?: boolean
   /**
    * Additional Puck plugins to use.
-   * The headingAnalyzer plugin is included by default.
-   * Set to `false` to disable all default plugins.
+   * Order: headingAnalyzer, prop plugins, context plugins, integration plugins
+   * (context integrations before prop integrations), version history, then AI plugins.
+   * Named custom plugins are deduped by name, first wins; unnamed plugins stay.
+   * Set to `false` to disable all plugins, including integration plugins.
    */
   plugins?: PuckPlugin[] | false
+  /** Bundles applied after the host config. Create the array once at module scope. */
+  integrations?: readonly PuckIntegration[]
   /**
    * Layout definitions for the editor preview.
    * The editor reads header, footer, editorBackground, and editorDarkMode
@@ -354,6 +359,7 @@ export function PuckEditor({
   previewUrlPrefix,
   enableViewports,
   plugins,
+  integrations,
   layouts: layoutsProp,
   layoutStyles,
   layoutKey,
@@ -392,6 +398,7 @@ export function PuckEditor({
     layouts: layoutsFromContext,
     theme: themeFromContext,
     plugins: pluginsFromContext,
+    integrations: integrationsFromContext,
     editorStylesheets: editorStylesheetsFromContext,
     editorCss: editorCssFromContext,
   } = usePuckConfig()
@@ -400,18 +407,41 @@ export function PuckEditor({
   const baseConfig = configProp || configFromContext
   const theme = themeProp || themeFromContext
 
-  // Merge plugins from props and context
-  // Props take precedence and are added first, context plugins follow
+  // Props take precedence, followed by context and integration plugins.
   const mergedPlugins = useMemo(() => {
-    // If plugins prop is false, disable all plugins (including context ones)
-    if (plugins === false) return false
-    // If plugins prop is provided (not undefined), it takes precedence
-    // But also include context plugins
-    const propPlugins = plugins || []
-    const contextPlugins = pluginsFromContext || []
-    const combined = [...propPlugins, ...contextPlugins]
+    const combinedIntegrations = [...(integrationsFromContext || []), ...(integrations || [])]
+    if (plugins === false) {
+      if (process.env.NODE_ENV !== 'production') {
+        for (const integration of combinedIntegrations) {
+          if (integration.plugins?.length) {
+            console.warn(`[payload-puck] integration "${integration.name}": plugins disabled by plugins={false}; skipped`)
+          }
+        }
+      }
+      return false
+    }
+
+    const combined: PuckPlugin[] = []
+    const names = new Set<string>()
+    const append = (plugin: PuckPlugin, integrationName?: string) => {
+      if (plugin.name !== undefined) {
+        if (names.has(plugin.name)) {
+          if (process.env.NODE_ENV !== 'production') {
+            const origin = integrationName === undefined ? '' : `integration "${integrationName}": `
+            console.warn(`[payload-puck] ${origin}plugin "${plugin.name}" duplicate; skipped`)
+          }
+          return
+        }
+        names.add(plugin.name)
+      }
+      combined.push(plugin)
+    }
+    for (const plugin of [...(plugins || []), ...(pluginsFromContext || [])]) append(plugin)
+    for (const integration of combinedIntegrations) {
+      for (const plugin of [...(integration.plugins || [])]) append(plugin, integration.name)
+    }
     return combined.length > 0 ? combined : undefined
-  }, [plugins, pluginsFromContext])
+  }, [plugins, pluginsFromContext, integrations, integrationsFromContext])
 
   // Props take precedence over context for editor stylesheets
   const editorStylesheets = editorStylesheetsProp || editorStylesheetsFromContext
@@ -452,7 +482,10 @@ export function PuckEditor({
   const finalConfig = useMemo(() => {
     if (!baseConfig) return null
 
-    let config = baseConfig
+    let config = applyIntegrations(baseConfig, [
+      ...(integrationsFromContext || []),
+      ...(integrations || []),
+    ])
 
     // Inject AI component instructions when AI is enabled
     if (enableAi && !hasAiConfig(config)) {
@@ -470,7 +503,7 @@ export function PuckEditor({
     }
 
     return config
-  }, [baseConfig, hasPageTree, enableAi, aiComponentInstructions])
+  }, [baseConfig, integrations, integrationsFromContext, hasPageTree, enableAi, aiComponentInstructions])
 
   // Merge page-tree initial values into initialData
   const finalInitialData = useMemo(() => {
