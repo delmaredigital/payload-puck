@@ -792,7 +792,7 @@ details .details-body > :first-child { margin-top: 0; }
   <div class="header-brand">
     <span>payload</span>-puck
   </div>
-  <span class="header-badge">v0.11.0</span>
+  <span class="header-badge">v0.10.3</span>
 
   <div class="search-wrap">
     <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -843,6 +843,7 @@ details .details-body > :first-child { margin-top: 0; }
       <a class="nav-link" href="#custom-fields">Custom Fields</a>
       <a class="nav-link" href="#building-custom">Building Custom Components</a>
       <a class="nav-link" href="#extending-configs">Extending Configs</a>
+      <a class="nav-link" href="#integrations">Integrations</a>
     </div>
 
     <div class="nav-section">
@@ -1681,6 +1682,51 @@ createPuckPlugin({
     </div>
 
 
+    <!-- INTEGRATIONS -->
+    <div class="section" id="integrations">
+      <h2>Integrations</h2>
+      <p>An integration bundles Puck components, categories and optional editor plugins.</p>
+      <p>Host components and category fields win; integrations fill missing component keys and append category names. Config helpers ignore plugins.</p>
+
+      <pre><span class="lang-tag">tsx</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-comment">// Render config</span>
+<span class="hl-keyword">import</span> { <span class="hl-func">extendConfig</span>, baseConfig, <span class="hl-keyword">type</span> <span class="hl-type">PuckIntegration</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config'</span>
+
+<span class="hl-keyword">const</span> integrations: <span class="hl-keyword">readonly</span> <span class="hl-type">PuckIntegration</span>[] = [{
+  name: <span class="hl-string">'dummy'</span>,
+  components: { DummyBlock: { <span class="hl-func">render</span>: () =&gt; &lt;div&gt;Dummy block&lt;/div&gt; } },
+  categories: { custom: { title: <span class="hl-string">'Custom'</span>, components: [<span class="hl-string">'DummyBlock'</span>] } },
+}]
+
+<span class="hl-keyword">export const</span> renderConfig = <span class="hl-func">extendConfig</span>({ base: baseConfig, integrations })</code></pre>
+
+      <pre><span class="lang-tag">tsx</span><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="hl-string">'use client'</span>
+
+<span class="hl-keyword">import</span> { <span class="hl-type">PuckConfigProvider</span>, <span class="hl-keyword">type</span> <span class="hl-type">PuckIntegration</span> } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/client'</span>
+<span class="hl-keyword">import</span> { editorConfig } <span class="hl-keyword">from</span> <span class="hl-string">'@delmaredigital/payload-puck/config/editor'</span>
+<span class="hl-keyword">import type</span> { <span class="hl-type">ReactNode</span> } <span class="hl-keyword">from</span> <span class="hl-string">'react'</span>
+
+<span class="hl-keyword">const</span> integrations: <span class="hl-keyword">readonly</span> <span class="hl-type">PuckIntegration</span>[] = [{
+  name: <span class="hl-string">'dummy'</span>,
+  components: { DummyBlock: { <span class="hl-func">render</span>: () =&gt; &lt;div&gt;Dummy block&lt;/div&gt; } },
+  categories: { custom: { title: <span class="hl-string">'Custom'</span>, components: [<span class="hl-string">'DummyBlock'</span>] } },
+}]
+
+<span class="hl-keyword">export function</span> <span class="hl-func">EditorProvider</span>({ children }: { children: <span class="hl-type">ReactNode</span> }) {
+  <span class="hl-keyword">return</span> &lt;<span class="hl-type">PuckConfigProvider</span> config={editorConfig} integrations={integrations}&gt;{children}&lt;/<span class="hl-type">PuckConfigProvider</span>&gt;
+}</code></pre>
+
+      <div class="callout callout-note">
+        <p><strong>Note:</strong> Create the integration array once at module scope: a new array per render rebuilds the editor config. <code>PuckEditor</code> also accepts <code>integrations</code> directly.</p>
+      </div>
+
+      <p>Integration plugins follow prop and context plugins; named integration plugins are deduped against prop, context and earlier integration plugins. <code>plugins={false}</code> disables all plugins while integration components still apply.</p>
+      <p>The editor applies integrations without <code>exclude</code>, so to opt out of an integration's component, omit that integration from the provider or define your own component under the same key, which wins.</p>
+
+      <h3>Running experiments on slots</h3>
+      <p>Use <a href="https://www.npmjs.com/package/@delmaredigital/payload-experiments">@delmaredigital/payload-experiments</a> to run experiments on Puck slots through an integration.</p>
+      <p>Works with: payload-experiments ≥0.4.0 ↔ payload-puck ≥0.10.3.</p>
+    </div>
+
     <!-- THEMING -->
     <div class="section" id="theming">
       <h2>Theming</h2>
@@ -2514,9 +2560,9 @@ createPuckPlugin({
         <tbody>
           <tr><td><code>@delmaredigital/payload-puck</code></td><td>Plugin creation, field utilities</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/plugin</code></td><td><code>createPuckPlugin</code></td></tr>
-          <tr><td><code>@delmaredigital/payload-puck/config</code></td><td><code>baseConfig</code>, <code>createConfig()</code>, <code>extendConfig()</code></td></tr>
-          <tr><td><code>@delmaredigital/payload-puck/config/editor</code></td><td><code>editorConfig</code> for editing</td></tr>
-          <tr><td><code>@delmaredigital/payload-puck/client</code></td><td><code>PuckEditor</code>, <code>PuckConfigProvider</code>, page-tree utilities</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/config</code></td><td><code>baseConfig</code>, <code>createConfig()</code>, <code>extendConfig()</code>, <code>applyIntegrations</code>, <code>PuckIntegration</code> type</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/config/editor</code></td><td><code>editorConfig</code> for editing, <code>applyIntegrations</code>, <code>PuckIntegration</code> type</td></tr>
+          <tr><td><code>@delmaredigital/payload-puck/client</code></td><td><code>PuckEditor</code>, <code>PuckConfigProvider</code>, page-tree utilities, <code>applyIntegrations</code>, <code>PuckIntegration</code> type</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/editor</code></td><td><code>PuckEditor</code>, <code>HeaderActions</code>, editor hooks</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/rsc</code></td><td><code>PuckEditorView</code> for Payload admin views</td></tr>
           <tr><td><code>@delmaredigital/payload-puck/render</code></td><td><code>PageRenderer</code>, <code>HybridPageRenderer</code></td></tr>

@@ -10,7 +10,7 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdelmaredigital%2Fdd-starter&project-name=my-payload-site&build-command=pnpm%20run%20ci&env=PAYLOAD_SECRET,BETTER_AUTH_SECRET&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="32"></a>
 </p>
 
-> ⚠️ **Upgrading to 0.10.x from 0.9? Breaking — requires `@puckeditor/core` 0.24.** Run `pnpm add @puckeditor/core@^0.24.0`. The built-in components now arrange their sidebar fields in General / Style / Layout tabs, and the action bar shows a drag handle (`dnd={{ enableDragHandle: false }}` on `PuckEditor` hides it). Saved page data is unchanged. 0.10.1 only raises dependency floors. **0.10.2 is a security fix — upgrade recommended:** the admin editor view now applies the collection's read access. It also makes the admin editor full-screen, and the canvas no longer inherits the admin page's CSS; list any stylesheet your preview needs in `editorStylesheets`. **0.11.0 adds `integrations`** (bundles of components, categories and editor plugins from other packages); nothing changes if you don't use them. See the [CHANGELOG](./CHANGELOG.md#0110---2026-11-04).
+> ⚠️ **Upgrading to 0.10.x from 0.9? Breaking — requires `@puckeditor/core` 0.24.** Run `pnpm add @puckeditor/core@^0.24.0`. The built-in components now arrange their sidebar fields in General / Style / Layout tabs, and the action bar shows a drag handle (`dnd={{ enableDragHandle: false }}` on `PuckEditor` hides it). Saved page data is unchanged. 0.10.1 only raises dependency floors. **0.10.2 is a security fix — upgrade recommended:** the admin editor view now applies the collection's read access. It also makes the admin editor full-screen, and the canvas no longer inherits the admin page's CSS; list any stylesheet your preview needs in `editorStylesheets`. **0.10.3 adds `integrations`** (bundles of components, categories and editor plugins from other packages); nothing changes if you don't use them. See the [CHANGELOG](./CHANGELOG.md#0103---2026-11-05).
 >
 > Coming from an older version? The [Upgrade Guide](https://delmaredigital.github.io/payload-puck/#upgrading) lists what each breaking or security release needs.
 
@@ -177,7 +177,7 @@ The editor applies integrations without `exclude`, so to opt out of an integrati
 ## Running experiments on slots
 
 Use [@delmaredigital/payload-experiments](https://www.npmjs.com/package/@delmaredigital/payload-experiments) to run experiments on Puck slots through an integration.
-Works with: payload-experiments ≥0.4.0 ↔ payload-puck ≥0.11.0.
+Works with: payload-experiments ≥0.4.0 ↔ payload-puck ≥0.10.3.
 
 ## License
 
