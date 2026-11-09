@@ -13,13 +13,15 @@ import {
 import { createIsHomepageUniqueHook } from '../hooks/isHomepageUnique.js'
 
 /**
- * Default access: anyone may read, only authenticated Payload users may write.
+ * Default access: anonymous callers may read published pages only;
+ * authenticated Payload users may read everything and write.
  *
  * Before 0.9.1 every operation defaulted to allow-all, so a plugin consumer who
  * passed no `access` shipped a pages collection that anonymous REST callers
  * could create, update and delete.
  */
-const defaultReadAccess: Access = () => true
+const defaultReadAccess: Access = ({ req }) =>
+  req.user ? true : { _status: { equals: 'published' } }
 const defaultWriteAccess: Access = ({ req }) => Boolean(req.user)
 
 /**

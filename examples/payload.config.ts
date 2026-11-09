@@ -20,13 +20,20 @@ export const puckConfig = {
         },
       },
 
-      // Optional: access control (shown: the defaults)
+      // Optional: access control (defaults: published-only anonymous reads,
+      // authenticated users can read everything and write)
       access: {
-        read: () => true,
+        read: ({ req }) => req.user ? true : { _status: { equals: 'published' } },
         create: ({ req }) => !!req.user,
         update: ({ req }) => !!req.user,
         delete: ({ req }) => !!req.user,
       },
+
+      // Optional: map Puck root props to Payload fields.
+      // Must match rootPropsMapping in your custom API routes for load/save parity.
+      rootPropsMapping: [
+        { from: 'pageLayout', to: 'pageLayout' },
+      ],
 
       // Optional: options for the Page Layout field.
       // Only value/label matter here; header/footer components

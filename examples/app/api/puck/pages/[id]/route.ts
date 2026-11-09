@@ -25,10 +25,9 @@ export const { GET, PATCH, DELETE } = createPuckApiRoutesWithId({
     canDelete: async (user, pageId) => ({ allowed: user?.role === 'admin' }),
   },
 
-  // Optional: map Puck root props to Payload fields
+  // Optional: map Puck root props to Payload fields.
+  // Must match createPuckPlugin({ rootPropsMapping }) for load/save parity.
   rootPropsMapping: [
-    { from: 'metaTitle', to: 'seo.metaTitle' },
-    { from: 'metaDescription', to: 'seo.metaDescription' },
     { from: 'pageLayout', to: 'pageLayout' },
   ],
 })

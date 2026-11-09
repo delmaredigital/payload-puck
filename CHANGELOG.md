@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Anonymous reads no longer expose unpublished pages.** The generated pages collection previously allowed anonymous callers to read drafts through Payload's REST API (`GET /api/pages?draft=true` and `/api/pages/:id?draft=true`). Default read access now filters anonymous callers to `_status: 'published'`; authenticated users can still read all pages. Consumer `access.read` and `collectionOverrides.access.read` continue to override the default.
+
 ### Added
 
 - **Starter example typecheck.** `pnpm typecheck:examples` checks `examples/**` against the current source entry points using paths that mirror the package exports. CI runs it on Node 20 and 24.
 
 ### Fixed
 
+- **Starter root prop mappings preserve SEO edits.** Removed mappings to nonexistent `seo.*` fields that overrode the working `meta.*` defaults. The remaining `pageLayout` example is configured identically on the plugin and custom route so admin loading and route saving agree.
 - **Plugin theme reaches the admin editor.** `createPuckPlugin({ theme })` now passes the theme to the integrated editor's existing `ThemeProvider`, including its canvas and preview. An explicitly configured plugin theme takes precedence over `PuckConfigProvider`; omitting it preserves the provider fallback. Standalone editors still use `PuckConfigProvider` or `PuckEditor`, and frontend rendering uses `ThemeProvider`.
 - **Working starter files.** Replaced stale examples with the documented routes, layouts, theme and custom component. Imports use `@puckeditor/core` and public plugin exports; frontend queries require published pages; custom API authentication preserves `payloadUser` for collection access; the standalone editor includes its `/restore` route. The plugin configuration is an explicitly typed fragment to merge into an existing Payload config with its own `db` and `secret`.
 

@@ -117,6 +117,9 @@ function generatePuckEditField(
  * - Optionally registers API endpoints for CRUD operations
  *
  * The Puck editor is fully integrated into Payload's admin UI.
+ * Generated pages default to published-only reads for anonymous callers and
+ * unrestricted reads for authenticated Payload users. Writes require authentication.
+ * Consumer access functions override these defaults.
  *
  * @example
  * ```typescript
@@ -127,7 +130,7 @@ function generatePuckEditField(
  *     createPuckPlugin({
  *       pagesCollection: 'pages',
  *       access: {
- *         read: () => true,
+ *         read: ({ req }) => req.user ? true : { _status: { equals: 'published' } },
  *         create: ({ req }) => !!req.user,
  *         update: ({ req }) => !!req.user,
  *         delete: ({ req }) => req.user?.role === 'admin',

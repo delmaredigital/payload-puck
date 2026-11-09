@@ -67,7 +67,8 @@ export interface PuckPluginOptions {
    * Access control for the generated pages collection.
    * Uses Payload's Access type for full compatibility.
    *
-   * Defaults: `read` allows everyone; `create`, `update` and `delete` require
+   * Defaults: `read` allows authenticated users everything; anonymous callers get
+   * `{ _status: { equals: 'published' } }`. `create`, `update` and `delete` require
    * an authenticated Payload user (`({ req }) => Boolean(req.user)`). Pass your
    * own functions to tighten this, e.g. `update: ({ req }) => req.user?.role === 'admin'`.
    * `readVersions` is optional and falls back to Payload's default when unset.
