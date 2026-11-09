@@ -184,6 +184,7 @@
     "puck",
     "page-builder",
     "visual-editor",
+    "nextjs",
     "cms"
   ],
   "engines": {
@@ -198,7 +199,7 @@
   "bugs": {
     "url": "https://github.com/delmaredigital/payload-puck/issues"
   },
-  "homepage": "https://delmaredigital.com/developers",
+  "homepage": "https://plugins.delmaredigital.com/puck",
   "pnpm": {
     "overrides": {
       "brace-expansion@1": "^1.1.16",

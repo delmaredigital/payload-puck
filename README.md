@@ -10,15 +10,15 @@ A PayloadCMS plugin for integrating [Puck](https://puckeditor.com) visual page b
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdelmaredigital%2Fdd-starter&project-name=my-payload-site&build-command=pnpm%20run%20ci&env=PAYLOAD_SECRET,BETTER_AUTH_SECRET&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="32"></a>
 </p>
 
+**Documentation:** [plugins.delmaredigital.com/docs/puck](https://plugins.delmaredigital.com/docs/puck) · [Overview](https://plugins.delmaredigital.com/puck)
+
 > ⚠️ **Upgrading to 0.10.x from 0.9? Breaking — requires `@puckeditor/core` 0.24.** Run `pnpm add @puckeditor/core@^0.24.0`. The built-in components now arrange their sidebar fields in General / Style / Layout tabs, and the action bar shows a drag handle (`dnd={{ enableDragHandle: false }}` on `PuckEditor` hides it). Saved page data is unchanged. 0.10.1 only raises dependency floors. **0.10.2 is a security fix — upgrade recommended:** the admin editor view now applies the collection's read access. It also makes the admin editor full-screen, and the canvas no longer inherits the admin page's CSS; list any stylesheet your preview needs in `editorStylesheets`. **0.10.3 adds `integrations`** (bundles of components, categories and editor plugins from other packages); nothing changes if you don't use them. See the [CHANGELOG](./CHANGELOG.md#0103---2026-11-05).
 >
-> Coming from an older version? The [Upgrade Guide](https://delmaredigital.github.io/payload-puck/#upgrading) lists what each breaking or security release needs.
+> Coming from an older version? The [Upgrade Guide](https://plugins.delmaredigital.com/docs/puck/upgrading) lists what each breaking or security release needs.
 
 ---
 
 ## Documentation
-
-**[Full documentation &rarr;](https://delmaredigital.github.io/payload-puck/)**
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/delmaredigital/payload-puck)
 
@@ -127,11 +127,13 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
 
 That's it! The plugin registers the editor view, API endpoints, and "Edit with Puck" buttons automatically.
 
+For starter files, see the [starter files guide](https://plugins.delmaredigital.com/docs/puck/guides/starter-files). The npm package ships only `dist`; example files are not available under `node_modules/@delmaredigital/payload-puck/examples`.
+
 ---
 
 ## Documentation
 
-For everything else — components, custom fields, theming, layouts, dark mode, page-tree integration, hybrid integration, AI integration, advanced configuration, and the full export reference — see the [full documentation](https://delmaredigital.github.io/payload-puck/).
+For everything else — components, custom fields, theming, layouts, dark mode, page-tree integration, hybrid integration, AI integration, advanced configuration, and the full export reference — see the [full documentation](https://plugins.delmaredigital.com/docs/puck).
 
 ---
 
