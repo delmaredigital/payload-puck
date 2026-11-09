@@ -6,12 +6,15 @@
  * Usage:
  * 1. Copy this file to your project (e.g., src/lib/puck-theme.ts)
  * 2. Customize the values to match your CSS variables/design tokens
- * 3. Import and pass to PageRenderer or PuckEditor:
+ * 3. Pass to PuckConfigProvider or PuckEditor, and wrap frontend rendering:
  *
  * ```tsx
  * import { puckTheme } from '@/lib/puck-theme'
+ * import { ThemeProvider } from '@delmaredigital/payload-puck/theme'
  *
- * <PageRenderer data={data} config={config} theme={puckTheme} />
+ * <ThemeProvider theme={puckTheme}>
+ *   <PageRenderer data={data} config={config} />
+ * </ThemeProvider>
  * ```
  */
 
@@ -51,7 +54,7 @@ export const exampleTheme: ThemeConfig = {
     },
   },
 
-  // CTA button variants
+  // CTA button helpers for custom components (unused by built-ins)
   ctaButtonVariants: {
     primary: {
       classes: 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -64,7 +67,7 @@ export const exampleTheme: ThemeConfig = {
     },
   },
 
-  // CTA background styles
+  // CTA background helpers for custom components (unused by built-ins)
   ctaBackgroundStyles: {
     default: 'bg-muted',
     dark: 'bg-primary text-primary-foreground',

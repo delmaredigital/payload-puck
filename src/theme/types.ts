@@ -64,14 +64,16 @@ export interface ThemeConfig {
   buttonVariants?: Partial<ButtonVariantStyles>
 
   /**
-   * CTA button variant styles
-   * Merged with default CTA button variants
+   * CTA button variant helpers for custom components, exposed by useTheme().
+   * Merged with DEFAULT_CTA_BUTTON_VARIANTS; use getVariantClasses() from /theme.
+   * Built-in components do not consume these styles.
    */
   ctaButtonVariants?: Partial<ButtonVariantStyles>
 
   /**
-   * CTA background styles
-   * Merged with default background styles
+   * CTA background helpers for custom components, exposed by useTheme().
+   * Merged with DEFAULT_CTA_BACKGROUND_STYLES; use getBackgroundClasses() from /theme.
+   * Built-in components do not consume these styles.
    */
   ctaBackgroundStyles?: Partial<BackgroundStyles>
 
@@ -89,7 +91,7 @@ export interface ThemeConfig {
 
   /**
    * Focus ring color class (e.g., 'focus:ring-primary')
-   * @default 'focus:ring-blue-500'
+   * @default 'focus:ring-ring'
    */
   focusRingColor?: string
 }

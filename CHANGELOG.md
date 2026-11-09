@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Starter example typecheck.** `pnpm typecheck:examples` checks `examples/**` against the current source entry points using paths that mirror the package exports. CI runs it on Node 20 and 24.
+
+### Fixed
+
+- **Plugin theme reaches the admin editor.** `createPuckPlugin({ theme })` now passes the theme to the integrated editor's existing `ThemeProvider`, including its canvas and preview. An explicitly configured plugin theme takes precedence over `PuckConfigProvider`; omitting it preserves the provider fallback. Standalone editors still use `PuckConfigProvider` or `PuckEditor`, and frontend rendering uses `ThemeProvider`.
+- **Working starter files.** Replaced stale examples with the documented routes, layouts, theme and custom component. Imports use `@puckeditor/core` and public plugin exports; frontend queries require published pages; custom API authentication preserves `payloadUser` for collection access; the standalone editor includes its `/restore` route. The plugin configuration is an explicitly typed fragment to merge into an existing Payload config with its own `db` and `secret`.
+
 ### Documentation
 
 - Documentation moved to https://plugins.delmaredigital.com/docs/puck. The GitHub Pages site now redirects there.
+- The example file guide and README now direct users to copy starters from GitHub or the docs page; examples are not shipped in the npm package.
+- Corrected the documented focus-ring default to `focus:ring-ring`, identified the public CTA theme helpers as utilities for custom components (unused by built-ins), fixed preset imports to use `/config/editor`, and updated the exported theme example to wrap frontend rendering in `ThemeProvider`.
 
 ## [0.10.3] - 2026-11-05
 

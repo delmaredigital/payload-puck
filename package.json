@@ -105,6 +105,7 @@
     "copyfiles": "copyfiles -u 1 \"src/**/*.css\" dist",
     "dev": "pnpm generate-version && swc ./src -d ./dist --strip-leading-paths --watch",
     "typecheck": "pnpm generate-version && tsc --noEmit && tsc -p tsconfig.test.json",
+    "typecheck:examples": "pnpm generate-version && tsc -p tsconfig.examples.json",
     "test": "pnpm generate-version && vitest run",
     "test:watch": "pnpm generate-version && vitest",
     "test:coverage": "pnpm generate-version && vitest run --coverage",

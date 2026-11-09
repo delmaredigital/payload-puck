@@ -1,247 +1,28 @@
-# Puck Plugin Examples
+# Starter files
 
-Copy these files to your project as a starting point. Each file includes comments explaining what to customize.
+Copy the files you need from [GitHub](https://github.com/delmaredigital/payload-puck/tree/main/examples) or the [starter files guide](https://plugins.delmaredigital.com/docs/puck/guides/starter-files) into your application's `src/` directory, keeping the paths below. The npm package contains only `dist`, so these files must be copied from GitHub or the docs page.
 
-## Directory Structure
+These are starting points to adapt, not a standalone application. Merge the `puckConfig.plugins` fragment from `payload.config.ts` into your existing `buildConfig()` call, keep your secret, database and admin setup, and adjust the Tailwind CSS import in the manage layout. Configure `@/*` to resolve to your app's `src/*` and `@payload-config` to your Payload configuration.
 
-```
-examples/
-├── api/
-│   └── puck/
-│       └── pages/
-│           ├── route.ts              # List & create pages
-│           └── [id]/
-│               ├── route.ts          # Get, update, delete page
-│               └── versions/
-│                   └── route.ts      # Version history (optional)
-├── app/
-│   ├── (frontend)/
-│   │   └── page.tsx                  # Homepage route (root "/")
-│   ├── (manage)/
-│   │   └── layout.tsx                # Editor layout (imports Tailwind CSS)
-│   ├── pages/
-│   │   └── [id]/
-│   │       └── edit/
-│   │           └── page.tsx          # Visual editor page
-│   └── [...slug]/
-│       └── page.tsx                  # Dynamic page renderer
-├── config/
-│   └── payload.config.example.ts     # Payload plugin configuration
-└── lib/
-    ├── puck-theme.ts                 # Theme configuration
-    └── puck-layouts.ts               # Custom page layouts
-```
+| File | Purpose |
+| --- | --- |
+| `payload.config.ts` | Plugin configuration, generated collection access and layout choices; merge into your existing config. |
+| `app/(frontend)/page.tsx` | Published homepage lookup, metadata and rendering. |
+| `app/(frontend)/[...slug]/page.tsx` | Published pages at other paths, metadata and rendering. |
+| `app/(manage)/layout.tsx` | Standalone editor root layout; imports your Tailwind CSS. |
+| `app/(manage)/pages/[id]/edit/page.tsx` | Standalone editor with save, publish, preview and history. |
+| `app/api/puck/pages/route.ts` | Authenticated list and create routes. |
+| `app/api/puck/pages/[id]/route.ts` | Authenticated read, update, publish and delete routes. |
+| `app/api/puck/pages/[id]/versions/route.ts` | Authenticated version listing and restore handler. |
+| `app/api/puck/pages/[id]/restore/route.ts` | Restore endpoint used by the editor's History panel. |
+| `lib/puck-layouts.ts` | Custom layouts, header/footer slots and editor backgrounds. |
+| `lib/puck-theme.ts` | Button styles, focus ring and colour picker presets. |
+| `components/CustomBanner.tsx` | Custom component using the public field helpers. |
+| `puck/custom-config.ts` | Adds the banner to the built-in editor config. |
+| `styles/puck-theme.css` | CSS variables for apps without an existing shadcn/ui theme. |
 
-**Note:** The plugin automatically creates a `puck-templates` collection for the Template component. No additional API routes are needed - templates use Payload's built-in REST API at `/api/puck-templates`.
+For the built-in admin editor and endpoints, start with the [quick start](https://plugins.delmaredigital.com/docs/puck/quick-start); you only need plugin configuration, a `PuckConfigProvider` and a frontend route. Copy the standalone editor and API routes when you need to replace the built-in flows. Set `enableEndpoints: false` when replacing the plugin's endpoints with these custom routes. The routes preserve Payload's authenticated user as `payloadUser`, so collection and field access checks retain their authentication context.
 
-## Quick Setup
+Pass custom layouts to `PuckConfigProvider` (or `PuckEditor`) and `PageRenderer`. Pass a custom theme to `PuckConfigProvider` (or `PuckEditor`); for the integrated admin editor you can also set the plugin's `theme` option. Wrap frontend rendering in `ThemeProvider`. See the guide for Tailwind v4 utility mappings and further setup.
 
-### 1. Add the Plugin to Payload Config
-
-Reference the example configuration and merge with your existing `payload.config.ts`:
-
-```bash
-# View the example config
-cat node_modules/@delmaredigital/payload-puck/examples/config/payload.config.example.ts
-```
-
-Add the plugin to your config:
-
-```typescript
-import { createPuckPlugin } from '@delmaredigital/payload-puck/plugin'
-
-export default buildConfig({
-  plugins: [
-    createPuckPlugin({
-      pagesCollection: 'pages',
-    }),
-  ],
-  // ... rest of your config
-})
-```
-
-### 2. Copy API Routes
-
-```bash
-# From your project root
-cp -r node_modules/@delmaredigital/payload-puck/examples/api/puck src/app/api/
-```
-
-### 3. Copy Editor Page & Layout
-
-```bash
-# Create route group and copy layout (REQUIRED for Tailwind styles)
-mkdir -p src/app/\(manage\)/pages/\[id\]/edit
-cp node_modules/@delmaredigital/payload-puck/examples/app/\(manage\)/layout.tsx src/app/\(manage\)/
-
-# Copy editor page
-cp node_modules/@delmaredigital/payload-puck/examples/app/pages/\[id\]/edit/page.tsx src/app/\(manage\)/pages/\[id\]/edit/
-```
-
-> **Important:** The layout file imports Tailwind CSS. Without it, the editor will be completely unstyled. Update the CSS import path in `layout.tsx` to match your project's globals.css location.
-
-### 4. Copy Frontend Routes
-
-```bash
-# Homepage route (handles root "/")
-mkdir -p src/app/\(frontend\)
-cp node_modules/@delmaredigital/payload-puck/examples/app/\(frontend\)/page.tsx src/app/\(frontend\)/
-
-# Dynamic catch-all route (handles "/about", "/contact", etc.)
-mkdir -p src/app/\(frontend\)/\[...slug\]
-cp node_modules/@delmaredigital/payload-puck/examples/app/\[...slug\]/page.tsx src/app/\(frontend\)/\[...slug\]/
-```
-
-### 5. Copy Theme (Optional)
-
-```bash
-mkdir -p src/lib
-cp node_modules/@delmaredigital/payload-puck/examples/lib/puck-theme.ts src/lib/
-```
-
-Then uncomment the theme imports in the editor and renderer pages.
-
-### 6. Copy Layouts (Optional)
-
-```bash
-cp node_modules/@delmaredigital/payload-puck/examples/lib/puck-layouts.ts src/lib/
-```
-
-Then update your plugin config and renderer to use custom layouts.
-
-## Customization
-
-### Authentication
-
-Edit the `authenticate` function in each API route to match your auth setup:
-
-```typescript
-authenticate: async (request) => {
-  // Your auth logic here
-  const session = await getSession(request)
-  if (!session?.user) return { authenticated: false }
-  return { authenticated: true, user: session.user }
-},
-```
-
-### Permissions
-
-Customize the `canView`, `canEdit`, `canPublish`, and `canDelete` hooks:
-
-```typescript
-canEdit: async (user, pageId) => {
-  // Example: Only editors and admins can edit
-  return { allowed: ['editor', 'admin'].includes(user?.role) }
-},
-```
-
-### Theme
-
-Edit `lib/puck-theme.ts` to match your CSS variables:
-
-```typescript
-buttonVariants: {
-  default: {
-    // Use your CSS variable classes
-    classes: 'bg-brand text-brand-foreground hover:bg-brand/90',
-  },
-},
-```
-
-### Layouts
-
-Edit `lib/puck-layouts.ts` to define custom page layouts with header/footer support:
-
-```typescript
-import { createLayout, mergeLayouts, DEFAULT_LAYOUTS } from '@delmaredigital/payload-puck/layouts'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
-
-// Layout with sticky header
-const defaultLayout = createLayout({
-  value: 'default',
-  label: 'Default',
-  description: 'Standard page with header and footer',
-  maxWidth: '1200px',
-  // Header/footer rendered in both editor preview and frontend
-  header: Header,
-  footer: Footer,
-  // Editor preview settings
-  editorBackground: '#ffffff',
-  editorDarkMode: false,
-  // IMPORTANT: Set this if your header is sticky/fixed
-  // This adds padding-top in both editor AND frontend so content doesn't render behind the header
-  stickyHeaderHeight: 80, // Height of your sticky header in pixels
-})
-
-// Landing layout without header/footer
-const landingLayout = createLayout({
-  value: 'landing',
-  label: 'Landing',
-  description: 'Full-width layout without header/footer',
-  fullWidth: true,
-  // No header/footer - content controls the entire page
-  editorBackground: '#f8fafc',
-})
-
-// Dark theme example
-const darkLayout = createLayout({
-  value: 'dark',
-  label: 'Dark',
-  description: 'Dark theme layout',
-  maxWidth: '1200px',
-  header: Header, // Could be a dark-themed header
-  footer: Footer,
-  editorBackground: '#111827',
-  editorDarkMode: true, // Sets dark mode class on iframe
-  stickyHeaderHeight: 80,
-})
-
-// Combine with defaults
-export const customLayouts = mergeLayouts(
-  DEFAULT_LAYOUTS,
-  [defaultLayout, landingLayout, darkLayout],
-  { replace: true } // Replace defaults with our versions
-)
-```
-
-Use layouts in your editor page:
-
-```typescript
-import { PuckEditor } from '@delmaredigital/payload-puck/editor'
-import { customLayouts } from '@/lib/puck-layouts'
-
-<PuckEditor
-  config={editorConfig}
-  pageId={page.id}
-  initialData={page.puckData}
-  layouts={customLayouts}  // Editor reads header/footer from layouts
-/>
-```
-
-And in your PageRenderer:
-
-```typescript
-import { PageRenderer } from '@delmaredigital/payload-puck/render'
-import { customLayouts } from '@/lib/puck-layouts'
-
-<PageRenderer
-  data={page.puckData}
-  layouts={customLayouts}  // Frontend renders header/footer from layouts
-/>
-```
-
-#### Layout Definition Options
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `value` | `string` | Unique identifier |
-| `label` | `string` | Display name in editor |
-| `header` | `ComponentType` | Header component for preview & frontend |
-| `footer` | `ComponentType` | Footer component for preview & frontend |
-| `stickyHeaderHeight` | `number` | Height of sticky/fixed header (applies padding in editor & frontend) |
-| `editorBackground` | `string` | Background color for editor preview |
-| `editorDarkMode` | `boolean` | Use dark mode in editor preview |
-| `maxWidth` | `string` | Container max-width (e.g., `'1200px'`) |
-| `fullWidth` | `boolean` | If true, no container constraints |
-| `classes` | `object` | CSS classes for wrapper/container/content |
+Run `pnpm typecheck:examples` in this repository to check these starters against the current source entry points. It does not start an application server.

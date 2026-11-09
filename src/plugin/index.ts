@@ -459,6 +459,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
           collections: puckCollections,
           // Per-instance settings use this instance's values (last plugin wins for shared settings)
           layouts: options.layouts ?? incomingConfig.custom?.puck?.layouts,
+          theme: options.theme ?? incomingConfig.custom?.puck?.theme,
           pageTree: pageTreeConfig ?? incomingConfig.custom?.puck?.pageTree,
           editorStylesheets: editorStylesheets.length > 0
             ? editorStylesheets

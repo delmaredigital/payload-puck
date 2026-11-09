@@ -127,7 +127,7 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
 
 That's it! The plugin registers the editor view, API endpoints, and "Edit with Puck" buttons automatically.
 
-For starter files, see the [starter files guide](https://plugins.delmaredigital.com/docs/puck/guides/starter-files). The npm package ships only `dist`; example files are not available under `node_modules/@delmaredigital/payload-puck/examples`.
+Copy starter files from [GitHub](https://github.com/delmaredigital/payload-puck/tree/main/examples) or the [starter files guide](https://plugins.delmaredigital.com/docs/puck/guides/starter-files). See [examples/README.md](examples/README.md) for the file guide and setup notes. The npm package ships only `dist`; examples must be copied from GitHub or the docs. Contributors can check them against the source exports with `pnpm typecheck:examples`.
 
 ---
 

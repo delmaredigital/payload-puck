@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PuckEditor, type PuckEditorProps } from '../../src/editor/PuckEditor.js'
 import { PuckConfigProvider, usePuckConfig, type PuckConfigContextValue } from '../../src/views/PuckConfigContext.js'
 import { applyIntegrations, resetIntegrationWarningsForTests, type PuckIntegration } from '../../src/config/merge.js'
+import type { ThemeConfig } from '../../src/theme/types.js'
 
 const capture = vi.hoisted(() => ({ props: null as PuckEditorProps | null }))
 vi.mock('next/dynamic', () => ({
@@ -29,10 +30,11 @@ function render(
   integrations?: readonly PuckIntegration[],
   plugins?: Plugin[],
   providerConfig: Config = config,
+  theme?: ThemeConfig,
 ) {
   act(() => {
     root.render(createElement(StrictMode, null, createElement(PuckConfigProvider, {
-      config: providerConfig, integrations, plugins,
+      config: providerConfig, integrations, plugins, theme,
       children: [createElement(ContextReader, { key: 'context' }), createElement(PuckEditor, { ...props, ...editor, key: 'editor' })],
     })))
   })
@@ -58,6 +60,19 @@ afterEach(() => {
 })
 
 describe('editor integrations', () => {
+  it('passes the provider theme to the implementation when no theme prop is set', () => {
+    const theme: ThemeConfig = { focusRingColor: 'focus:ring-brand' }
+    const result = render({}, undefined, undefined, config, theme)
+    expect(result.theme).toBe(theme)
+  })
+
+  it('prefers the admin view theme prop over the provider theme', () => {
+    const pluginTheme: ThemeConfig = { focusRingColor: 'focus:ring-plugin' }
+    const providerTheme: ThemeConfig = { focusRingColor: 'focus:ring-provider' }
+    const result = render({ theme: pluginTheme }, undefined, undefined, config, providerTheme)
+    expect(result.theme).toBe(pluginTheme)
+  })
+
   it('passes provider integration components to the implementation with a context-only config', () => {
     expect(config.components).not.toHaveProperty('DummyBlock')
     const result = render({ config: undefined }, [{

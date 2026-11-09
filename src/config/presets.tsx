@@ -8,7 +8,7 @@
  *
  * @example
  * ```tsx
- * import { fullConfig, extendConfig } from '@delmaredigital/payload-puck/config'
+ * import { fullConfig, extendConfig } from '@delmaredigital/payload-puck/config/editor'
  * import { MyHeroConfig } from '@/components/puck/Hero'
  *
  * export const puckConfig = extendConfig({
@@ -132,7 +132,7 @@ export const defaultRoot = {
  *
  * @example
  * ```tsx
- * import { pageTreeRoot, fullConfig, extendConfig } from '@delmaredigital/payload-puck/config'
+ * import { pageTreeRoot, fullConfig, extendConfig } from '@delmaredigital/payload-puck/config/editor'
  *
  * export const puckConfig = extendConfig({
  *   base: fullConfig,

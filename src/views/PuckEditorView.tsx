@@ -17,6 +17,7 @@ import type { AdminViewProps } from 'payload'
 import { PuckEditor } from '../editor/PuckEditor.js'
 import { mapPayloadFieldsToRootProps } from '../api/utils/mapRootProps.js'
 import type { RootPropsMapping } from '../api/types.js'
+import type { ThemeConfig } from '../theme/types.js'
 
 export interface PuckEditorViewProps extends AdminViewProps {
   // Additional props can be passed via plugin config
@@ -57,6 +58,7 @@ export async function PuckEditorView({
   // Get puck config from plugin custom settings
   const puckConfig = (payload.config as any).custom?.puck?.config
   const layouts = (payload.config as any).custom?.puck?.layouts
+  const theme = (payload.config as any).custom?.puck?.theme as ThemeConfig | undefined
   const explicitPageTreeConfig = (payload.config as any).custom?.puck?.pageTree
   const aiConfig = (payload.config as any).custom?.puck?.ai
   const editorStylesheets = (payload.config as any).custom?.puck?.editorStylesheets as string[] | undefined
@@ -223,6 +225,7 @@ export async function PuckEditorView({
       backUrl={backUrl}
       previewUrlPrefix={previewUrlPrefix}
       layouts={layouts}
+      theme={theme}
       hasPageTree={!!pageTreeConfig}
       folder={pageTreeConfig ? (typeof page?.folder === 'object' ? page?.folder?.id : page?.folder) : undefined}
       pageSegment={pageTreeConfig ? page?.pageSegment : undefined}

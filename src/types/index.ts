@@ -99,8 +99,11 @@ export interface PuckPluginOptions {
   admin?: PuckAdminConfig
 
   /**
-   * Theme configuration for customizing button styles, colors, and presets
-   * All values are optional and will fall back to defaults
+   * Theme configuration for the integrated admin editor's canvas and preview.
+   * Takes precedence over PuckConfigProvider's theme in the admin editor.
+   * All values are optional and will fall back to defaults.
+   * For standalone editors use PuckConfigProvider or PuckEditor; for frontend
+   * rendering wrap PageRenderer in ThemeProvider.
    */
   theme?: ThemeConfig
 

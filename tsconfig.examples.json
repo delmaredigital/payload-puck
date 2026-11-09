@@ -1,0 +1,74 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "paths": {
+      "@delmaredigital/payload-puck": [
+        "./src/index.ts"
+      ],
+      "@delmaredigital/payload-puck/plugin": [
+        "./src/plugin/index.ts"
+      ],
+      "@delmaredigital/payload-puck/config": [
+        "./src/config/index.tsx"
+      ],
+      "@delmaredigital/payload-puck/config/editor": [
+        "./src/config/config.editor.tsx"
+      ],
+      "@delmaredigital/payload-puck/render": [
+        "./src/render/index.ts"
+      ],
+      "@delmaredigital/payload-puck/client": [
+        "./src/exports/client.ts"
+      ],
+      "@delmaredigital/payload-puck/rsc": [
+        "./src/exports/rsc.ts"
+      ],
+      "@delmaredigital/payload-puck/layouts": [
+        "./src/layouts/index.ts"
+      ],
+      "@delmaredigital/payload-puck/api": [
+        "./src/api/index.ts"
+      ],
+      "@delmaredigital/payload-puck/admin/client": [
+        "./src/admin/client.ts"
+      ],
+      "@delmaredigital/payload-puck/theme": [
+        "./src/theme/index.ts"
+      ],
+      "@delmaredigital/payload-puck/components": [
+        "./src/components/exports.ts"
+      ],
+      "@delmaredigital/payload-puck/fields": [
+        "./src/fields/index.ts"
+      ],
+      "@delmaredigital/payload-puck/editor": [
+        "./src/editor/index.ts"
+      ],
+      "@delmaredigital/payload-puck/ai": [
+        "./src/ai/index.ts"
+      ],
+      "@delmaredigital/payload-puck/email": [
+        "./src/email/index.ts"
+      ],
+      "@delmaredigital/payload-puck/email/components": [
+        "./src/components/email/exports.ts"
+      ],
+      "@/*": [
+        "./examples/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "examples/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/reference"
+  ]
+}
