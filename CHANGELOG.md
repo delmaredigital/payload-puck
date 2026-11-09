@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **Anonymous reads no longer expose unpublished pages.** The generated pages collection previously allowed anonymous callers to read drafts through Payload's REST API (`GET /api/pages?draft=true` and `/api/pages/:id?draft=true`). Default read access now filters anonymous callers to `_status: 'published'`; authenticated users can still read all pages. Consumer `access.read` and `collectionOverrides.access.read` continue to override the default.
+- **Anonymous reads no longer expose unpublished pages.** The generated pages collection previously allowed anonymous callers to read drafts through Payload's REST API (`GET /api/pages?draft=true` and `/api/pages/:id?draft=true`). Default read access now filters anonymous callers to `_status: 'published'`; authenticated users can still read all pages. Consumer `access.read` and `collectionOverrides.access.read` continue to override the default. With drafts turned off (`collectionOverrides: { versions: { drafts: false } }`) there is no `_status` field and every save is live, so anonymous reads stay allowed. **Breaking** for code that reads drafts without a signed-in user, such as a preview route calling the REST API with `draft=true`: pass the user (or `overrideAccess: true` in a trusted server route), or set `access.read`.
 
 ### Added
 

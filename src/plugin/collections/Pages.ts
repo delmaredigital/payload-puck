@@ -16,12 +16,17 @@ import { createIsHomepageUniqueHook } from '../hooks/isHomepageUnique.js'
  * Default access: anonymous callers may read published pages only;
  * authenticated Payload users may read everything and write.
  *
+ * `_status` exists only when drafts are enabled. With drafts turned off every
+ * save is live, so anonymous callers may read every page; filtering on a field
+ * the collection does not have would hide (or error on) every page.
+ *
  * Before 0.9.1 every operation defaulted to allow-all, so a plugin consumer who
  * passed no `access` shipped a pages collection that anonymous REST callers
  * could create, update and delete.
  */
-const defaultReadAccess: Access = ({ req }) =>
+const publishedOnlyReadAccess: Access = ({ req }) =>
   req.user ? true : { _status: { equals: 'published' } }
+const allowAllReadAccess: Access = () => true
 const defaultWriteAccess: Access = ({ req }) => Boolean(req.user)
 
 /**
@@ -127,6 +132,13 @@ export function generatePagesCollection(
     ...additionalFields,
   ]
 
+  const versions: CollectionConfig['versions'] =
+    typeof collectionOverrides.versions === 'object'
+      ? { drafts: true, ...collectionOverrides.versions }
+      : { drafts: true }
+  const hasDrafts = typeof versions === 'object' && Boolean(versions.drafts)
+  const defaultReadAccess = hasDrafts ? publishedOnlyReadAccess : allowAllReadAccess
+
   return {
     slug,
     admin: {
@@ -162,10 +174,7 @@ export function generatePagesCollection(
       afterRefresh: collectionOverrides.hooks?.afterRefresh,
       afterMe: collectionOverrides.hooks?.afterMe,
     },
-    versions:
-      typeof collectionOverrides.versions === 'object'
-        ? { drafts: true, ...collectionOverrides.versions }
-        : { drafts: true },
+    versions,
     fields: baseFields,
     // Everything merged above (admin, access, hooks, versions, fields) must not
     // be clobbered by a shallow spread of the overrides: passing

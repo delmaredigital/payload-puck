@@ -16,6 +16,22 @@ describe('generatePagesCollection default access', () => {
     expect(await access.read!(req(user))).toEqual({ _status: { equals: 'published' } })
   })
 
+  it('lets anonymous callers read every page when drafts are turned off', async () => {
+    const noDrafts = generatePagesCollection('pages', {
+      collectionOverrides: { versions: { drafts: false } },
+    })
+    expect(noDrafts.versions).toEqual({ drafts: false })
+    expect(await noDrafts.access!.read!(req(null))).toBe(true)
+    expect(await noDrafts.access!.read!(req({ id: 1 }))).toBe(true)
+  })
+
+  it('keeps the published-only filter when versions are overridden with drafts on', async () => {
+    const withDrafts = generatePagesCollection('pages', {
+      collectionOverrides: { versions: { maxPerDoc: 10 } },
+    }).access!
+    expect(await withDrafts.read!(req(null))).toEqual({ _status: { equals: 'published' } })
+  })
+
   it('allows authenticated users to read everything', async () => {
     expect(await access.read!(req({ id: 1, collection: 'users' }))).toBe(true)
   })
