@@ -18,6 +18,7 @@ import { PuckEditor } from '../editor/PuckEditor.js'
 import { mapPayloadFieldsToRootProps } from '../api/utils/mapRootProps.js'
 import type { RootPropsMapping } from '../api/types.js'
 import type { ThemeConfig } from '../theme/types.js'
+import type { PuckPluginOptions } from '../types/index.js'
 
 export interface PuckEditorViewProps extends AdminViewProps {
   // Additional props can be passed via plugin config
@@ -68,6 +69,9 @@ export async function PuckEditorView({
     | undefined
   const rootPropsMapping = (payload.config as any).custom?.puck?.rootPropsMapping as
     | RootPropsMapping[]
+    | undefined
+  const canPublishOption = (payload.config as any).custom?.puck?.canPublish as
+    | PuckPluginOptions['canPublish']
     | undefined
 
   // Fetch the page data
@@ -214,8 +218,21 @@ export async function PuckEditorView({
     )
   }
 
+  // Hide Publish/Unpublish for users who may not publish. Fails closed: if the
+  // function throws, the buttons are hidden (publishing is still enforced by access).
+  let canPublish = true
+  if (canPublishOption) {
+    try {
+      canPublish = Boolean(await canPublishOption({ req, user: req.user, collection, id: pageId }))
+    } catch (err) {
+      console.error('[PuckEditorView] canPublish threw; hiding publish buttons:', err)
+      canPublish = false
+    }
+  }
+
   return (
     <PuckEditor
+      canPublish={canPublish}
       pageId={pageId}
       initialData={initialData}
       pageTitle={page?.title || 'Untitled'}

@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig, Config as PayloadConfig, Field } from 'payload'
+import type { Access, CollectionConfig, Config as PayloadConfig, Field, PayloadRequest } from 'payload'
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 import type { ThemeConfig } from '../theme/types.js'
 import type { LayoutDefinition, LayoutConfig } from '../layouts/types.js'
@@ -266,6 +266,26 @@ export interface PuckPluginOptions {
    * ```
    */
   previewUrl?: string | ((page: any) => string | ((slug: string) => string))
+
+  /**
+   * Decide per user whether the editor shows the Publish and Unpublish buttons.
+   * Return false for users who may save drafts but not publish.
+   *
+   * This only hides the buttons in the integrated editor. It does not stop a
+   * publish request: enforce publishing with collection access or hooks. If the
+   * function throws, the buttons are hidden.
+   *
+   * @example
+   * ```typescript
+   * canPublish: ({ user }) => user?.role === 'admin' || user?.role === 'publisher'
+   * ```
+   */
+  canPublish?: (args: {
+    req: PayloadRequest
+    user: PayloadRequest['user']
+    collection: string
+    id: string
+  }) => boolean | Promise<boolean>
 }
 
 /**

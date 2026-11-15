@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`canPublish` for the integrated editor.** A new `canPublish` plugin option, `createPuckPlugin({ canPublish: ({ req, user, collection, id }) => boolean | Promise<boolean> })`, decides per user whether the editor shows the Publish and Unpublish buttons, so users who may only save drafts are not offered a button that always fails. `PuckEditor` takes a matching `canPublish` prop (default `true`) and `HeaderActions` a `showPublish` prop. This only hides the buttons: enforce publishing with collection access or hooks. If the function throws, the buttons are hidden. Omitting the option keeps the current behavior.
+
 ## [0.11.0] - 2026-11-09
 
 ### Security

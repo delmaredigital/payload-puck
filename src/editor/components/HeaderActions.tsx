@@ -82,6 +82,14 @@ export interface HeaderActionsProps {
    * @default true
    */
   showSaveDraft?: boolean
+
+  /**
+   * Show the Publish and Unpublish buttons. Set to false for users who may save
+   * drafts but not publish. Only affects the buttons; enforce publishing rules
+   * with collection access or hooks.
+   * @default true
+   */
+  showPublish?: boolean
   /**
    * Whether to show the view page button
    * @default true
@@ -356,6 +364,7 @@ export const HeaderActions = memo(function HeaderActions({
   actionsStart,
   actionsEnd,
   showSaveDraft = true,
+  showPublish = true,
   showViewPage = true,
   showInteractiveToggle = false,
   showPreviewButton = true,
@@ -593,7 +602,7 @@ export const HeaderActions = memo(function HeaderActions({
       )}
 
       {/* Custom publish button if handler provided */}
-      {onPublish && (
+      {showPublish && onPublish && (
         <button
           type="button"
           onClick={handlePublishClick}
@@ -614,7 +623,7 @@ export const HeaderActions = memo(function HeaderActions({
       )}
 
       {/* Unpublish link (only shown when document is published) */}
-      {onUnpublish && documentStatus === 'published' && (
+      {showPublish && onUnpublish && documentStatus === 'published' && (
         <button
           type="button"
           onClick={onUnpublish}
