@@ -142,8 +142,8 @@
     }
   },
   "dependencies": {
-    "@puckeditor/cloud-client": "^0.8.2",
-    "@puckeditor/plugin-ai": "^0.8.3",
+    "@puckeditor/cloud-client": "^0.9.0",
+    "@puckeditor/plugin-ai": "^0.9.0",
     "@puckeditor/plugin-heading-analyzer": "^0.24.0",
     "@radix-ui/react-popover": "^1.1.23",
     "@tiptap/core": "^3.32.1",
