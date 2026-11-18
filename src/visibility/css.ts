@@ -22,9 +22,19 @@ export const LIVE_CSS = SCREEN_SIZES.map(
   (size) => `@media ${SCREEN_MEDIA_QUERIES[size]}{.${hideOnClassName(size)}{display:none!important}}`,
 ).join('\n')
 
-/** Quotes a value for use inside a CSS string or attribute selector. */
+/**
+ * Quotes a value for use inside a CSS string or attribute selector. Block ids
+ * come from page data, so everything except letters, digits, space, `_` and
+ * `-` is hex-escaped: no quote, newline (\n, \r, \f), backslash or `<` can end
+ * the string, the rule or the <style> element. NUL becomes U+FFFD, as CSS does.
+ */
 export function cssString(value: string): string {
-  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\a ')}"`
+  let out = ''
+  for (const char of value) {
+    const code = char.codePointAt(0)!
+    out += /[A-Za-z0-9 _-]/.test(char) ? char : `\\${(code === 0 ? 0xfffd : code).toString(16)} `
+  }
+  return `"${out}"`
 }
 
 export interface VisibilityEntry {

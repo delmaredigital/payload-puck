@@ -235,7 +235,14 @@ describe('editor CSS', () => {
   })
 
   it('quotes ids safely', () => {
-    expect(cssString('a"b\\c')).toBe('"a\\"b\\\\c"')
-    expect(buildCanvasCss([{ ...hidden, id: 'x"]{}*{display:none' }])).toContain('[data-puck-component="x\\"]{}*{display:none"]')
+    expect(cssString('Heading-1_a b')).toBe('"Heading-1_a b"')
+    expect(cssString('a"b\\c')).toBe('"a\\22 b\\5c c"')
+    // Every CSS newline, NUL, and the characters that could end the rule or <style>
+    for (const hostile of ['x"]{}*{display:none', 'x\ry', 'x\fy', 'x\ny', 'x\0y', '</style><script>']) {
+      const quoted = cssString(hostile)
+      expect(quoted.slice(1, -1), JSON.stringify(hostile)).toMatch(/^[A-Za-z0-9 _\\-]*$/)
+    }
+    expect(cssString('\0')).toBe('"\\fffd "')
+    expect(buildCanvasCss([{ ...hidden, id: 'x"]{}' }])).toContain('[data-puck-component="x\\22 \\5d \\7b \\7d "]')
   })
 })
