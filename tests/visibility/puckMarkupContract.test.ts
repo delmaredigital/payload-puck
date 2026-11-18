@@ -4,7 +4,7 @@
  * The editor marks hidden blocks with CSS keyed on attributes Puck renders:
  * - `data-puck-component="<id>"` on every block in the canvas;
  * - `data-puck-layer-tree-id="<id>"` on every Outline row (undocumented).
- * It also relies on the action bar being drawn outside the block, so greying
+ * It also relies on the action bar being drawn outside the block, so graying
  * a block's content never dims its toolbar, and on `puck.isEditing` telling
  * editor renders from live ones.
  *
@@ -43,7 +43,7 @@ describe('installed Puck markup used by block visibility', () => {
     expect(draggable).toContain('el.setAttribute("data-puck-component", id)')
   })
 
-  it("draws the action bar in a portal outside the block, so greying a block can't dim it", () => {
+  it("draws the action bar in a portal outside the block, so graying a block can't dim it", () => {
     const draggable = moduleSource('components/DraggableComponent/index.tsx')
     expect(draggable).toMatch(/createPortal\d*\([^]*?CustomActionBar[^]*?portalEl \|\| document\.body/)
     expect(draggable).toContain('ownerDocument.body')

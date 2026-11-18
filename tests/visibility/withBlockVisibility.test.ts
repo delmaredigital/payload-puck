@@ -1,6 +1,6 @@
 /**
  * withBlockVisibility: the config transform that gives every block show/hide.
- * Live-page behaviour is checked by rendering through Puck's real <Render>.
+ * Live-page behavior is checked by rendering through Puck's real <Render>.
  */
 
 import { createElement, isValidElement, type ReactNode } from 'react'
@@ -135,12 +135,12 @@ describe('withBlockVisibility — live page', () => {
   it('hides a block on chosen sizes with a layout-neutral wrapper and one stylesheet', () => {
     const html = render(config, page([leaf('a', 'Wide only', { hideOn: ['phone', 'tablet'] }), leaf('b', 'No phone', { hideOn: ['phone'] })]))
     expect(html).toContain(
-      '<div class="payload-puck-hide-on-phone payload-puck-hide-on-tablet" style="display:contents"><p>Wide only</p></div>',
+      '<div class="payload-puck-visibility payload-puck-hide-on-phone payload-puck-hide-on-tablet" style="display:contents"><p>Wide only</p></div>',
     )
-    expect(html).toContain('<div class="payload-puck-hide-on-phone" style="display:contents"><p>No phone</p></div>')
+    expect(html).toContain('<div class="payload-puck-visibility payload-puck-hide-on-phone" style="display:contents"><p>No phone</p></div>')
     // React 19 dedupes the hoistable stylesheet by href
     expect(html.match(new RegExp(`data-href="${LIVE_STYLE_HREF}"|href="${LIVE_STYLE_HREF}"`, 'g'))?.length ?? 0).toBeLessThanOrEqual(1)
-    expect(html).toContain('@media (max-width: 767.98px){.payload-puck-hide-on-phone{display:none!important}}')
+    expect(html).toContain('@media (width < 768px){.payload-puck-hide-on-phone{display:none!important}}')
   })
 
   it('treats all three sizes as Hidden', () => {
@@ -151,6 +151,117 @@ describe('withBlockVisibility — live page', () => {
     const Leaf = (config.components.Leaf as ComponentConfig).render as (p: object) => ReactNode
     const props = { id: 'a', text: 'Editable', _visibility: { hidden: true }, puck: { isEditing: true } }
     expect(renderToStaticMarkup(createElement(Leaf, props))).toBe('<p>Editable</p>')
+  })
+})
+
+describe('withBlockVisibility — copies of wrapped blocks', () => {
+  const config = withBlockVisibility(hostConfig)
+  const MyLeaf = vi.fn(({ text }: { text: string }) => createElement('em', null, text))
+
+  it('wraps again when a copy replaces render, so Hidden still hides', () => {
+    const copy = { ...config.components.Leaf, render: MyLeaf } as unknown as ComponentConfig
+    expect(hasBlockVisibility(copy)).toBe(false)
+    const rewrapped = withBlockVisibility({ ...config, components: { ...config.components, Leaf: copy } } as Config)
+    expect(hasBlockVisibility(rewrapped.components.Leaf as ComponentConfig)).toBe(true)
+    expect(Object.keys((rewrapped.components.Leaf as ComponentConfig).fields!)[0]).toBe('_visibility')
+
+    const html = render(rewrapped, page([leaf('a', 'Mine'), leaf('b', 'Secret', { hidden: true })]))
+    expect(html).toBe('<main><div><em>Mine</em></div></main>')
+    expect(MyLeaf.mock.calls.map(([props]) => props.text)).toEqual(['Mine'])
+  })
+
+  it('keeps a Hidden block hidden through PageRenderer after such a copy', () => {
+    const html = renderToStaticMarkup(createElement(PageRenderer, {
+      config: { ...config, components: { ...config.components, Leaf: { ...config.components.Leaf, render: MyLeaf } } } as unknown as Config,
+      data: page([leaf('b', 'Secret', { hidden: true })]),
+    }))
+    expect(html).not.toContain('Secret')
+  })
+
+  it('keeps a Hidden email block out of a sent email after such a copy', () => {
+    const MyText = ({ content }: { content: string }) => createElement('p', null, content)
+    const emailConfig = {
+      ...emailEditorConfig,
+      components: { ...emailEditorConfig.components, EmailText: { ...emailEditorConfig.components.EmailText, render: MyText } },
+    } as unknown as Config
+    const html = renderToEmailHtml(page([
+      { type: 'EmailText', props: { id: 'a', content: 'Kept paragraph' } },
+      { type: 'EmailText', props: { id: 'b', content: 'Dropped paragraph', _visibility: { hidden: true } } },
+    ]), { config: emailConfig })
+    expect(html).toContain('Kept paragraph')
+    expect(html).not.toContain('Dropped paragraph')
+  })
+
+  it('re-wraps a screen-sizes config for email: no wrapper, no stylesheet', () => {
+    const html = renderToEmailHtml(page([leaf('a', 'Phone only', { hideOn: ['tablet', 'desktop'] })]), { config })
+    expect(html).toContain('<p>Phone only</p>')
+    expect(html).not.toContain('payload-puck')
+    expect(html).not.toContain('display:contents')
+    // The email shell has its own <style>; ours must not be there
+    expect(html).not.toContain(LIVE_STYLE_HREF)
+    expect(html).not.toContain('payload-puck-hide-on')
+  })
+
+  it('wraps again when a copy replaces renderFields or resolveFields', () => {
+    const layout = vi.fn(() => null)
+    const copy = { ...config.components.Leaf, renderFields: layout } as unknown as ComponentConfig
+    const rewrapped = withBlockVisibility({ components: { Leaf: copy } } as unknown as Config)
+    expect((rewrapped.components.Leaf as ComponentConfig).renderFields).not.toBe(layout)
+  })
+})
+
+describe('blockVisibility: { screenSizes: false }', () => {
+  const Row = vi.fn(({ text }: { text: string }) => createElement('li', null, text))
+  const config = withBlockVisibility({
+    components: {
+      List: {
+        fields: { items: { type: 'slot' } },
+        render: ({ items: Items }: { items: () => ReactNode }) => createElement('ul', null, createElement(Items)),
+      },
+      Row: { blockVisibility: { screenSizes: false }, fields: { text: { type: 'text' } }, render: Row },
+    },
+  } as unknown as Config)
+
+  it('offers Shown/Hidden only for that block type', () => {
+    const field = (config.components.Row as ComponentConfig).fields!._visibility as any
+    const markup = renderToStaticMarkup(field.render({ value: undefined, onChange: () => {}, name: '_visibility', id: 'x', field }))
+    expect(markup).toContain('Hidden')
+    expect(markup).not.toContain('Hide on phone')
+    const listField = (config.components.List as ComponentConfig).fields!._visibility as any
+    expect(renderToStaticMarkup(listField.render({ value: undefined, onChange: () => {}, name: '_visibility', id: 'y', field: listField })))
+      .toContain('Hide on phone')
+  })
+
+  it('never wraps the block, so it stays a direct child of its list', () => {
+    const html = render(config, page([{ type: 'List', props: { id: 'l', items: [
+      { type: 'Row', props: { id: 'r1', text: 'One', _visibility: { hideOn: ['phone'] } } },
+      { type: 'Row', props: { id: 'r2', text: 'Two', _visibility: { hidden: true } } },
+    ] } }]))
+    expect(html).toContain('<li>One</li>')
+    expect(html).not.toContain('display:contents')
+    expect(html).not.toContain('Two')
+  })
+})
+
+describe("a block's own resolveFields", () => {
+  const fresh = { text: { type: 'text' }, extra: { type: 'text' } }
+
+  it('keeps the Visibility control first when the block returns new fields', async () => {
+    const config = withBlockVisibility({
+      components: {
+        Sync: { fields: { text: { type: 'text' } }, resolveFields: () => ({ ...fresh }), render: () => null },
+        Async: { fields: { text: { type: 'text' } }, resolveFields: async () => ({ ...fresh }), render: () => null },
+      },
+    } as unknown as Config)
+    const run = (name: string) =>
+      (config.components[name] as ComponentConfig).resolveFields!({ props: {} } as any, {} as any)
+
+    const sync = (await run('Sync')) as Record<string, unknown>
+    const asyncResult = (await run('Async')) as Record<string, unknown>
+    for (const result of [sync, asyncResult]) {
+      expect(Object.keys(result)).toEqual(['_visibility', 'text', 'extra'])
+      expect(result._visibility).toBe((config.components.Sync as ComponentConfig).fields!._visibility)
+    }
   })
 })
 

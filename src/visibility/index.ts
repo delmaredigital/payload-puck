@@ -21,6 +21,35 @@
 
 import type { ComponentData, Config, Data } from '@puckeditor/core'
 
+/**
+ * Per-block-type settings for show/hide, set on the component config:
+ *
+ * ```ts
+ * const ListItem: ComponentConfig = {
+ *   blockVisibility: { screenSizes: false },
+ *   render: ({ text }) => <li>{text}</li>,
+ * }
+ * ```
+ */
+export interface BlockVisibilityComponentOptions {
+  /**
+   * Set false to offer only Shown / Hidden for this block type, without the
+   * per-screen-size options. Use it for blocks whose root must be a direct
+   * child of its parent: `<li>`, `<tr>` and other table or list parts, or
+   * blocks styled by sibling selectors such as `:first-child` or `space-y-*`.
+   * Per-size hiding wraps the block in a `display: contents` element, which
+   * those can't tolerate.
+   */
+  screenSizes?: boolean
+}
+
+declare module '@puckeditor/core' {
+  interface ComponentConfigExtensions {
+    /** payload-puck show/hide settings for this block type. */
+    blockVisibility?: BlockVisibilityComponentOptions
+  }
+}
+
 /** The prop each block stores its visibility under. */
 export const VISIBILITY_PROP = '_visibility' as const
 
@@ -39,14 +68,25 @@ export const SCREEN_BREAKPOINTS = {
   desktop: 1024,
 } as const
 
-/** Media query matching each screen size. */
-export const SCREEN_MEDIA_QUERIES: Readonly<Record<ScreenSize, string>> = {
-  phone: `(max-width: ${SCREEN_BREAKPOINTS.tablet - 0.02}px)`,
-  tablet: `(min-width: ${SCREEN_BREAKPOINTS.tablet}px) and (max-width: ${SCREEN_BREAKPOINTS.desktop - 0.02}px)`,
-  desktop: `(min-width: ${SCREEN_BREAKPOINTS.desktop}px)`,
-}
+/**
+ * Media query matching each screen size, in range syntax so the sizes meet
+ * exactly: no width falls between two sizes.
+ */
+export const SCREEN_MEDIA_QUERIES: Readonly<Record<ScreenSize, string>> = Object.freeze({
+  phone: `(width < ${SCREEN_BREAKPOINTS.tablet}px)`,
+  tablet: `(${SCREEN_BREAKPOINTS.tablet}px <= width < ${SCREEN_BREAKPOINTS.desktop}px)`,
+  desktop: `(width >= ${SCREEN_BREAKPOINTS.desktop}px)`,
+})
 
-/** The stored value of a block's `_visibility` prop. */
+/**
+ * The stored value of a block's `_visibility` prop. This shape is a stable
+ * public contract that other code may read directly:
+ *
+ * `{ hidden?: true, hideOn?: ('phone' | 'tablet' | 'desktop')[] }`
+ *
+ * A missing or malformed value means shown. Hidden on all three sizes means
+ * fully hidden. Prefer the helpers below, which apply those rules.
+ */
 export interface BlockVisibility {
   /** Hidden everywhere. Takes precedence over `hideOn`. */
   hidden?: boolean
@@ -71,8 +111,6 @@ export interface ResolvedBlockVisibility {
 /** Anything with a `props` object, e.g. Puck `ComponentData`. */
 export type BlockLike = { props?: unknown } | null | undefined
 
-const SHOWN: ResolvedBlockVisibility = Object.freeze({ hidden: false, hideOn: [] as ScreenSize[] }) as ResolvedBlockVisibility
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -93,10 +131,10 @@ export function readBlockVisibility(props: unknown): BlockVisibility | undefined
 
 /** Resolves a stored value to its effective visibility. */
 export function resolveVisibility(value: BlockVisibility | undefined): ResolvedBlockVisibility {
-  if (!value) return SHOWN
-  const hideOn = SCREEN_SIZES.filter((size) => value.hideOn?.includes(size))
-  if (value.hidden === true || hideOn.length === SCREEN_SIZES.length) return { hidden: true, hideOn: [] }
-  return hideOn.length ? { hidden: false, hideOn } : SHOWN
+  // A fresh object every time: callers may keep or change it
+  const hideOn = SCREEN_SIZES.filter((size) => value?.hideOn?.includes(size))
+  if (value?.hidden === true || hideOn.length === SCREEN_SIZES.length) return { hidden: true, hideOn: [] }
+  return { hidden: false, hideOn }
 }
 
 /** A block's effective visibility. A block with no setting is shown. */
@@ -122,8 +160,109 @@ export function isBlockHiddenOn(block: BlockLike, size: ScreenSize): boolean {
 export interface WalkShownBlocksContext {
   /** Id of the block whose slot or zone holds this block; null at the top level. */
   parentId: string | null
-  /** The slot or zone holding the block, e.g. `root:default-zone` or `<parentId>:content`. */
+  /**
+   * The slot or zone holding the block, e.g. `root:default-zone`,
+   * `<parentId>:content`, or for a slot inside an array field
+   * `<parentId>:items[0].content`.
+   */
   zone: string
+}
+
+type FieldsLike = Record<string, unknown>
+
+/**
+ * Slot contents of one block, following slot fields nested inside `array` and
+ * `object` fields the way Puck does.
+ */
+function slotsOf(
+  fields: unknown,
+  props: unknown,
+  path: string,
+  out: Array<[string, unknown]>,
+  seen: Set<object>,
+): void {
+  // Field definitions and prop values both come from outside; stop on repeats
+  if (!isRecord(fields) || !isRecord(props) || seen.has(props)) return
+  seen.add(props)
+  for (const [name, field] of Object.entries(fields as FieldsLike)) {
+    if (!isRecord(field)) continue
+    const value = props[name]
+    const at = path ? `${path}.${name}` : name
+    if (field.type === 'slot') {
+      out.push([at, value])
+    } else if (field.type === 'array' && Array.isArray(value)) {
+      value.forEach((item, index) => slotsOf(field.arrayFields, item, `${at}[${index}]`, out, seen))
+    } else if (field.type === 'object') {
+      slotsOf(field.objectFields, value, at, out, seen)
+    }
+  }
+}
+
+/**
+ * Visits every block in the data top-down: slots (also inside array and
+ * object fields) and legacy `data.zones`. With `skipHidden`, a hidden block is
+ * skipped together with everything inside it.
+ *
+ * Never throws on malformed data, and stops at repeated zones or blocks, so
+ * cyclic data can't recurse forever.
+ * @internal
+ */
+export function forEachBlock(
+  data: Partial<Data> | null | undefined,
+  config: Pick<Config, 'components'> | null | undefined,
+  visit: (block: ComponentData, context: WalkShownBlocksContext) => void,
+  { skipHidden }: { skipHidden: boolean },
+): void {
+  if (!isRecord(data)) return
+  const components = isRecord(config?.components) ? (config!.components as Record<string, unknown>) : {}
+  const zones = isRecord(data.zones) ? (data.zones as Record<string, unknown>) : {}
+  const seenBlocks = new Set<object>()
+  const seenZones = new Set<string>()
+
+  // Legacy zones by parent id. A key without "parent:" can't be placed; skip it
+  const zonesByParent = new Map<string, string[]>()
+  for (const zone of Object.keys(zones)) {
+    const colon = zone.indexOf(':')
+    if (colon <= 0) continue
+    const parent = zone.slice(0, colon)
+    zonesByParent.set(parent, [...(zonesByParent.get(parent) ?? []), zone])
+  }
+
+  // Iterative, depth-first, top-down: no recursion, so no stack overflow on deep data
+  type Entry = { item: unknown; context: WalkShownBlocksContext }
+  const stack: Entry[] = []
+  const listEntries = (list: unknown, context: WalkShownBlocksContext): Entry[] =>
+    Array.isArray(list) ? list.map((item) => ({ item, context })) : []
+  const zoneEntries = (parentId: string): Entry[] =>
+    (zonesByParent.get(parentId) ?? []).flatMap((zone) => {
+      if (seenZones.has(zone)) return []
+      seenZones.add(zone)
+      return listEntries(zones[zone], { parentId: parentId === 'root' ? null : parentId, zone })
+    })
+  const push = (entries: Entry[]) => {
+    for (let i = entries.length - 1; i >= 0; i--) stack.push(entries[i])
+  }
+
+  push([...listEntries(data.content, { parentId: null, zone: 'root:default-zone' }), ...zoneEntries('root')])
+
+  while (stack.length) {
+    const { item, context } = stack.pop()!
+    if (!isRecord(item) || typeof item.type !== 'string' || !isRecord(item.props)) continue
+    if (seenBlocks.has(item)) continue
+    seenBlocks.add(item)
+    const block = item as unknown as ComponentData
+    if (skipHidden && isBlockHidden(block)) continue
+    visit(block, context)
+
+    const id = typeof block.props.id === 'string' ? block.props.id : null
+    const component = components[block.type]
+    const slots: Array<[string, unknown]> = []
+    slotsOf(isRecord(component) ? component.fields : undefined, block.props, '', slots, new Set())
+    push([
+      ...slots.flatMap(([path, value]) => listEntries(value, { parentId: id, zone: `${id}:${path}` })),
+      ...(id ? zoneEntries(id) : []),
+    ])
+  }
 }
 
 /**
@@ -131,48 +270,20 @@ export interface WalkShownBlocksContext {
  *
  * A hidden block is skipped together with everything inside it. Blocks hidden
  * on only some screen sizes are visited, because they are still in the page.
- * Slots are found through the config's `slot` fields; legacy `data.zones`
- * are followed too.
+ * Slots are found through the config's `slot` fields, including slots inside
+ * `array` and `object` fields; legacy `data.zones` are followed too.
+ *
+ * Limit: slots that a component only adds at runtime through `resolveFields`
+ * aren't in the static config, so blocks inside them are not visited.
+ *
+ * Never throws, whatever the data.
  */
 export function walkShownBlocks(
   data: Partial<Data> | null | undefined,
   config: Pick<Config, 'components'>,
   visit: (block: ComponentData, context: WalkShownBlocksContext) => void,
 ): void {
-  if (!data) return
-  const zones = isRecord(data.zones) ? (data.zones as Record<string, unknown>) : {}
-
-  const walkList = (list: unknown, context: WalkShownBlocksContext) => {
-    if (!Array.isArray(list)) return
-    for (const item of list) {
-      if (!isRecord(item) || typeof item.type !== 'string' || !isRecord(item.props)) continue
-      const block = item as unknown as ComponentData
-      if (isBlockHidden(block)) continue
-      visit(block, context)
-
-      const id = typeof block.props.id === 'string' ? block.props.id : null
-      const fields = config.components?.[block.type]?.fields
-      if (fields) {
-        for (const [name, field] of Object.entries(fields)) {
-          if ((field as { type?: string } | undefined)?.type === 'slot') {
-            walkList((block.props as Record<string, unknown>)[name], { parentId: id, zone: `${id}:${name}` })
-          }
-        }
-      }
-      if (id) walkZonesOf(id)
-    }
-  }
-
-  const walkZonesOf = (parentId: string) => {
-    for (const [zone, list] of Object.entries(zones)) {
-      if (zone.slice(0, zone.indexOf(':')) === parentId) walkList(list, { parentId, zone })
-    }
-  }
-
-  walkList(data.content, { parentId: null, zone: 'root:default-zone' })
-  for (const [zone, list] of Object.entries(zones)) {
-    if (zone.startsWith('root:')) walkList(list, { parentId: null, zone })
-  }
+  forEachBlock(data, config, visit, { skipHidden: true })
 }
 
 // -----------------------------------------------------------------------------

@@ -4,13 +4,20 @@
  * - Live page: one fixed stylesheet that hides `display: contents` wrappers
  *   per screen size.
  * - Editor canvas: rules keyed on `[data-puck-component="<id>"]`, the attribute
- *   Puck puts on every block in the canvas, to grey hidden blocks and badge them.
+ *   Puck puts on every block in the canvas, to gray hidden blocks and badge them.
  * - Editor Outline: rules keyed on `[data-puck-layer-tree-id="<id>"]`, the
  *   attribute Puck puts on every Outline row. Puck does not document it; if a
  *   Puck release drops it the rules simply match nothing.
  */
 
 import { SCREEN_MEDIA_QUERIES, SCREEN_SIZES, describeVisibility, type ResolvedBlockVisibility, type ScreenSize } from './index.js'
+
+/**
+ * Class on every per-size `display: contents` wrapper. Parents that style
+ * their direct children (`> *`) can reach through it with
+ * `> .payload-puck-visibility > *`.
+ */
+export const VISIBILITY_WRAPPER_CLASS = 'payload-puck-visibility'
 
 /** Class that hides a live-page block on one screen size. */
 export const hideOnClassName = (size: ScreenSize) => `payload-puck-hide-on-${size}`
@@ -47,15 +54,15 @@ const BADGE =
   'padding:1px 6px;border-radius:4px;background:#1f2937;color:#fff;' +
   'font:600 11px/1.5 system-ui,-apple-system,sans-serif;letter-spacing:.02em;white-space:nowrap;'
 
-const GREY = 'opacity:.45;filter:grayscale(1);'
+const GRAY = 'opacity:.45;filter:grayscale(1);'
 
 const OUTLINE = 'outline:2px dashed #9ca3af;outline-offset:-2px;'
 
 /**
- * Canvas rules. A hidden block's content is greyed and outlined and carries a
+ * Canvas rules. A hidden block's content is grayed and outlined and carries a
  * badge. The block element itself is not dimmed, and Puck draws its action bar
  * in a separate overlay, so the toolbar stays at full strength. A block hidden
- * on some screen sizes is badged everywhere and greyed only at those sizes.
+ * on some screen sizes is badged everywhere and grayed only at those sizes.
  */
 export function buildCanvasCss(entries: VisibilityEntry[]): string {
   const rules: string[] = []
@@ -65,10 +72,10 @@ export function buildCanvasCss(entries: VisibilityEntry[]): string {
     const block = `[data-puck-component=${cssString(id)}]`
     rules.push(`${block}::after{content:${cssString(badge)};${BADGE}}`)
     if (visibility.hidden) {
-      rules.push(`${block}>*{${GREY}}`, `${block}{${OUTLINE}}`)
+      rules.push(`${block}>*{${GRAY}}`, `${block}{${OUTLINE}}`)
     } else {
       for (const size of visibility.hideOn) {
-        rules.push(`@media ${SCREEN_MEDIA_QUERIES[size]}{${block}>*{${GREY}}${block}{${OUTLINE}}}`)
+        rules.push(`@media ${SCREEN_MEDIA_QUERIES[size]}{${block}>*{${GRAY}}${block}{${OUTLINE}}}`)
       }
     }
   }

@@ -279,7 +279,9 @@ export const FlexConfig: ComponentConfig = {
     }
 
     // Build Tailwind classes for flex layout
-    // [&>*]:min-w-0 prevents flex children from overflowing (CSS best practice)
+    // [&>*]:min-w-0 prevents flex children from overflowing (CSS best practice).
+    // The second selector reaches a child through show/hide's per-size
+    // display:contents wrapper, which would otherwise take the rule instead
     const contentClasses = cn(
       'flex w-full min-h-[50px]',
       flexDirectionMap[direction],
@@ -287,6 +289,7 @@ export const FlexConfig: ComponentConfig = {
       alignItems && alignItemsMap[alignItems],
       flexWrapMap[wrap],
       '[&>*]:min-w-0',
+      '[&>.payload-puck-visibility>*]:min-w-0',
       contentClass,
     )
 

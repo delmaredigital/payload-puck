@@ -56,18 +56,26 @@ describe('getBlockVisibility / isBlockHidden / isBlockHiddenOn', () => {
     expect(isBlockHiddenOn(b, 'desktop')).toBe(true)
   })
 
+  it('returns a fresh value each time, so callers cannot change shared state', () => {
+    const first = getBlockVisibility(block('a'))
+    first.hideOn.push('phone')
+    first.hidden = true
+    expect(getBlockVisibility(block('a'))).toEqual({ hidden: false, hideOn: [] })
+    expect(getBlockVisibility(block('b'))).not.toBe(getBlockVisibility(block('b')))
+  })
+
   it('treats a block hidden on all three sizes as fully hidden', () => {
     expect(isBlockHidden(block('a', { hideOn: ['phone', 'tablet', 'desktop'] }))).toBe(true)
   })
 })
 
 describe('breakpoints', () => {
-  it('cuts phone / tablet / desktop at 768 and 1024', () => {
+  it('cuts phone / tablet / desktop at 768 and 1024 with no gap between sizes', () => {
     expect(SCREEN_BREAKPOINTS).toEqual({ tablet: 768, desktop: 1024 })
     expect(SCREEN_MEDIA_QUERIES).toEqual({
-      phone: '(max-width: 767.98px)',
-      tablet: '(min-width: 768px) and (max-width: 1023.98px)',
-      desktop: '(min-width: 1024px)',
+      phone: '(width < 768px)',
+      tablet: '(768px <= width < 1024px)',
+      desktop: '(width >= 1024px)',
     })
   })
 })
@@ -121,7 +129,67 @@ describe('walkShownBlocks', () => {
     expect(visited(data)).toEqual(['a@root:default-zone', 'b@a:left', 'r@root:extra'])
   })
 
-  it('tolerates empty or partial data', () => {
+  it('follows slots inside array and object fields, like Puck', () => {
+    const nestedConfig = {
+      components: {
+        Tabs: {
+          fields: {
+            tabs: { type: 'array', arrayFields: { label: { type: 'text' }, content: { type: 'slot' } } },
+            aside: { type: 'object', objectFields: { body: { type: 'slot' } } },
+          },
+          render: () => null,
+        },
+        Box: config.components.Box,
+      },
+    } as unknown as Config
+    const data = {
+      root: { props: {} },
+      content: [{ type: 'Tabs', props: {
+        id: 't',
+        tabs: [{ label: 'One', content: [block('a')] }, { label: 'Two', content: [block('b', { hidden: true }, { content: [block('x')] })] }],
+        aside: { body: [block('c')] },
+      } }],
+    }
+    const seen: string[] = []
+    walkShownBlocks(data, nestedConfig, (b, ctx) => seen.push(`${b.props.id}@${ctx.zone}`))
+    expect(seen).toEqual(['t@root:default-zone', 'a@t:tabs[0].content', 'c@t:aside.body'])
+  })
+
+  it('stops on cyclic legacy zones and skips zone keys without a parent', () => {
+    const data = {
+      root: { props: {} },
+      content: [block('a')],
+      zones: { 'a:inner': [block('a2')], 'a2:inner': [block('a')], nocolon: [block('z')], ':orphan': [block('o')] },
+    }
+    // Each zone is followed once, so the a → a2 → a loop ends
+    expect(visited(data)).toEqual(['a@root:default-zone', 'a2@a:inner', 'a@a2:inner'])
+  })
+
+  it('stops on blocks that contain themselves', () => {
+    const self: any = block('loop')
+    self.props.content = [self]
+    expect(visited({ root: { props: {} }, content: [self] })).toEqual(['loop@root:default-zone'])
+  })
+
+  it('handles very deep nesting without overflowing the stack', () => {
+    let inner: ComponentData = block('leaf')
+    for (let i = 0; i < 20_000; i++) inner = block(`b${i}`, undefined, { content: [inner] })
+    let count = 0
+    walkShownBlocks({ root: { props: {} }, content: [inner] }, config, () => { count++ })
+    expect(count).toBe(20_001)
+  })
+
+  it('never throws, whatever the data or config', () => {
+    const inputs: unknown[] = [null, undefined, 0, 'x', [], {}, { content: 'x' }, { content: [null, 1, 'a', { type: 1 }, { type: 'Box' }, { type: 'Box', props: null }] },
+      { content: [{ type: 'Box', props: { id: 1, content: 'not a list' } }], zones: [] },
+      { content: [], zones: { 'a:b': 'x', 'c:d': [null] } }]
+    const configs: unknown[] = [config, {}, { components: null }, { components: { Box: null } }, { components: { Box: { fields: 'x' } } },
+      { components: { Box: { fields: { content: null, list: { type: 'array', arrayFields: null } } } } }]
+    for (const data of inputs) {
+      for (const cfg of configs) {
+        expect(() => walkShownBlocks(data as any, cfg as any, () => {})).not.toThrow()
+      }
+    }
     expect(visited({})).toEqual([])
     walkShownBlocks(null, config, () => { throw new Error('should not visit') })
   })

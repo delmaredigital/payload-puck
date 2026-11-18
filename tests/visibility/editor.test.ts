@@ -13,8 +13,10 @@ import {
   VisibilityAction,
   VisibilityCanvasStyles,
   VisibilityEditorStyles,
+  OWNER_ATTRIBUTE,
   collectVisibilityEntries,
   composeVisibilityOverrides,
+  visibilityEntriesFor,
   toggleVisibilityAction,
 } from '../../src/visibility/editor.js'
 import { buildCanvasCss, buildOutlineCss, cssString } from '../../src/visibility/css.js'
@@ -75,6 +77,18 @@ describe('composeVisibilityOverrides', () => {
     const [editorStyles, puck] = childrenOf(ui) as ReactElement[]
     expect(editorStyles.type).toBe(VisibilityEditorStyles)
     expect(puck.type).toBe(HostPuck)
+  })
+
+  it("marks each overlay with its block id, keeping a host's componentOverlay", () => {
+    const HostOverlay = ({ children }: { children: ReactNode }) => createElement('div', null, children)
+    const overlayProps = { children: 'overlay', hover: false, isSelected: true, componentId: 'Heading-1', componentType: 'Heading' }
+    for (const host of [undefined, HostOverlay]) {
+      const overlay = composeVisibilityOverrides(host ? { componentOverlay: HostOverlay } : {}).componentOverlay!(overlayProps) as ReactElement
+      const [marker, rest] = childrenOf(overlay) as ReactElement[]
+      expect(marker.props).toEqual({ hidden: true, [OWNER_ATTRIBUTE]: 'Heading-1' })
+      if (host) expect(rest.type).toBe(HostOverlay)
+      else expect(rest).toBe('overlay')
+    }
   })
 
   it('passes children straight through when there is no host override', () => {
@@ -184,7 +198,7 @@ describe('resetProps', () => {
 })
 
 describe('collectVisibilityEntries', () => {
-  it('finds hidden blocks at any depth, including inside hidden blocks', () => {
+  it('finds hidden blocks at any depth, inside hidden blocks and in legacy zones', () => {
     const data = {
       root: { props: {} },
       content: [
@@ -195,10 +209,23 @@ describe('collectVisibilityEntries', () => {
       ],
     } as unknown as Data
     const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id)
+    // A legacy DropZone zone of a top-level block
+    ;(data.content as any[]).push({ type: 'Leaf', props: { id: 'zoneHost' } })
+    ;(data as any).zones = { 'zoneHost:left': [{ type: 'Leaf', props: { id: 'zoned', _visibility: { hidden: true } } }] }
     expect(collectVisibilityEntries(data, config).sort(byId)).toEqual([
       { id: 'box', visibility: { hidden: true, hideOn: [] } },
       { id: 'inner', visibility: { hidden: false, hideOn: ['phone'] } },
+      { id: 'zoned', visibility: { hidden: true, hideOn: [] } },
     ])
+  })
+})
+
+describe('visibilityEntriesFor', () => {
+  it('walks each data object once for both style sheets', () => {
+    const data = { root: { props: {} }, content: [{ type: 'Leaf', props: { id: 'a', _visibility: { hidden: true } } }] } as unknown as Data
+    const first = visibilityEntriesFor(data, config)
+    expect(visibilityEntriesFor(data, config)).toBe(first)
+    expect(visibilityEntriesFor({ ...data }, config)).not.toBe(first)
   })
 })
 
@@ -206,7 +233,7 @@ describe('editor CSS', () => {
   const hidden = { id: 'Heading-1', visibility: { hidden: true, hideOn: [] } }
   const phone = { id: 'Text-2', visibility: { hidden: false, hideOn: ['phone' as const] } }
 
-  it('greys and badges a hidden block through its content, not the block element', () => {
+  it('grays and badges a hidden block through its content, not the block element', () => {
     const css = buildCanvasCss([hidden])
     expect(css).toContain('[data-puck-component="Heading-1"]::after{content:"Hidden";')
     expect(css).toContain('[data-puck-component="Heading-1"]>*{opacity:.45;filter:grayscale(1);}')
@@ -214,10 +241,10 @@ describe('editor CSS', () => {
     expect(css).not.toMatch(/\[data-puck-component="Heading-1"\]\{[^}]*opacity/)
   })
 
-  it('greys a per-size block only at that size but always badges it', () => {
+  it('grays a per-size block only at that size but always badges it', () => {
     const css = buildCanvasCss([phone])
     expect(css).toContain('[data-puck-component="Text-2"]::after{content:"Hidden on phone";')
-    expect(css).toContain('@media (max-width: 767.98px){[data-puck-component="Text-2"]>*{opacity:.45;')
+    expect(css).toContain('@media (width < 768px){[data-puck-component="Text-2"]>*{opacity:.45;')
     expect(css.split('\n').filter((rule) => rule.includes('opacity')).every((rule) => rule.startsWith('@media'))).toBe(true)
   })
 

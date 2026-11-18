@@ -5,7 +5,7 @@
  * iframe). Covers what a DOM can show: hidden blocks stay rendered, selectable
  * and wired for drag; the action bar toggle; undo/redo; duplicate; the styles
  * keyed on Puck's markup; and a host action bar override kept in place.
- * Visual checks (greying, badge placement, action bar not dimmed) need a real
+ * Visual checks (graying, badge placement, action bar not dimmed) need a real
  * browser.
  */
 
@@ -17,8 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { withBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
 import { composeVisibilityOverrides } from '../../src/visibility/editor.js'
 
-const config = withBlockVisibility({
-  components: {
+const components = {
     Box: {
       fields: { content: { type: 'slot' } },
       render: ({ content: Content }: { content: () => ReactNode }) => createElement('section', null, createElement(Content)),
@@ -27,8 +26,8 @@ const config = withBlockVisibility({
       fields: { text: { type: 'text' } },
       render: ({ text }: { text: string }) => createElement('p', null, text),
     },
-  },
-} as unknown as Config)
+}
+const config = withBlockVisibility({ components } as unknown as Config)
 
 const initialData = (): Data => ({
   root: { props: {} },
@@ -49,7 +48,7 @@ function Capture() {
   return null
 }
 
-function mount(hostOverrides: Partial<Overrides> = {}) {
+function mount(hostOverrides: Partial<Overrides> = {}, puckConfig: Config = config) {
   const overrides = composeVisibilityOverrides({
     ...hostOverrides,
     // A host `puck` override: also proves ours wraps rather than replaces it
@@ -57,7 +56,7 @@ function mount(hostOverrides: Partial<Overrides> = {}) {
   })
   act(() => {
     root.render(createElement(Puck, {
-      config,
+      config: puckConfig,
       data: initialData(),
       overrides,
       plugins: [outlinePlugin()],
@@ -147,6 +146,50 @@ describe('block visibility in the Puck editor', () => {
     const [original, copy] = (data().content[0].props as { content: ComponentData[] }).content
     expect(copy.props.id).not.toBe(original.props.id)
     expect(copy.props._visibility).toEqual({ hidden: true })
+  })
+
+  it("acts on the block whose bar it is in, not the selected one", () => {
+    mount()
+    select('shown')
+    // Hovering another block gives it an overlay and action bar too
+    act(() => {
+      document.querySelector('[data-puck-component="hidden"]')!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    const bars = [...document.querySelectorAll('[data-puck-overlay]')]
+    const hoveredBar = bars.find((bar) => bar.querySelector('[data-payload-puck-visibility-owner="hidden"]'))
+    const selectedBar = bars.find((bar) => bar.querySelector('[data-payload-puck-visibility-owner="shown"]'))
+    expect(hoveredBar && selectedBar).toBeTruthy()
+    expect(hoveredBar!.querySelector('button[title="Show block"]')).not.toBeNull()
+    expect(selectedBar!.querySelector('button[title="Hide block"]')).not.toBeNull()
+
+    act(() => hoveredBar!.querySelector<HTMLButtonElement>('button[title="Show block"]')!.click())
+    expect(leaf('hidden')?.props).not.toHaveProperty('_visibility')
+    expect(leaf('shown')?.props).not.toHaveProperty('_visibility')
+  })
+
+  it('offers no toggle on a block that may not be edited', () => {
+    const locked = withBlockVisibility({
+      components: { ...components, Leaf: { ...components.Leaf, permissions: { edit: false } } },
+    } as unknown as Config)
+    mount({}, locked)
+    select('shown')
+    expect(button('Duplicate')).not.toBeNull()
+    expect(button('Hide block')).toBeNull()
+  })
+
+  it('honors resolvePermissions per block', async () => {
+    const perBlock = withBlockVisibility({
+      components: {
+        ...components,
+        Leaf: { ...components.Leaf, resolvePermissions: (data: ComponentData) => ({ edit: data.props.id !== 'shown' }) },
+      },
+    } as unknown as Config)
+    mount({}, perBlock)
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 50)))
+    select('shown')
+    expect(button('Hide block')).toBeNull()
+    select('hidden')
+    expect(button('Show block')).not.toBeNull()
   })
 
   it("keeps a host's own action bar, with the toggle inside it", () => {
