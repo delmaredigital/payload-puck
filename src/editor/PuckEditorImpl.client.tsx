@@ -752,7 +752,8 @@ export function PuckEditorImpl({
         </IframeWrapper>
       ),
       // Merge custom overrides; composeVisibilityOverrides then adds show/hide
-      // to the resulting actionBar, iframe and puck overrides without replacing them
+      // to the resulting actionBar, componentOverlay, iframe and puck
+      // overrides without replacing them
       ...customOverrides,
     }),
     [

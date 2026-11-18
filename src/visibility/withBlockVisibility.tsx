@@ -13,6 +13,10 @@ import { LIVE_CSS, LIVE_STYLE_HREF, VISIBILITY_WRAPPER_CLASS, hideOnClassName } 
 import { VISIBILITY_PROP, getBlockVisibility, type BlockVisibility } from './index.js'
 import { warnOnce } from '../config/merge.js'
 
+// Re-exported so this module's declarations import './index.js', which
+// carries the `blockVisibility` typing for component configs
+export type { BlockVisibilityComponentOptions } from './index.js'
+
 export interface BlockVisibilityOptions {
   /**
    * Offer hiding per screen size (phone / tablet / desktop). Set false for
@@ -44,6 +48,34 @@ const renderWrappers = new WeakMap<object, { inner: ComponentType<any>; screenSi
 const renderFieldsWrappers = new WeakMap<object, RenderFieldsFn>()
 const resolveFieldsWrappers = new WeakMap<object, { inner: ResolveFieldsFn; field: VisibilityField }>()
 
+/*
+ * Memos: the same host function or component always gets the same wrapper.
+ * A new wrapper is a new component type to React, which would remount the
+ * block (and everything inside it) and lose its state.
+ */
+const renderMemo = new WeakMap<object, Map<string, ComponentType<any>>>()
+const renderFieldsMemo = new WeakMap<object, RenderFieldsFn>()
+const resolveFieldsMemo = new WeakMap<object, Map<boolean, ResolveFieldsFn>>()
+type ComponentMemo = { wrapped: ComponentConfig<any>; parts: unknown[] }
+const componentMemo = new WeakMap<object, Map<boolean, ComponentMemo>>()
+
+/** The pieces of a component the wrapped copy depends on. */
+const partsOf = (component: ComponentConfig<any>): unknown[] => [
+  component.render,
+  component.fields,
+  component.renderFields,
+  component.resolveFields,
+  component.blockVisibility?.screenSizes,
+]
+
+function memo<K extends object, S, V>(map: WeakMap<K, Map<S, V>>, key: K, sub: S, make: () => V): V {
+  let byKey = map.get(key)
+  if (!byKey) map.set(key, (byKey = new Map()))
+  let value = byKey.get(sub)
+  if (value === undefined) byKey.set(sub, (value = make()))
+  return value
+}
+
 function visibilityField(screenSizes: boolean): VisibilityField {
   let field = fieldsBySizes.get(screenSizes)
   if (!field) {
@@ -69,6 +101,7 @@ export function isBlockVisibilityField(field: unknown): boolean {
 /**
  * True when the component renders through show/hide: its `render` is ours.
  * A copy that replaced `render` (e.g. `{ ...wrapped, render: Mine }`) is not.
+ * @internal Not exported from any package entry point.
  */
 export function hasBlockVisibility(component: Pick<ComponentConfig, 'render'> | undefined): boolean {
   return !!component?.render && renderWrappers.has(component.render)
@@ -81,6 +114,10 @@ export function hasBlockVisibility(component: Pick<ComponentConfig, 'render'> | 
 type RenderProps = Record<string, unknown> & { puck?: { isEditing?: boolean } }
 
 function wrapRender(Render: ComponentType<any>, screenSizes: boolean, requested: boolean, name: string) {
+  return memo(renderMemo, Render, `${screenSizes}|${requested}`, () => createRenderWrapper(Render, screenSizes, requested, name))
+}
+
+function createRenderWrapper(Render: ComponentType<any>, screenSizes: boolean, requested: boolean, name: string) {
   function BlockVisibilityRender(props: RenderProps): ReactNode {
     // In the editor a hidden block stays fully rendered and editable; the
     // editor grays it with CSS keyed on Puck's own block attribute
@@ -112,6 +149,8 @@ function wrapRender(Render: ComponentType<any>, screenSizes: boolean, requested:
 
 /** Pins the visibility control above whatever layout the block uses. */
 function wrapRenderFields(RenderFields: RenderFieldsFn): RenderFieldsFn {
+  const known = renderFieldsMemo.get(RenderFields)
+  if (known) return known
   const wrapper: RenderFieldsFn = function BlockVisibilityRenderFields({ fields, ...rest }) {
     const { [VISIBILITY_PROP]: control, ...others } = fields as Record<string, ReactNode>
     return createElement(
@@ -122,6 +161,7 @@ function wrapRenderFields(RenderFields: RenderFieldsFn): RenderFieldsFn {
     )
   }
   renderFieldsWrappers.set(wrapper, RenderFields)
+  renderFieldsMemo.set(RenderFields, wrapper)
   return wrapper
 }
 
@@ -133,14 +173,16 @@ function withVisibilityField(fields: Fields<any> | undefined, field: VisibilityF
 
 /** Puts the control back, first, when the block's own resolveFields returns new fields. */
 function wrapResolveFields(resolveFields: ResolveFieldsFn, field: VisibilityField): ResolveFieldsFn {
-  const wrapper: ResolveFieldsFn = (data, params) => {
-    const result = resolveFields(data, params)
-    return result instanceof Promise
-      ? result.then((fields) => withVisibilityField(fields, field))
-      : withVisibilityField(result, field)
-  }
-  resolveFieldsWrappers.set(wrapper, { inner: resolveFields, field })
-  return wrapper
+  return memo(resolveFieldsMemo, resolveFields, fieldSizes.get(field)!, () => {
+    const wrapper: ResolveFieldsFn = (data, params) => {
+      const result = resolveFields(data, params)
+      return result instanceof Promise
+        ? result.then((fields) => withVisibilityField(fields, field))
+        : withVisibilityField(result, field)
+    }
+    resolveFieldsWrappers.set(wrapper, { inner: resolveFields, field })
+    return wrapper
+  })
 }
 
 // -----------------------------------------------------------------------------
@@ -154,6 +196,11 @@ function withComponentVisibility(name: string, component: ComponentConfig<any>, 
     return component
   }
 
+  // Reuse the copy made from this same component, unless it was changed since
+  const known = componentMemo.get(component)?.get(requested)
+  const parts = partsOf(component)
+  if (known && known.parts.every((part, i) => part === parts[i])) return known.wrapped
+
   const screenSizes = requested && component.blockVisibility?.screenSizes !== false
   const field = visibilityField(screenSizes)
   const render = renderWrappers.get(component.render)
@@ -165,6 +212,7 @@ function withComponentVisibility(name: string, component: ComponentConfig<any>, 
     render?.screenSizes === screenSizes &&
     render.requested === requested &&
     existing === field &&
+    Object.keys(component.fields ?? {})[0] === VISIBILITY_PROP &&
     (!component.renderFields || renderFieldsWrappers.has(component.renderFields)) &&
     (!component.resolveFields || resolve?.field === field)
   if (done) return component
@@ -175,7 +223,9 @@ function withComponentVisibility(name: string, component: ComponentConfig<any>, 
     : undefined
   const innerResolveFields = component.resolveFields ? (resolve?.inner ?? component.resolveFields) : undefined
 
-  return {
+  // The wrappers come from the memos, so a rebuilt copy (e.g. only to put the
+  // field back first) keeps the same render and React keeps the block mounted
+  const wrapped: ComponentConfig<any> = {
     ...component,
     // First in the object so Puck's default field order puts it on top
     fields: withVisibilityField(component.fields, field),
@@ -183,6 +233,9 @@ function withComponentVisibility(name: string, component: ComponentConfig<any>, 
     ...(innerResolveFields ? { resolveFields: wrapResolveFields(innerResolveFields, field) } : {}),
     render: wrapRender(innerRender, screenSizes, requested, name) as unknown as ComponentConfig['render'],
   }
+  if (!componentMemo.has(component)) componentMemo.set(component, new Map())
+  componentMemo.get(component)!.set(requested, { wrapped, parts })
+  return wrapped
 }
 
 /** The screenSizes setting the config's blocks were given, if any were. */
@@ -194,8 +247,6 @@ function inheritedScreenSizes(config: Config<any>): boolean | undefined {
   return undefined
 }
 
-const cache = new WeakMap<object, Map<boolean, Config>>()
-
 /**
  * Returns a config in which every block (not the root) can be shown or hidden:
  *
@@ -204,17 +255,16 @@ const cache = new WeakMap<object, Map<boolean, Config>>()
  *   and a block hidden on some screen sizes is hidden there with CSS;
  * - in the editor, hidden blocks stay rendered and editable.
  *
- * Safe to call repeatedly, and cached per config object. Blocks copied from a
- * wrapped config with their own `render` (or `renderFields` / `resolveFields`)
- * are wrapped again. `PuckEditor`, `PageRenderer`, `HybridPageRenderer` and the
+ * Safe to call repeatedly. The same block always gets the same wrapped render,
+ * so passing a new config object each render doesn't remount blocks; nothing
+ * is cached per config, so blocks added to a config later are covered too.
+ * Blocks copied from a wrapped config with their own `render` (or
+ * `renderFields` / `resolveFields`) are wrapped again. `PuckEditor`, `PageRenderer`, `HybridPageRenderer` and the
  * email renderers apply it for you; call it yourself only when you pass a
  * config straight to Puck's `<Render>`.
  */
 export function withBlockVisibility<C extends Config<any>>(config: C, options: BlockVisibilityOptions = {}): C {
   const requested = options.screenSizes ?? inheritedScreenSizes(config) ?? true
-  let byOption = cache.get(config)
-  const cached = byOption?.get(requested)
-  if (cached) return cached as C
 
   const components: Record<string, ComponentConfig<any>> = {}
   let changed = false
@@ -223,10 +273,5 @@ export function withBlockVisibility<C extends Config<any>>(config: C, options: B
     if (components[name] !== component) changed = true
   }
   // Nothing to change (no blocks, or all already done): keep the config's identity
-  const result = changed ? ({ ...config, components } as C) : config
-
-  if (!byOption) cache.set(config, (byOption = new Map()))
-  byOption.set(requested, result)
-  if (result !== config) cache.set(result, new Map([[requested, result]]))
-  return result
+  return changed ? ({ ...config, components } as C) : config
 }

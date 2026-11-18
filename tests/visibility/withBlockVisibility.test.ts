@@ -9,7 +9,7 @@ import { Render, type ComponentConfig, type Config, type Data } from '@puckedito
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { hasBlockVisibility, withBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
-import { LIVE_STYLE_HREF } from '../../src/visibility/css.js'
+import { LIVE_CSS, LIVE_STYLE_HREF } from '../../src/visibility/css.js'
 import { resetIntegrationWarningsForTests } from '../../src/config/merge.js'
 import { createFieldLayout } from '../../src/fields/fieldLayout.js'
 import { emailEditorConfig } from '../../src/config/config.email.editor.js'
@@ -65,11 +65,43 @@ describe('withBlockVisibility — config', () => {
     expect(box.fields).toHaveProperty('content', { type: 'slot' })
   })
 
-  it('is idempotent and cached', () => {
-    expect(withBlockVisibility(hostConfig)).toBe(config)
+  it('is idempotent: a wrapped config comes back unchanged', () => {
     expect(withBlockVisibility(config)).toBe(config)
-    const again = withBlockVisibility({ ...config })
-    expect(again.components.Leaf).toBe(config.components.Leaf)
+    expect(withBlockVisibility({ ...config }).components).toBe(config.components)
+  })
+
+  it('gives every config built from the same blocks the same wrapped blocks', () => {
+    // e.g. a host passing `{ ...baseConfig, root }` inline on every render
+    const a = withBlockVisibility({ ...hostConfig })
+    const b = withBlockVisibility({ ...hostConfig })
+    expect(a).not.toBe(b)
+    expect(a.components.Leaf).toBe(b.components.Leaf)
+    expect(a.components.Box).toBe(b.components.Box)
+  })
+
+  it('gives a fresh copy of the same block the same render', () => {
+    const copy = withBlockVisibility({ components: { Leaf: { ...hostConfig.components.Leaf } } } as unknown as Config)
+    expect((copy.components.Leaf as ComponentConfig).render).toBe((config.components.Leaf as ComponentConfig).render)
+  })
+
+  it('wraps blocks added to a config after it was first wrapped', () => {
+    const mutable = { components: { ...hostConfig.components } } as unknown as Config
+    withBlockVisibility(mutable)
+    ;(mutable.components as Record<string, ComponentConfig>).Late = {
+      render: () => createElement('b', null, 'late'),
+    } as unknown as ComponentConfig
+    const later = withBlockVisibility(mutable)
+    expect(hasBlockVisibility(later.components.Late as ComponentConfig)).toBe(true)
+    expect(render(later, page([{ type: 'Late', props: { id: 'l' } }, { type: 'Late', props: { id: 'h', _visibility: { hidden: true } } }])))
+      .toBe('<div><b>late</b></div>')
+  })
+
+  it('puts the control back first on a copy that adds fields before it, keeping its render', () => {
+    const leaf = config.components.Leaf as ComponentConfig
+    const copy = { ...leaf, fields: { extra: { type: 'text' }, ...leaf.fields } } as unknown as ComponentConfig
+    const rewrapped = withBlockVisibility({ components: { Leaf: copy } } as unknown as Config).components.Leaf as ComponentConfig
+    expect(Object.keys(rewrapped.fields!)).toEqual(['_visibility', 'extra', 'text'])
+    expect(rewrapped.render).toBe(leaf.render)
   })
 
   it('leaves a block that defines its own _visibility field alone, with a warning', () => {
@@ -140,7 +172,12 @@ describe('withBlockVisibility — live page', () => {
     expect(html).toContain('<div class="payload-puck-visibility payload-puck-hide-on-phone" style="display:contents"><p>No phone</p></div>')
     // React 19 dedupes the hoistable stylesheet by href
     expect(html.match(new RegExp(`data-href="${LIVE_STYLE_HREF}"|href="${LIVE_STYLE_HREF}"`, 'g'))?.length ?? 0).toBeLessThanOrEqual(1)
-    expect(html).toContain('@media (width < 768px){.payload-puck-hide-on-phone{display:none!important}}')
+    expect(html).toContain('@media (max-width: 767.98px){.payload-puck-hide-on-phone{display:none!important}}')
+  })
+
+  it('uses media queries older Safari understands (no range syntax)', () => {
+    expect(LIVE_CSS).not.toMatch(/width\s*[<>]/)
+    expect(LIVE_CSS).toContain('@media (min-width: 768px) and (max-width: 1023.98px){.payload-puck-hide-on-tablet')
   })
 
   it('treats all three sizes as Hidden', () => {

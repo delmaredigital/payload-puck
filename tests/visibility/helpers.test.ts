@@ -12,6 +12,7 @@ import {
   SCREEN_MEDIA_QUERIES,
   SCREEN_SIZES,
   describeVisibility,
+  type BlockVisibility,
   getBlockVisibility,
   isBlockHidden,
   isBlockHiddenOn,
@@ -64,19 +65,28 @@ describe('getBlockVisibility / isBlockHidden / isBlockHiddenOn', () => {
     expect(getBlockVisibility(block('b'))).not.toBe(getBlockVisibility(block('b')))
   })
 
+  it('types hidden as true or absent, matching the stored contract', () => {
+    // @ts-expect-error hidden is never false: a shown block stores nothing
+    const invalid: BlockVisibility = { hidden: false }
+    const valid: BlockVisibility = { hidden: true, hideOn: ['phone'] }
+    expect([invalid, valid]).toHaveLength(2)
+  })
+
   it('treats a block hidden on all three sizes as fully hidden', () => {
     expect(isBlockHidden(block('a', { hideOn: ['phone', 'tablet', 'desktop'] }))).toBe(true)
   })
 })
 
 describe('breakpoints', () => {
-  it('cuts phone / tablet / desktop at 768 and 1024 with no gap between sizes', () => {
+  it('cuts phone / tablet / desktop at 768 and 1024 in the classic form older Safari reads', () => {
     expect(SCREEN_BREAKPOINTS).toEqual({ tablet: 768, desktop: 1024 })
     expect(SCREEN_MEDIA_QUERIES).toEqual({
-      phone: '(width < 768px)',
-      tablet: '(768px <= width < 1024px)',
-      desktop: '(width >= 1024px)',
+      phone: '(max-width: 767.98px)',
+      tablet: '(min-width: 768px) and (max-width: 1023.98px)',
+      desktop: '(min-width: 1024px)',
     })
+    // No range syntax anywhere: Safari before 16.4 drops those rules
+    for (const query of Object.values(SCREEN_MEDIA_QUERIES)) expect(query).not.toMatch(/[<>]/)
   })
 })
 

@@ -244,7 +244,7 @@ describe('editor CSS', () => {
   it('grays a per-size block only at that size but always badges it', () => {
     const css = buildCanvasCss([phone])
     expect(css).toContain('[data-puck-component="Text-2"]::after{content:"Hidden on phone";')
-    expect(css).toContain('@media (width < 768px){[data-puck-component="Text-2"]>*{opacity:.45;')
+    expect(css).toContain('@media (max-width: 767.98px){[data-puck-component="Text-2"]>*{opacity:.45;')
     expect(css.split('\n').filter((rule) => rule.includes('opacity')).every((rule) => rule.startsWith('@media'))).toBe(true)
   })
 
@@ -254,6 +254,11 @@ describe('editor CSS', () => {
     expect(css).toContain('[data-puck-layer-tree-id="Heading-1"]::before{content:"Hidden";')
     expect(css).toContain('[data-puck-layer-tree-id="Text-2"]{position:relative;}')
     expect(css).toContain('[data-puck-layer-tree-id="Text-2"]::before{content:"Hidden on phone";')
+  })
+
+  it('uses media queries older Safari understands (no range syntax)', () => {
+    expect(buildCanvasCss([phone, { ...phone, id: 'b', visibility: { hidden: false, hideOn: ['tablet', 'desktop'] } }]))
+      .not.toMatch(/width\s*[<>]/)
   })
 
   it('emits nothing when no block is hidden', () => {

@@ -85,6 +85,21 @@ export function toggleVisibilityAction(
   }
 }
 
+type PuckLookups = {
+  getSelectorForId: (id: string) => unknown
+  getItemById: (id: string) => ComponentData | undefined
+}
+
+/**
+ * The block an action bar belongs to, or undefined if it no longer exists.
+ * The owner id comes from the DOM and can briefly name a block that was just
+ * removed (delete, undo). Puck's getItemById throws for an unknown id, so the
+ * node is checked first: getSelectorForId returns undefined for a missing one.
+ */
+export function ownerBlock(puck: PuckLookups, owner: string | null): ComponentData | undefined {
+  return owner && puck.getSelectorForId(owner) ? puck.getItemById(owner) : undefined
+}
+
 /** Marks which block an overlay (and so its action bar) belongs to. */
 export const OWNER_ATTRIBUTE = 'data-payload-puck-visibility-owner'
 
@@ -108,7 +123,7 @@ export function VisibilityAction() {
     if (id !== owner) setOwner(id)
   })
 
-  const block = usePuck((s) => (owner ? s.getItemById(owner) : undefined))
+  const block = usePuck((s) => ownerBlock(s, owner))
   const canEdit = usePuck((s) => (block ? s.getPermissions({ item: block }).edit !== false : false))
   const dispatch = usePuck((s) => s.dispatch)
   const getSelectorForId = usePuck((s) => s.getSelectorForId)

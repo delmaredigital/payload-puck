@@ -22,6 +22,7 @@ export type { EmailRendererProps } from './EmailRenderer.js'
 export { renderToEmailHtml } from './renderToEmailHtml.js'
 // Show/hide for email blocks (Shown/Hidden only). The email renderers apply it.
 export { withBlockVisibility } from '../visibility/withBlockVisibility.js'
+export type { BlockVisibilityOptions, BlockVisibilityComponentOptions } from '../visibility/withBlockVisibility.js'
 export type { RenderToEmailHtmlOptions } from './renderToEmailHtml.js'
 
 // Document shell (for advanced customization)

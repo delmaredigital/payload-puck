@@ -69,13 +69,15 @@ export const SCREEN_BREAKPOINTS = {
 } as const
 
 /**
- * Media query matching each screen size, in range syntax so the sizes meet
- * exactly: no width falls between two sizes.
+ * Media query matching each screen size. Classic min/max form rather than
+ * range syntax (`width < 768px`), which Safari before 16.4 ignores: there the
+ * rules would be dropped and blocks hidden per size would show everywhere.
+ * The `.98` upper bounds leave no gap on fractional (zoomed) widths.
  */
 export const SCREEN_MEDIA_QUERIES: Readonly<Record<ScreenSize, string>> = Object.freeze({
-  phone: `(width < ${SCREEN_BREAKPOINTS.tablet}px)`,
-  tablet: `(${SCREEN_BREAKPOINTS.tablet}px <= width < ${SCREEN_BREAKPOINTS.desktop}px)`,
-  desktop: `(width >= ${SCREEN_BREAKPOINTS.desktop}px)`,
+  phone: `(max-width: ${SCREEN_BREAKPOINTS.tablet - 0.02}px)`,
+  tablet: `(min-width: ${SCREEN_BREAKPOINTS.tablet}px) and (max-width: ${SCREEN_BREAKPOINTS.desktop - 0.02}px)`,
+  desktop: `(min-width: ${SCREEN_BREAKPOINTS.desktop}px)`,
 })
 
 /**
@@ -88,8 +90,8 @@ export const SCREEN_MEDIA_QUERIES: Readonly<Record<ScreenSize, string>> = Object
  * fully hidden. Prefer the helpers below, which apply those rules.
  */
 export interface BlockVisibility {
-  /** Hidden everywhere. Takes precedence over `hideOn`. */
-  hidden?: boolean
+  /** Hidden everywhere. Takes precedence over `hideOn`. Only ever `true` or absent. */
+  hidden?: true
   /** Screen sizes the block is hidden on (with CSS; it stays in the HTML). */
   hideOn?: ScreenSize[]
 }

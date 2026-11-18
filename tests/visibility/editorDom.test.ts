@@ -9,13 +9,13 @@
  * browser.
  */
 
-import { act, createElement, Fragment, type ReactNode } from 'react'
+import { act, createElement, Fragment, useEffect, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { Puck, outlinePlugin, useGetPuck, type ComponentData, type Config, type Data, type Overrides } from '@puckeditor/core'
+import { Puck, Render, outlinePlugin, useGetPuck, type ComponentData, type Config, type Data, type Overrides } from '@puckeditor/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { withBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
-import { composeVisibilityOverrides } from '../../src/visibility/editor.js'
+import { composeVisibilityOverrides, ownerBlock } from '../../src/visibility/editor.js'
 
 const components = {
     Box: {
@@ -93,6 +93,7 @@ afterEach(() => {
   act(() => root.unmount())
   container.remove()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
 })
 
 describe('block visibility in the Puck editor', () => {
@@ -202,5 +203,86 @@ describe('block visibility in the Puck editor', () => {
     expect(host!.querySelector('button[title="Hide block"]')).not.toBeNull()
     // Puck's own actions are still passed in
     expect(host!.querySelector('button[title="Duplicate"]')).not.toBeNull()
+  })
+
+  describe('when the block a toggle belongs to goes away', () => {
+    // A throw inside Puck's store selectors surfaces as a React error report.
+    // Puck logs unrelated noise here (localStorage, act warnings), so look for
+    // the getItemById failure itself or React's report of an uncaught error
+    const errors = () =>
+      (console.error as unknown as { mock: { calls: unknown[][] } }).mock.calls
+        .map((args) => args.map((arg) => (arg instanceof Error ? `${arg.name}: ${arg.message}` : String(arg))).join(' '))
+        .filter((line) => /reading 'data'|error occurred in|Uncaught/i.test(line))
+    beforeEach(() => { vi.spyOn(console, 'error').mockImplementation(() => {}) })
+
+    function hover(id: string) {
+      act(() => {
+        document.querySelector(`[data-puck-component="${id}"]`)!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+      })
+    }
+
+    it("looks up a deleted block without throwing (Puck's getItemById would)", () => {
+      mount()
+      act(() => getPuck().dispatch({ type: 'remove', index: 0, zone: 'box:content' }))
+      // The real Puck API: getItemById throws for an id that is gone...
+      expect(() => getPuck().getItemById('hidden')).toThrow()
+      // ...so the toggle's lookup must not call it for one
+      expect(ownerBlock(getPuck(), 'hidden')).toBeUndefined()
+      expect(ownerBlock(getPuck(), null)).toBeUndefined()
+      expect(ownerBlock(getPuck(), 'shown')?.props.id).toBe('shown')
+    })
+
+    // React catches errors thrown by store selectors while notifying, and
+    // these bars unmount with their blocks, so the scenarios below pass even
+    // without the guard. They pin that the real flows stay error-free.
+    it('does not throw when the hovered block is deleted', () => {
+      mount()
+      select('shown')
+      hover('hidden')
+      expect(() => act(() => getPuck().dispatch({ type: 'remove', index: 0, zone: 'box:content' }))).not.toThrow()
+      expect(leaf('hidden')).toBeUndefined()
+      expect(errors()).toEqual([])
+    })
+
+    it('does not throw when the selected block is deleted', () => {
+      mount()
+      select('shown')
+      expect(button('Hide block')).not.toBeNull()
+      expect(() => act(() => getPuck().dispatch({ type: 'remove', index: 1, zone: 'box:content' }))).not.toThrow()
+      expect(leaf('shown')).toBeUndefined()
+      expect(errors()).toEqual([])
+    })
+
+    it('does not throw when undo removes a newly inserted, selected block', async () => {
+      mount()
+      await recorded()
+      act(() => getPuck().dispatch({
+        type: 'insert', componentType: 'Leaf', destinationIndex: 0, destinationZone: 'box:content', id: 'added',
+      }))
+      select('added')
+      await recorded()
+      expect(button('Hide block')).not.toBeNull()
+      expect(() => act(() => getPuck().history.back())).not.toThrow()
+      expect(leaf('added')).toBeUndefined()
+      expect(errors()).toEqual([])
+    })
+  })
+})
+
+describe('wrapped blocks on a live page', () => {
+  it('stay mounted when the host passes a new config object on every render', () => {
+    let mounts = 0
+    function Stateful() {
+      useEffect(() => { mounts++ }, [])
+      return createElement('p', null, 'stateful')
+    }
+    const base = { components: { Stateful: { render: Stateful } } } as unknown as Config
+    const data = { root: { props: {} }, content: [{ type: 'Stateful', props: { id: 's' } }] } as unknown as Data
+
+    act(() => root.render(createElement(Render, { config: withBlockVisibility({ ...base }), data })))
+    act(() => root.render(createElement(Render, { config: withBlockVisibility({ ...base }), data })))
+    act(() => root.render(createElement(Render, { config: withBlockVisibility({ ...base, root: {} }), data })))
+    expect(container.textContent).toBe('stateful')
+    expect(mounts).toBe(1)
   })
 })
