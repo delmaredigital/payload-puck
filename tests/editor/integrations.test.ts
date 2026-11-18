@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PuckEditor, type PuckEditorProps } from '../../src/editor/PuckEditor.js'
 import { PuckConfigProvider, usePuckConfig, type PuckConfigContextValue } from '../../src/views/PuckConfigContext.js'
 import { applyIntegrations, resetIntegrationWarningsForTests, type PuckIntegration } from '../../src/config/merge.js'
+import { blockVisibilitySource, hasBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
 import type { ThemeConfig } from '../../src/theme/types.js'
 
 const capture = vi.hoisted(() => ({ props: null as PuckEditorProps | null }))
@@ -17,6 +18,12 @@ vi.mock('next/dynamic', () => ({
 }))
 
 const dummy: ComponentConfig<any> = { render: () => createElement('div') }
+
+/** The editor adds show/hide to every block; compare the block it was made from. */
+function source(component: ComponentConfig<any> | undefined) {
+  expect(hasBlockVisibility(component)).toBe(true)
+  return blockVisibilitySource(component!)
+}
 const config: Config = { components: {} }
 const initialData = { content: [], root: { props: {} } }
 const props: PuckEditorProps = { pageId: '1', pageTitle: 'Dummy', pageSlug: 'dummy', initialData, config }
@@ -80,7 +87,7 @@ describe('editor integrations', () => {
     }])
 
     expect(context.config).toBe(config)
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expect(source(result.config?.components.DummyBlock)).toBe(dummy)
     expect(config.components).not.toHaveProperty('DummyBlock')
   })
 
@@ -109,10 +116,10 @@ describe('editor integrations', () => {
     const children = location === 'slot'
       ? parent.props.content
       : result.initialData.zones!['template-1:content']
-    expect(result.config?.components[parent.type]).toBe(template)
+    expect(source(result.config?.components[parent.type])).toBe(template)
     expect(children).toEqual([nested])
     for (const child of children) {
-      expect(result.config?.components[child.type]).toBe(dummy)
+      expect(source(result.config?.components[child.type])).toBe(dummy)
     }
   })
 
@@ -165,7 +172,7 @@ describe('editor integrations', () => {
       name: 'dummy', components: { DummyBlock: dummy }, plugins: [{ name: 'bundle' }],
     }], [{ name: 'context' }])
     expect(result.plugins).toBe(false)
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expect(source(result.config?.components.DummyBlock)).toBe(dummy)
     expect(console.warn).toHaveBeenCalledExactlyOnceWith(
       '[payload-puck] integration "dummy": plugins disabled by plugins={false}; skipped',
     )
@@ -236,7 +243,7 @@ describe('editor integrations', () => {
     expect(context).not.toBe(firstContext)
     expect(context.integrations).toBe(next)
     expect(result.config).not.toBe(firstConfig)
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expect(source(result.config?.components.DummyBlock)).toBe(dummy)
     expect(result.plugins).toEqual([{ name: 'next' }])
   })
 
@@ -245,7 +252,7 @@ describe('editor integrations', () => {
     const result = render({ integrations: [{ name: 'prop', components: { DummyBlock: other } }] }, [
       { name: 'context', components: { DummyBlock: dummy } },
     ])
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expect(source(result.config?.components.DummyBlock)).toBe(dummy)
     expect(console.warn).toHaveBeenCalledTimes(1)
   })
 

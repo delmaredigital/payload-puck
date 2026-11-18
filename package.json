@@ -91,6 +91,11 @@
       "import": "./dist/components/email/exports.js",
       "types": "./dist/components/email/exports.d.ts",
       "default": "./dist/components/email/exports.js"
+    },
+    "./visibility": {
+      "import": "./dist/visibility/index.js",
+      "types": "./dist/visibility/index.d.ts",
+      "default": "./dist/visibility/index.js"
     }
   },
   "files": [

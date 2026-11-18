@@ -15,6 +15,7 @@ import { usePuckConfig } from '../views/PuckConfigContext.js'
 import { injectAiConfig, hasAiConfig } from '../ai/utils/injectAiConfig.js'
 import { comprehensiveComponentAiConfig } from '../ai/presets/index.js'
 import { applyIntegrations, warnOnce, type PuckIntegration } from '../config/merge.js'
+import { withBlockVisibility } from '../visibility/withBlockVisibility.js'
 
 // Dynamic import with ssr: false to prevent hydration mismatch
 // Puck generates random IDs for drag-and-drop that differ between server/client
@@ -484,6 +485,9 @@ export function PuckEditor({
       ...(integrationsFromContext || []),
       ...(integrations || []),
     ])
+
+    // Every block, including host and integration blocks, can be shown or hidden
+    config = withBlockVisibility(config)
 
     // Inject AI component instructions when AI is enabled
     if (enableAi && !hasAiConfig(config)) {

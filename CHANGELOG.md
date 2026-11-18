@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Show and hide any block.** Every block, including your own and integration blocks, gets a Visibility setting at the top of its sidebar: Shown / Hidden, plus Hide on phone, tablet or desktop (phone below 768px, tablet 768–1023px, desktop 1024px and up). The action bar has a Hide block / Show block button. In the editor a hidden block stays rendered and editable, greyed out with a "Hidden" or "Hidden on phone" badge, and its Outline row is tagged. On the live page a Hidden block renders nothing (its children don't run); a block hidden on some sizes is hidden with CSS and is still in the HTML. Ticking all three sizes is the same as Hidden. Stored as `props._visibility`; a missing value means shown, so no migration. Email blocks get Shown/Hidden only. `PuckEditor`, `PageRenderer`, `HybridPageRenderer`, `EmailRenderer` and `renderToEmailHtml` apply it automatically; wrap configs passed straight to Puck's `<Render>` with `withBlockVisibility` (from `/render` or `/email`).
+- **`@delmaredigital/payload-puck/visibility`.** Server-safe helpers for other code and plugins: `getBlockVisibility`, `isBlockHidden`, `isBlockHiddenOn`, `walkShownBlocks`, and the `SCREEN_SIZES`, `SCREEN_BREAKPOINTS` and `SCREEN_MEDIA_QUERIES` constants.
+
+### Changed
+
+- **Reset to defaults keeps a block's visibility.**
+- **`_visibility` is a reserved prop name.** A block that defines its own `_visibility` field is left without the setting and logs one warning in development.
+
 ## [0.11.0] - 2026-11-09
 
 ### Security

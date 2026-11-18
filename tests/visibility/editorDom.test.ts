@@ -1,0 +1,163 @@
+// @vitest-environment happy-dom
+
+/**
+ * Block visibility inside the real Puck editor (happy-dom, canvas without an
+ * iframe). Covers what a DOM can show: hidden blocks stay rendered, selectable
+ * and wired for drag; the action bar toggle; undo/redo; duplicate; the styles
+ * keyed on Puck's markup; and a host action bar override kept in place.
+ * Visual checks (greying, badge placement, action bar not dimmed) need a real
+ * browser.
+ */
+
+import { act, createElement, Fragment, type ReactNode } from 'react'
+import { createRoot, type Root } from 'react-dom/client'
+import { Puck, outlinePlugin, useGetPuck, type ComponentData, type Config, type Data, type Overrides } from '@puckeditor/core'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { withBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
+import { composeVisibilityOverrides } from '../../src/visibility/editor.js'
+
+const config = withBlockVisibility({
+  components: {
+    Box: {
+      fields: { content: { type: 'slot' } },
+      render: ({ content: Content }: { content: () => ReactNode }) => createElement('section', null, createElement(Content)),
+    },
+    Leaf: {
+      fields: { text: { type: 'text' } },
+      render: ({ text }: { text: string }) => createElement('p', null, text),
+    },
+  },
+} as unknown as Config)
+
+const initialData = (): Data => ({
+  root: { props: {} },
+  content: [
+    { type: 'Box', props: { id: 'box', content: [
+      { type: 'Leaf', props: { id: 'hidden', text: 'Hidden text', _visibility: { hidden: true } } },
+      { type: 'Leaf', props: { id: 'shown', text: 'Shown text' } },
+    ] } },
+  ],
+} as unknown as Data)
+
+let root: Root
+let container: HTMLDivElement
+let getPuck: ReturnType<typeof useGetPuck>
+
+function Capture() {
+  getPuck = useGetPuck()
+  return null
+}
+
+function mount(hostOverrides: Partial<Overrides> = {}) {
+  const overrides = composeVisibilityOverrides({
+    ...hostOverrides,
+    // A host `puck` override: also proves ours wraps rather than replaces it
+    puck: ({ children }: { children: ReactNode }) => createElement(Fragment, null, createElement(Capture), children),
+  })
+  act(() => {
+    root.render(createElement(Puck, {
+      config,
+      data: initialData(),
+      overrides,
+      plugins: [outlinePlugin()],
+      iframe: { enabled: false },
+      ui: { plugin: { current: 'outline' }, itemExpanded: { box: true } },
+    } as any))
+  })
+}
+
+const data = () => getPuck().appState.data
+const leaf = (id: string) =>
+  ((data().content[0].props as { content: ComponentData[] }).content).find((item) => item.props.id === id)
+
+function select(id: string) {
+  act(() => {
+    const selector = getPuck().getSelectorForId(id)!
+    getPuck().dispatch({ type: 'setUi', ui: { itemSelector: selector } })
+  })
+}
+
+/** Puck records history 300ms after the last change */
+const recorded = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 350)))
+
+const button = (title: string) => document.querySelector<HTMLButtonElement>(`button[title="${title}"]`)
+
+beforeEach(() => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
+  container = document.createElement('div')
+  document.body.append(container)
+  root = createRoot(container)
+})
+
+afterEach(() => {
+  act(() => root.unmount())
+  container.remove()
+  vi.unstubAllGlobals()
+})
+
+describe('block visibility in the Puck editor', () => {
+  it('keeps a hidden block rendered, selectable and wired for drag', () => {
+    mount()
+    const block = document.querySelector('[data-puck-component="hidden"]')
+    expect(block?.textContent).toContain('Hidden text')
+    expect(block?.hasAttribute('data-puck-dnd')).toBe(true)
+
+    select('hidden')
+    expect(getPuck().selectedItem?.props.id).toBe('hidden')
+    expect(button('Show block')).not.toBeNull()
+  })
+
+  it('renders Outline rows with data-puck-layer-tree-id and styles them', () => {
+    mount()
+    // Contract: the Outline tag depends on this attribute
+    expect(document.querySelector('[data-puck-layer-tree-id="hidden"]')).not.toBeNull()
+    expect(document.querySelector('[data-puck-layer-tree-id="shown"]')).not.toBeNull()
+
+    const css = document.querySelector('style[data-payload-puck-visibility="editor"]')?.textContent ?? ''
+    expect(css).toContain('[data-puck-layer-tree-id="hidden"]::before{content:"Hidden";')
+    expect(css).toContain('[data-puck-component="hidden"]>*{opacity:.45;')
+    expect(css).not.toContain('"shown"')
+  })
+
+  it('toggles from the action bar, and undo/redo restore each state', async () => {
+    mount()
+    select('shown')
+    await recorded()
+    act(() => button('Hide block')!.click())
+    await recorded()
+    expect(leaf('shown')?.props._visibility).toEqual({ hidden: true })
+    expect(button('Show block')).not.toBeNull()
+    expect(document.querySelector('style[data-payload-puck-visibility="editor"]')?.textContent)
+      .toContain('[data-puck-component="shown"]')
+
+    act(() => getPuck().history.back())
+    expect(leaf('shown')?.props).not.toHaveProperty('_visibility')
+
+    act(() => getPuck().history.forward())
+    expect(leaf('shown')?.props._visibility).toEqual({ hidden: true })
+
+    act(() => button('Show block')!.click())
+    expect(leaf('shown')?.props).not.toHaveProperty('_visibility')
+  })
+
+  it('keeps the hidden state on a duplicate', () => {
+    mount()
+    act(() => getPuck().dispatch({ type: 'duplicate', sourceIndex: 0, sourceZone: 'box:content' }))
+    const [original, copy] = (data().content[0].props as { content: ComponentData[] }).content
+    expect(copy.props.id).not.toBe(original.props.id)
+    expect(copy.props._visibility).toEqual({ hidden: true })
+  })
+
+  it("keeps a host's own action bar, with the toggle inside it", () => {
+    mount({
+      actionBar: ({ children }) => createElement('div', { 'data-host-bar': '' }, children),
+    })
+    select('shown')
+    const host = document.querySelector('[data-host-bar]')
+    expect(host).not.toBeNull()
+    expect(host!.querySelector('button[title="Hide block"]')).not.toBeNull()
+    // Puck's own actions are still passed in
+    expect(host!.querySelector('button[title="Duplicate"]')).not.toBeNull()
+  })
+})

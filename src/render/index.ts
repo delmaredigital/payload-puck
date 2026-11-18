@@ -15,6 +15,11 @@ export type {
   HybridPageDataInput,
 } from './HybridPageRenderer.js'
 
+// Show/hide for every block. PageRenderer applies it; call it yourself only
+// when passing a config straight to Puck's <Render>.
+export { withBlockVisibility } from '../visibility/withBlockVisibility.js'
+export type { BlockVisibilityOptions } from '../visibility/withBlockVisibility.js'
+
 // Re-export createRenderLayouts for convenience (commonly used with renderers)
 export { createRenderLayouts } from '../layouts/utils.js'
 

@@ -8,6 +8,7 @@
 import { Render } from '@puckeditor/core'
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 import { emailBaseConfig } from '../config/config.email.js'
+import { withBlockVisibility } from '../visibility/withBlockVisibility.js'
 
 export interface EmailRendererProps {
   data: PuckData
@@ -26,5 +27,6 @@ export function EmailRenderer({
     return null
   }
 
-  return <Render config={config} data={data} />
+  // Email gets Shown/Hidden only: media queries are unreliable in email clients
+  return <Render config={withBlockVisibility(config, { screenSizes: false })} data={data} />
 }

@@ -20,6 +20,8 @@ export { emailEditorConfig } from '../config/config.email.editor.js'
 export { EmailRenderer } from './EmailRenderer.js'
 export type { EmailRendererProps } from './EmailRenderer.js'
 export { renderToEmailHtml } from './renderToEmailHtml.js'
+// Show/hide for email blocks (Shown/Hidden only). The email renderers apply it.
+export { withBlockVisibility } from '../visibility/withBlockVisibility.js'
 export type { RenderToEmailHtmlOptions } from './renderToEmailHtml.js'
 
 // Document shell (for advanced customization)
