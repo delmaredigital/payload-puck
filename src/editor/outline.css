@@ -1,0 +1,17 @@
+/*
+ * Outline: make slot group rows ("Content", "Variant 1", ...) readable.
+ *
+ * Puck labels each named slot of a block with a muted, extra-small row.
+ * Puck 0.24 exposes two public variables for that row and nothing else, so
+ * only those are set here. Both point at Puck's own tokens, so they follow
+ * Puck's theme (its UI stays light, including when Payload is in dark mode).
+ *
+ * :where() gives these zero specificity: any value a host sets, even on
+ * :root, wins.
+ */
+:where(:root) {
+  /* Puck default: --puck-color-text-muted (grey-05). Now the same strength as block rows */
+  --puck-outline-zone-color-text: var(--puck-color-text);
+  /* Puck default: 90% of --puck-font-size-xxxs. Now the same size as block rows */
+  --puck-outline-zone-font-size: var(--puck-font-size-xxxs);
+}

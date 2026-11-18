@@ -10,6 +10,7 @@ import '@puckeditor/plugin-heading-analyzer/dist/index.css'
 import { createAiPlugin } from '@puckeditor/plugin-ai'
 import '@puckeditor/plugin-ai/styles.css'
 import './ai-plugin-overrides.css'
+import './outline.css'
 
 import { Maximize2 } from 'lucide-react'
 import { HeaderActions } from './components/HeaderActions.js'

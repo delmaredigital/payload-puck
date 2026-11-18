@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Outline slot labels are easier to read.** For blocks with several slots, the slot labels ("Content", "Variant 1", ...) now use the same colour and size as block rows instead of Puck's muted extra-small text. Set through Puck's public `--puck-outline-zone-color-text` and `--puck-outline-zone-font-size` variables at zero specificity, so a host's own values win. Slot labels can't be collapsed individually: Puck doesn't offer it.
 - **Reset to defaults keeps a block's visibility.**
 - **`_visibility` is a reserved prop name.** A block that defines its own `_visibility` field is left without the setting and logs one warning in development.
 

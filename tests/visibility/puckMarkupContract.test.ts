@@ -59,3 +59,29 @@ describe('installed Puck markup used by block visibility', () => {
     expect(draggable).toContain('overrides.actionBar || DefaultActionBar')
   })
 })
+
+describe('Outline slot rows', () => {
+  const css = readFileSync(join(dist, 'index.css'), 'utf8')
+  const ours = readFileSync(new URL('../../src/editor/outline.css', import.meta.url), 'utf8')
+  const editor = readFileSync(new URL('../../src/editor/PuckEditorImpl.client.tsx', import.meta.url), 'utf8')
+
+  it("are styled by Puck through the two public variables we set", () => {
+    expect(css).toMatch(/--_puck-outline-zone-color-text: var\(\s*--puck-outline-zone-color-text,/)
+    expect(css).toMatch(/font-size: var\(\s*--puck-outline-zone-font-size,/)
+  })
+
+  it('set only those variables, at zero specificity, from Puck tokens', () => {
+    const declarations = [...ours.replace(/\/\*[^]*?\*\//g, '').matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
+      .map(([, name, value]) => [name, value.trim()])
+    expect(declarations).toEqual([
+      ['--puck-outline-zone-color-text', 'var(--puck-color-text)'],
+      ['--puck-outline-zone-font-size', 'var(--puck-font-size-xxxs)'],
+    ])
+    expect(ours).toContain(':where(:root)')
+    expect(ours).not.toMatch(/\._?[A-Z]\w*-/) // no selectors on Puck's internal classes
+  })
+
+  it('are loaded by every editor', () => {
+    expect(editor).toContain("import './outline.css'")
+  })
+})
