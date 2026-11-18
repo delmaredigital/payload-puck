@@ -19,7 +19,7 @@ import {
   setBlockHidden,
   setBlockHiddenOn,
   walkShownBlocks,
-} from '../../src/visibility/index.js'
+} from '../../src/visibility/core.js'
 
 const block = (id: string, visibility?: unknown, extra: Record<string, unknown> = {}): ComponentData => ({
   type: 'Box',

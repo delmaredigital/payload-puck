@@ -51,9 +51,10 @@ beforeAll(() => {
   expect(result.emitSkipped).toBe(false)
 }, 120_000)
 
-/** Type errors from compiling `source` as a host file against the emitted declarations. */
-function compile(source: string): string[] {
-  const fixture = join(root, '__host_fixture__.ts')
+const fixture = join(root, '__host_fixture__.ts')
+
+/** A program for `source` as a host file, compiled against the emitted declarations. */
+function hostProgram(source: string): ts.Program {
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.ESNext,
@@ -77,9 +78,13 @@ function compile(source: string): string[] {
       ? ts.createSourceFile(name, text, version)
       : getSourceFile.call(host, name, version, ...rest)
   }
-  const program = ts.createProgram([fixture], options, host)
+  return ts.createProgram([fixture], options, host)
+}
+
+/** Type errors in a host file compiled against the emitted declarations. */
+function compile(source: string): string[] {
   return ts
-    .getPreEmitDiagnostics(program)
+    .getPreEmitDiagnostics(hostProgram(source))
     .filter((diagnostic) => diagnostic.file && resolve(diagnostic.file.fileName) === fixture)
     .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
 }
@@ -100,7 +105,9 @@ export const config = withBlockVisibility({ components: { Row } })
 describe('published types for blockVisibility', () => {
   it('emits declarations that load the augmentation', () => {
     const emitted = declarations.get(join(dist, 'visibility/withBlockVisibility.d.ts'))
-    expect(emitted).toContain("from './index.js'")
+    // The augmentation lives in core.ts; these must import it
+    expect(emitted).toContain("from './core.js'")
+    expect(declarations.get(join(dist, 'visibility/index.d.ts'))).toContain("from './core.js'")
   })
 
   it('types blockVisibility for a host that imports only /render', () => {
@@ -122,14 +129,38 @@ export const Row: ComponentConfig<{ text: string }> = {
     expect(errors.join('\n')).toContain('blockVisibility')
   })
 
-  it('keeps hasBlockVisibility out of every package entry point', () => {
+  it('exports exactly the documented names from /visibility', () => {
+    const program = hostProgram(`import * as visibility from '@delmaredigital/payload-puck/visibility'\nvoid visibility\n`)
+    const checker = program.getTypeChecker()
+    const file = program.getSourceFile(fixture)!
+    const declaration = file.statements.find(ts.isImportDeclaration)!
+    const moduleSymbol = checker.getSymbolAtLocation(declaration.moduleSpecifier)!
+    const names = checker.getExportsOfModule(moduleSymbol).map((symbol) => symbol.name).sort()
+    expect(names).toEqual([
+      // Values
+      'SCREEN_BREAKPOINTS', 'SCREEN_MEDIA_QUERIES', 'SCREEN_SIZES',
+      'getBlockVisibility', 'isBlockHidden', 'isBlockHiddenOn', 'walkShownBlocks',
+      // Types
+      'BlockLike', 'BlockVisibility', 'BlockVisibilityComponentOptions',
+      'ResolvedBlockVisibility', 'ScreenSize', 'WalkShownBlocksContext',
+    ].sort())
+  })
+
+  it('keeps internal helpers out of every package entry point', () => {
+    const internal = [
+      'hasBlockVisibility', 'isBlockVisibilityField', 'forEachBlock', 'readBlockVisibility', 'resolveVisibility',
+      'setBlockHidden', 'setBlockHiddenOn', 'describeVisibility', 'VISIBILITY_PROP', 'composeVisibilityOverrides',
+      'collectVisibilityEntries', 'visibilityEntriesFor', 'ownerBlock', 'toggleVisibilityAction', 'buildCanvasCss',
+      'buildOutlineCss', 'cssString', 'LIVE_CSS', 'VISIBILITY_STRINGS', 'BlockVisibilityControl',
+    ]
     const specifiers = Object.keys(entryPaths)
-    const errors = compile(specifiers
-      .map((specifier, i) => `import { hasBlockVisibility as h${i} } from '${specifier}'\nvoid h${i}\n`)
-      .join(''))
-    // One "no exported member" error per entry, and nothing else
-    expect(errors).toHaveLength(specifiers.length)
-    for (const error of errors) expect(error).toMatch(/has no exported member.*'hasBlockVisibility'|declares 'hasBlockVisibility' locally/)
+    const source = specifiers
+      .map((specifier, i) => `import { ${internal.map((name) => `${name} as n${i}_${name}`).join(', ')} } from '${specifier}'\n`)
+      .join('')
+    const errors = compile(source)
+    // One "no exported member" error per name per entry, and nothing else
+    expect(errors).toHaveLength(specifiers.length * internal.length)
+    for (const error of errors) expect(error).toMatch(/has no exported member|declares '\w+' locally/)
   }, 60_000)
 
   it('rejects a wrong value type once loaded', () => {

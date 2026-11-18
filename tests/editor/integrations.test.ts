@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PuckEditor, type PuckEditorProps } from '../../src/editor/PuckEditor.js'
 import { PuckConfigProvider, usePuckConfig, type PuckConfigContextValue } from '../../src/views/PuckConfigContext.js'
 import { applyIntegrations, resetIntegrationWarningsForTests, type PuckIntegration } from '../../src/config/merge.js'
-import { hasBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
+import { isWrapped } from '../visibility/isWrapped.js'
 import type { ThemeConfig } from '../../src/theme/types.js'
 
 const capture = vi.hoisted(() => ({ props: null as PuckEditorProps | null }))
@@ -24,7 +24,7 @@ const dummy: ComponentConfig<any> = { label: 'Dummy', render: () => createElemen
  * the one passed in: identify it by its (unique) label.
  */
 function expectBlock(component: ComponentConfig<any> | undefined, original: ComponentConfig<any>) {
-  expect(hasBlockVisibility(component)).toBe(true)
+  expect(isWrapped(component)).toBe(true)
   expect(component?.label).toBe(original.label)
 }
 const config: Config = { components: {} }

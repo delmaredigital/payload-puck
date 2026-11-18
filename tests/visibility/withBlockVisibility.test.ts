@@ -8,7 +8,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { Render, type ComponentConfig, type Config, type Data } from '@puckeditor/core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { hasBlockVisibility, withBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
+import { withBlockVisibility } from '../../src/visibility/withBlockVisibility.js'
+import { walkShownBlocks } from '../../src/visibility/index.js'
+import { isWrapped } from './isWrapped.js'
 import { LIVE_CSS, LIVE_STYLE_HREF } from '../../src/visibility/css.js'
 import { resetIntegrationWarningsForTests } from '../../src/config/merge.js'
 import { createFieldLayout } from '../../src/fields/fieldLayout.js'
@@ -54,7 +56,7 @@ describe('withBlockVisibility — config', () => {
     for (const name of ['Box', 'Leaf']) {
       const component = config.components[name] as ComponentConfig
       expect(Object.keys(component.fields ?? {})[0], name).toBe('_visibility')
-      expect(hasBlockVisibility(component)).toBe(true)
+      expect(isWrapped(component)).toBe(true)
     }
     expect(config.root).toBe(hostConfig.root)
     expect((config.root as ComponentConfig).fields).not.toHaveProperty('_visibility')
@@ -70,13 +72,57 @@ describe('withBlockVisibility — config', () => {
     expect(withBlockVisibility({ ...config }).components).toBe(config.components)
   })
 
-  it('gives every config built from the same blocks the same wrapped blocks', () => {
+  it('gives every config built from the same blocks the same render', () => {
     // e.g. a host passing `{ ...baseConfig, root }` inline on every render
     const a = withBlockVisibility({ ...hostConfig })
     const b = withBlockVisibility({ ...hostConfig })
     expect(a).not.toBe(b)
-    expect(a.components.Leaf).toBe(b.components.Leaf)
-    expect(a.components.Box).toBe(b.components.Box)
+    expect((a.components.Leaf as ComponentConfig).render).toBe((b.components.Leaf as ComponentConfig).render)
+    expect((a.components.Box as ComponentConfig).render).toBe((b.components.Box as ComponentConfig).render)
+  })
+
+  it('reflects changes a host makes to a block config in place, keeping its render', () => {
+    const Card = {
+      label: 'Card',
+      fields: { text: { type: 'text' } },
+      render: ({ text, x: X }: { text: string; x?: () => ReactNode }) =>
+        createElement('article', null, text, X ? createElement(X) : null),
+    } as Record<string, any>
+    const host = { components: { Card, Leaf: hostConfig.components.Leaf } } as unknown as Config
+    const before = withBlockVisibility(host).components.Card as ComponentConfig
+
+    const resolveData = (data: unknown) => data
+    Card.label = 'Renamed card'
+    Card.defaultProps = { text: 'Default' }
+    Card.resolveData = resolveData
+    Card.fields.x = { type: 'slot' }
+
+    const after = withBlockVisibility(host).components.Card as ComponentConfig
+    expect(after.label).toBe('Renamed card')
+    expect(after.defaultProps).toEqual({ text: 'Default' })
+    expect(after.resolveData).toBe(resolveData)
+    expect(Object.keys(after.fields!)).toEqual(['_visibility', 'text', 'x'])
+    expect(after.render).toBe(before.render)
+
+    // The new slot's blocks are found and rendered
+    const data = page([{ type: 'Card', props: { id: 'c', text: 'Card', x: [leaf('inner', 'In slot')] } }])
+    const seen: string[] = []
+    walkShownBlocks(data, withBlockVisibility(host), (block) => seen.push(String(block.props.id)))
+    expect(seen).toEqual(['c', 'inner'])
+    expect(render(withBlockVisibility(host), data)).toContain('<p>In slot</p>')
+  })
+
+  it("names each wrapper after the render it wraps, not the first block type that used it", () => {
+    function SharedRender() { return null }
+    const shared = withBlockVisibility({
+      components: { First: { render: SharedRender }, Second: { render: SharedRender } },
+    } as unknown as Config)
+    const display = (name: string) => ((shared.components[name] as ComponentConfig).render as { displayName?: string }).displayName
+    expect(display('First')).toBe('BlockVisibility(SharedRender)')
+    expect(display('Second')).toBe('BlockVisibility(SharedRender)')
+    const Named = Object.assign(() => null, { displayName: 'FancyBlock' })
+    expect(((withBlockVisibility({ components: { X: { render: Named } } } as unknown as Config).components.X as ComponentConfig)
+      .render as { displayName?: string }).displayName).toBe('BlockVisibility(FancyBlock)')
   })
 
   it('gives a fresh copy of the same block the same render', () => {
@@ -91,7 +137,7 @@ describe('withBlockVisibility — config', () => {
       render: () => createElement('b', null, 'late'),
     } as unknown as ComponentConfig
     const later = withBlockVisibility(mutable)
-    expect(hasBlockVisibility(later.components.Late as ComponentConfig)).toBe(true)
+    expect(isWrapped(later.components.Late as ComponentConfig)).toBe(true)
     expect(render(later, page([{ type: 'Late', props: { id: 'l' } }, { type: 'Late', props: { id: 'h', _visibility: { hidden: true } } }])))
       .toBe('<div><b>late</b></div>')
   })
@@ -197,9 +243,9 @@ describe('withBlockVisibility — copies of wrapped blocks', () => {
 
   it('wraps again when a copy replaces render, so Hidden still hides', () => {
     const copy = { ...config.components.Leaf, render: MyLeaf } as unknown as ComponentConfig
-    expect(hasBlockVisibility(copy)).toBe(false)
+    expect(isWrapped(copy)).toBe(false)
     const rewrapped = withBlockVisibility({ ...config, components: { ...config.components, Leaf: copy } } as Config)
-    expect(hasBlockVisibility(rewrapped.components.Leaf as ComponentConfig)).toBe(true)
+    expect(isWrapped(rewrapped.components.Leaf as ComponentConfig)).toBe(true)
     expect(Object.keys((rewrapped.components.Leaf as ComponentConfig).fields!)[0]).toBe('_visibility')
 
     const html = render(rewrapped, page([leaf('a', 'Mine'), leaf('b', 'Secret', { hidden: true })]))

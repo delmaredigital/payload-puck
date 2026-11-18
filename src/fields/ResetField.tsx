@@ -14,7 +14,7 @@ import type { CustomField } from '@puckeditor/core'
 import { createUsePuck } from '@puckeditor/core'
 import type { Data } from '@puckeditor/core'
 import { RefreshCw } from 'lucide-react'
-import { VISIBILITY_PROP } from '../visibility/index.js'
+import { VISIBILITY_PROP } from '../visibility/core.js'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()

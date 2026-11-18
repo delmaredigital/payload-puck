@@ -10,7 +10,7 @@
  *   Puck release drops it the rules simply match nothing.
  */
 
-import { SCREEN_MEDIA_QUERIES, SCREEN_SIZES, describeVisibility, type ResolvedBlockVisibility, type ScreenSize } from './index.js'
+import { SCREEN_MEDIA_QUERIES, SCREEN_SIZES, describeVisibility, type ResolvedBlockVisibility, type ScreenSize } from './core.js'
 
 /**
  * Class on every per-size `display: contents` wrapper. Parents that style

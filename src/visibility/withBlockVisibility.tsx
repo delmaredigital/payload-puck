@@ -10,12 +10,12 @@ import { createElement, Fragment, type ComponentType, type ReactNode } from 'rea
 import type { ComponentConfig, Config, CustomField, Fields } from '@puckeditor/core'
 import { BlockVisibilityControl } from './BlockVisibilityField.js'
 import { LIVE_CSS, LIVE_STYLE_HREF, VISIBILITY_WRAPPER_CLASS, hideOnClassName } from './css.js'
-import { VISIBILITY_PROP, getBlockVisibility, type BlockVisibility } from './index.js'
+import { VISIBILITY_PROP, getBlockVisibility, type BlockVisibility } from './core.js'
 import { warnOnce } from '../config/merge.js'
 
 // Re-exported so this module's declarations import './index.js', which
 // carries the `blockVisibility` typing for component configs
-export type { BlockVisibilityComponentOptions } from './index.js'
+export type { BlockVisibilityComponentOptions } from './core.js'
 
 export interface BlockVisibilityOptions {
   /**
@@ -49,24 +49,15 @@ const renderFieldsWrappers = new WeakMap<object, RenderFieldsFn>()
 const resolveFieldsWrappers = new WeakMap<object, { inner: ResolveFieldsFn; field: VisibilityField }>()
 
 /*
- * Memos: the same host function or component always gets the same wrapper.
- * A new wrapper is a new component type to React, which would remount the
- * block (and everything inside it) and lose its state.
+ * Memos: the same host function always gets the same wrapper. A new wrapper
+ * is a new component type to React, which would remount the block (and
+ * everything inside it) and lose its state. Component configs themselves are
+ * not memoized: they're cheap to copy, and a copy always reflects the host's
+ * current config, including changes made to it in place.
  */
 const renderMemo = new WeakMap<object, Map<string, ComponentType<any>>>()
 const renderFieldsMemo = new WeakMap<object, RenderFieldsFn>()
 const resolveFieldsMemo = new WeakMap<object, Map<boolean, ResolveFieldsFn>>()
-type ComponentMemo = { wrapped: ComponentConfig<any>; parts: unknown[] }
-const componentMemo = new WeakMap<object, Map<boolean, ComponentMemo>>()
-
-/** The pieces of a component the wrapped copy depends on. */
-const partsOf = (component: ComponentConfig<any>): unknown[] => [
-  component.render,
-  component.fields,
-  component.renderFields,
-  component.resolveFields,
-  component.blockVisibility?.screenSizes,
-]
 
 function memo<K extends object, S, V>(map: WeakMap<K, Map<S, V>>, key: K, sub: S, make: () => V): V {
   let byKey = map.get(key)
@@ -98,26 +89,17 @@ export function isBlockVisibilityField(field: unknown): boolean {
   return typeof field === 'object' && field !== null && fieldSizes.has(field)
 }
 
-/**
- * True when the component renders through show/hide: its `render` is ours.
- * A copy that replaced `render` (e.g. `{ ...wrapped, render: Mine }`) is not.
- * @internal Not exported from any package entry point.
- */
-export function hasBlockVisibility(component: Pick<ComponentConfig, 'render'> | undefined): boolean {
-  return !!component?.render && renderWrappers.has(component.render)
-}
-
 // -----------------------------------------------------------------------------
 // Wrappers
 // -----------------------------------------------------------------------------
 
 type RenderProps = Record<string, unknown> & { puck?: { isEditing?: boolean } }
 
-function wrapRender(Render: ComponentType<any>, screenSizes: boolean, requested: boolean, name: string) {
-  return memo(renderMemo, Render, `${screenSizes}|${requested}`, () => createRenderWrapper(Render, screenSizes, requested, name))
+function wrapRender(Render: ComponentType<any>, screenSizes: boolean, requested: boolean) {
+  return memo(renderMemo, Render, `${screenSizes}|${requested}`, () => createRenderWrapper(Render, screenSizes, requested))
 }
 
-function createRenderWrapper(Render: ComponentType<any>, screenSizes: boolean, requested: boolean, name: string) {
+function createRenderWrapper(Render: ComponentType<any>, screenSizes: boolean, requested: boolean) {
   function BlockVisibilityRender(props: RenderProps): ReactNode {
     // In the editor a hidden block stays fully rendered and editable; the
     // editor grays it with CSS keyed on Puck's own block attribute
@@ -142,7 +124,8 @@ function createRenderWrapper(Render: ComponentType<any>, screenSizes: boolean, r
       ),
     )
   }
-  BlockVisibilityRender.displayName = `BlockVisibility(${name})`
+  // Named after the render it wraps (one render can serve several block types)
+  BlockVisibilityRender.displayName = `BlockVisibility(${Render.displayName || Render.name || 'Component'})`
   renderWrappers.set(BlockVisibilityRender, { inner: Render, screenSizes, requested })
   return BlockVisibilityRender
 }
@@ -196,11 +179,6 @@ function withComponentVisibility(name: string, component: ComponentConfig<any>, 
     return component
   }
 
-  // Reuse the copy made from this same component, unless it was changed since
-  const known = componentMemo.get(component)?.get(requested)
-  const parts = partsOf(component)
-  if (known && known.parts.every((part, i) => part === parts[i])) return known.wrapped
-
   const screenSizes = requested && component.blockVisibility?.screenSizes !== false
   const field = visibilityField(screenSizes)
   const render = renderWrappers.get(component.render)
@@ -223,19 +201,16 @@ function withComponentVisibility(name: string, component: ComponentConfig<any>, 
     : undefined
   const innerResolveFields = component.resolveFields ? (resolve?.inner ?? component.resolveFields) : undefined
 
-  // The wrappers come from the memos, so a rebuilt copy (e.g. only to put the
-  // field back first) keeps the same render and React keeps the block mounted
-  const wrapped: ComponentConfig<any> = {
+  // The wrappers come from the memos, so every copy keeps the same render and
+  // React keeps the block mounted
+  return {
     ...component,
     // First in the object so Puck's default field order puts it on top
     fields: withVisibilityField(component.fields, field),
     ...(innerRenderFields ? { renderFields: wrapRenderFields(innerRenderFields) } : {}),
     ...(innerResolveFields ? { resolveFields: wrapResolveFields(innerResolveFields, field) } : {}),
-    render: wrapRender(innerRender, screenSizes, requested, name) as unknown as ComponentConfig['render'],
+    render: wrapRender(innerRender, screenSizes, requested) as unknown as ComponentConfig['render'],
   }
-  if (!componentMemo.has(component)) componentMemo.set(component, new Map())
-  componentMemo.get(component)!.set(requested, { wrapped, parts })
-  return wrapped
 }
 
 /** The screenSizes setting the config's blocks were given, if any were. */

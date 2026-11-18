@@ -15,7 +15,7 @@ import {
   setBlockHiddenOn,
   type BlockVisibility,
   type ScreenSize,
-} from './index.js'
+} from './core.js'
 
 export const VISIBILITY_STRINGS = {
   label: 'Visibility',

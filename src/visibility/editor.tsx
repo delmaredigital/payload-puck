@@ -13,7 +13,7 @@ import { ActionBar, createUsePuck, type ComponentData, type Config, type Data, t
 import { Eye, EyeOff } from 'lucide-react'
 import { buildCanvasCss, buildOutlineCss, type VisibilityEntry } from './css.js'
 import { VISIBILITY_STRINGS } from './BlockVisibilityField.js'
-import { VISIBILITY_PROP, forEachBlock, getBlockVisibility, readBlockVisibility, setBlockHidden } from './index.js'
+import { VISIBILITY_PROP, forEachBlock, getBlockVisibility, readBlockVisibility, setBlockHidden } from './core.js'
 
 const usePuck = createUsePuck()
 
