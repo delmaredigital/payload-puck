@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Fixed
 
-- **`canPublish` for the integrated editor.** A new `canPublish` plugin option, `createPuckPlugin({ canPublish: ({ req, user, collection, id }) => boolean | Promise<boolean> })`, decides per user whether the editor shows the Publish and Unpublish buttons, so users who may only save drafts are not offered a button that always fails. `PuckEditor` takes a matching `canPublish` prop (default `true`) and `HeaderActions` a `showPublish` prop. This only hides the buttons: enforce publishing with collection access or hooks. If the function throws, the buttons are hidden. Omitting the option keeps the current behavior.
+- **Publish and Unpublish only show for users who may publish.** The admin editor showed both buttons to everyone, so a user whose access rules allow saving drafts but not publishing got buttons that always failed (#57). The editor now asks the collection's `update` access whether this user may publish this page, the same check Payload's own admin uses, and hides both buttons if not. Nothing to configure: the buttons follow the access rules that already decide whether a publish succeeds. If the check itself fails, the buttons are hidden. For a custom editor page, `PuckEditor` takes `canPublish` (default `true`) and `HeaderActions` takes `showPublish` (default `true`).
 
 ## [0.12.0] - 2026-11-18
 

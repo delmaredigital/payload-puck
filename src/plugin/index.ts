@@ -156,7 +156,6 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     ai: aiConfig,
     previewUrl,
     rootPropsMapping,
-    canPublish,
   } = options
 
   const { addEditButton = true } = pluginAdminConfig
@@ -473,8 +472,6 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
           // load view can hydrate root.props from the same mappings the save
           // endpoints use, keeping the round-trip symmetric for custom fields.
           rootPropsMapping: rootPropsMapping ?? incomingConfig.custom?.puck?.rootPropsMapping,
-          // Decides per user whether the editor shows Publish/Unpublish.
-          canPublish: canPublish ?? incomingConfig.custom?.puck?.canPublish,
           ai: aiConfig?.enabled
             ? {
                 enabled: true,

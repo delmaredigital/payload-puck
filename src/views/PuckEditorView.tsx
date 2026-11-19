@@ -13,12 +13,11 @@
  */
 
 import type { CSSProperties, ReactNode } from 'react'
-import type { AdminViewProps } from 'payload'
+import { docAccessOperation, type AdminViewProps } from 'payload'
 import { PuckEditor } from '../editor/PuckEditor.js'
 import { mapPayloadFieldsToRootProps } from '../api/utils/mapRootProps.js'
 import type { RootPropsMapping } from '../api/types.js'
 import type { ThemeConfig } from '../theme/types.js'
-import type { PuckPluginOptions } from '../types/index.js'
 
 export interface PuckEditorViewProps extends AdminViewProps {
   // Additional props can be passed via plugin config
@@ -69,9 +68,6 @@ export async function PuckEditorView({
     | undefined
   const rootPropsMapping = (payload.config as any).custom?.puck?.rootPropsMapping as
     | RootPropsMapping[]
-    | undefined
-  const canPublishOption = (payload.config as any).custom?.puck?.canPublish as
-    | PuckPluginOptions['canPublish']
     | undefined
 
   // Fetch the page data
@@ -218,16 +214,24 @@ export async function PuckEditorView({
     )
   }
 
-  // Hide Publish/Unpublish for users who may not publish. Fails closed: if the
-  // function throws, the buttons are hidden (publishing is still enforced by access).
-  let canPublish = true
-  if (canPublishOption) {
-    try {
-      canPublish = Boolean(await canPublishOption({ req, user: req.user, collection, id: pageId }))
-    } catch (err) {
-      console.error('[PuckEditorView] canPublish threw; hiding publish buttons:', err)
-      canPublish = false
+  // Offer Publish/Unpublish only to users the collection's update access lets
+  // publish this page. This is the check Payload's own admin makes, and the
+  // same rule the save endpoint enforces, so the buttons can't drift from it.
+  // Fails closed: if the check fails, the buttons are hidden.
+  let canPublish = false
+  try {
+    const collectionConfig = payload.collections[collection as keyof typeof payload.collections]?.config
+    if (collectionConfig) {
+      const permissions = await docAccessOperation({
+        id: pageId,
+        collection: { config: collectionConfig } as never,
+        data: { ...page, _status: 'published' },
+        req,
+      })
+      canPublish = permissions.update === true
     }
+  } catch (err) {
+    console.error('[PuckEditorView] Could not check publish access; hiding Publish:', err)
   }
 
   return (
