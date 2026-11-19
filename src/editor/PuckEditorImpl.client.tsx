@@ -266,6 +266,14 @@ export interface PuckEditorImplProps {
   autoDetectDarkMode?: boolean
 
   /**
+   * Whether the signed-in user may publish. When false, the Publish and Unpublish
+   * buttons are hidden and the editor only saves drafts. This hides the buttons
+   * only: enforce the rule with collection access or hooks.
+   * @default true
+   */
+  canPublish?: boolean
+
+  /**
    * Show the preview dark mode toggle near the viewport switcher.
    * Allows toggling the preview iframe between light/dark modes independently.
    * @default true
@@ -325,6 +333,7 @@ export function PuckEditorImpl({
   experimentalFullScreenCanvas = false,
   dnd,
   autoDetectDarkMode = true,
+  canPublish = true,
   showPreviewDarkModeToggle = true,
   initialPreviewDarkMode = false,
 }: PuckEditorImplProps) {
@@ -730,6 +739,7 @@ export function PuckEditorImpl({
           saveError={saveError}
           onDismissError={() => setSaveError(null)}
           showVersionHistory={false}
+          showPublish={canPublish}
           showPreviewDarkModeToggle={showPreviewDarkModeToggle}
           previewDarkMode={previewDarkMode}
           onPreviewDarkModeChange={setPreviewDarkMode}
@@ -779,6 +789,7 @@ export function PuckEditorImpl({
       customOverrides,
       mergedEditorStylesheets,
       mergedEditorCss,
+      canPublish,
       showPreviewDarkModeToggle,
       previewDarkMode,
       setPreviewDarkMode,

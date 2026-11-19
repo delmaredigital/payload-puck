@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Publish and Unpublish only show for users who may publish.** The admin editor showed both buttons to everyone, so a user whose access rules allow saving drafts but not publishing got buttons that always failed (#57). The editor now asks the collection's `update` access whether this user may publish this page, the same check Payload's own admin uses, and hides both buttons if not. Nothing to configure: the buttons follow the access rules that already decide whether a publish succeeds. If the check itself fails, the buttons are hidden. For a custom editor page, `PuckEditor` takes `canPublish` (default `true`) and `HeaderActions` takes `showPublish` (default `true`).
+
 ## [0.12.0] - 2026-11-18
 
 ### Added

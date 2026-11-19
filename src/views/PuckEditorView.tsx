@@ -13,7 +13,7 @@
  */
 
 import type { CSSProperties, ReactNode } from 'react'
-import type { AdminViewProps } from 'payload'
+import { docAccessOperation, type AdminViewProps } from 'payload'
 import { PuckEditor } from '../editor/PuckEditor.js'
 import { mapPayloadFieldsToRootProps } from '../api/utils/mapRootProps.js'
 import type { RootPropsMapping } from '../api/types.js'
@@ -214,8 +214,29 @@ export async function PuckEditorView({
     )
   }
 
+  // Offer Publish/Unpublish only to users the collection's update access lets
+  // publish this page. This is the check Payload's own admin makes, and the
+  // same rule the save endpoint enforces, so the buttons can't drift from it.
+  // Fails closed: if the check fails, the buttons are hidden.
+  let canPublish = false
+  try {
+    const collectionConfig = payload.collections[collection as keyof typeof payload.collections]?.config
+    if (collectionConfig) {
+      const permissions = await docAccessOperation({
+        id: pageId,
+        collection: { config: collectionConfig } as never,
+        data: { ...page, _status: 'published' },
+        req,
+      })
+      canPublish = permissions.update === true
+    }
+  } catch (err) {
+    console.error('[PuckEditorView] Could not check publish access; hiding Publish:', err)
+  }
+
   return (
     <PuckEditor
+      canPublish={canPublish}
       pageId={pageId}
       initialData={initialData}
       pageTitle={page?.title || 'Untitled'}
