@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`canPublish` for the integrated editor.** A new `canPublish` plugin option, `createPuckPlugin({ canPublish: ({ req, user, collection, id }) => boolean | Promise<boolean> })`, decides per user whether the editor shows the Publish and Unpublish buttons, so users who may only save drafts are not offered a button that always fails. `PuckEditor` takes a matching `canPublish` prop (default `true`) and `HeaderActions` a `showPublish` prop. This only hides the buttons: enforce publishing with collection access or hooks. If the function throws, the buttons are hidden. Omitting the option keeps the current behavior.
 
+## [0.12.0] - 2026-11-18
+
+### Added
+
+- **Show and hide any block.** Every block, including your own and integration blocks, gets a Visibility setting at the top of its sidebar: Shown / Hidden, plus Hide on phone, tablet or desktop (phone below 768px, tablet 768px up to 1024px, desktop 1024px and up). The action bar has a Hide block / Show block button. In the editor a hidden block stays rendered and editable, grayed out with a "Hidden" or "Hidden on phone" badge, and its Outline row is tagged. On the live page a Hidden block renders nothing (its children don't run); a block hidden on some sizes is hidden with CSS and is still in the HTML. Hidden blocks, including ones hidden only on some screen sizes, remain in the saved page data your API returns. Don't use hiding for secrets or embargoed content. Ticking all three sizes is the same as Hidden. Puck's interactive preview leaves Hidden blocks out, like the live page. Stored as `props._visibility` in a stable shape other code may read, `{ hidden?: true, hideOn?: ('phone' | 'tablet' | 'desktop')[] }`; a missing or malformed value means shown, so no migration. Per-size hiding wraps the block in a `display: contents` element; block types whose root must be a direct child of its parent (`<li>`, `<tr>`, sibling selectors) can offer Shown/Hidden only with `blockVisibility: { screenSizes: false }`. Email blocks get Shown/Hidden only. `PuckEditor`, `PageRenderer`, `HybridPageRenderer`, `EmailRenderer` and `renderToEmailHtml` apply it automatically; wrap configs passed straight to Puck's `<Render>` with `withBlockVisibility` (from `/render` or `/email`).
+- **`@delmaredigital/payload-puck/visibility`.** Server-safe helpers for other code and plugins: `getBlockVisibility`, `isBlockHidden`, `isBlockHiddenOn`, `walkShownBlocks` (follows slots inside array and object fields and legacy zones; never throws), and the `SCREEN_SIZES`, `SCREEN_BREAKPOINTS` and `SCREEN_MEDIA_QUERIES` constants.
+- **Flex reaches children through the per-size wrapper.** Its `min-w-0` rule for children also applies to a child hidden on some screen sizes.
+
+### Changed
+
+- **Outline slot labels are easier to read.** For blocks with several slots, the slot labels ("Content", "Variant 1", ...) now use the same color and size as block rows instead of Puck's muted extra-small text. Set through Puck's public `--puck-outline-zone-color-text` and `--puck-outline-zone-font-size` variables on `:where(:root)`. Your own unlayered values win; values inside a CSS cascade layer (`@layer`, e.g. Tailwind v4) don't, so set them on `body` or an element inside the editor instead. Slot labels can't be collapsed individually: Puck doesn't offer it.
+- **Block `render` functions are wrapped.** In configs returned by `withBlockVisibility`, including `emailEditorConfig.components.*.render`, each block's `render` is a wrapper around the original. The same original always gets the same wrapper. Code that compares or extracts `render` functions should use the original function.
+- **Reset to defaults keeps a block's visibility.**
+- **`_visibility` is a reserved prop name.** A block that defines its own `_visibility` field is left without the setting and logs one warning in development.
+
 ## [0.11.0] - 2026-11-09
 
 ### Security

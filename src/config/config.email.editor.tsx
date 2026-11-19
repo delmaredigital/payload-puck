@@ -31,8 +31,9 @@ import { EmailDividerEditorConfig } from '../components/email/EmailDivider/Email
 import { EmailHeaderEditorConfig } from '../components/email/EmailHeader/EmailHeader.editor.js'
 import { EmailFooterEditorConfig } from '../components/email/EmailFooter/EmailFooter.editor.js'
 import { EmailSocialEditorConfig } from '../components/email/EmailSocial/EmailSocial.editor.js'
+import { withBlockVisibility } from '../visibility/withBlockVisibility.js'
 
-export const emailEditorConfig = {
+export const emailEditorConfig = withBlockVisibility({
   root: {
     fields: {
       subject: { type: 'text', label: 'Subject Line' },
@@ -92,4 +93,4 @@ export const emailEditorConfig = {
     EmailFooter: EmailFooterEditorConfig as ComponentConfig<any>,
     EmailSocial: EmailSocialEditorConfig as ComponentConfig<any>,
   },
-} satisfies PuckConfig
+} satisfies PuckConfig, { screenSizes: false })

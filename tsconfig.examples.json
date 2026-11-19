@@ -57,6 +57,9 @@
       "@delmaredigital/payload-puck/email/components": [
         "./src/components/email/exports.ts"
       ],
+      "@delmaredigital/payload-puck/visibility": [
+        "./src/visibility/index.ts"
+      ],
       "@/*": [
         "./examples/*"
       ]

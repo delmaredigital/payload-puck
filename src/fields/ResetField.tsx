@@ -14,6 +14,7 @@ import type { CustomField } from '@puckeditor/core'
 import { createUsePuck } from '@puckeditor/core'
 import type { Data } from '@puckeditor/core'
 import { RefreshCw } from 'lucide-react'
+import { VISIBILITY_PROP } from '../visibility/core.js'
 
 // Create usePuck hook for accessing editor state
 const usePuck = createUsePuck()
@@ -139,6 +140,20 @@ function updateComponentInData(
   }
 }
 
+/**
+ * Props a reset leaves the block with: its defaults, keeping whether it is
+ * shown or hidden (that is not a style choice the reset should undo).
+ */
+export function resetProps(
+  defaultProps: Record<string, unknown>,
+  currentProps: Record<string, unknown>
+): Record<string, unknown> {
+  const { [VISIBILITY_PROP]: _ignored, ...defaults } = defaultProps
+  return VISIBILITY_PROP in currentProps
+    ? { ...defaults, [VISIBILITY_PROP]: currentProps[VISIBILITY_PROP] }
+    : defaults
+}
+
 // =============================================================================
 // Field Configuration Factory
 // =============================================================================
@@ -170,7 +185,7 @@ export function createResetField<T extends object>(
       const updatedData = updateComponentInData(
         appState.data,
         componentId,
-        config.defaultProps as unknown as Record<string, unknown>
+        resetProps(config.defaultProps as unknown as Record<string, unknown>, selectedItem.props)
       )
 
       dispatch({

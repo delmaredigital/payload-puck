@@ -14,7 +14,7 @@ export const puckTheme: ThemeConfig = {
 
   focusRingColor: 'focus:ring-ring',
 
-  // Colour picker presets: add your brand colours
+  // Color picker presets: add your brand colors
   colorPresets: [
     { hex: '#ffffff', label: 'White' },
     { hex: '#f8fafc', label: 'Background' },

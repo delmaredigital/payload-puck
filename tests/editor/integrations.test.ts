@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PuckEditor, type PuckEditorProps } from '../../src/editor/PuckEditor.js'
 import { PuckConfigProvider, usePuckConfig, type PuckConfigContextValue } from '../../src/views/PuckConfigContext.js'
 import { applyIntegrations, resetIntegrationWarningsForTests, type PuckIntegration } from '../../src/config/merge.js'
+import { isWrapped } from '../visibility/isWrapped.js'
 import type { ThemeConfig } from '../../src/theme/types.js'
 
 const capture = vi.hoisted(() => ({ props: null as PuckEditorProps | null }))
@@ -16,7 +17,19 @@ vi.mock('next/dynamic', () => ({
   default: () => (props: PuckEditorProps) => { capture.props = props; return null },
 }))
 
-const dummy: ComponentConfig<any> = { render: () => createElement('div') }
+const dummy: ComponentConfig<any> = { label: 'Dummy', render: function DummyBlock() { return createElement('div') } }
+
+/**
+ * The editor adds show/hide to every block, so a block is a wrapped copy of
+ * the one passed in: identify it by its (unique) label.
+ */
+function expectBlock(component: ComponentConfig<any> | undefined, original: ComponentConfig<any>) {
+  expect(isWrapped(component)).toBe(true)
+  expect(component?.label).toBe(original.label)
+  // The wrapper is named after the render it wraps, so this proves it wraps the original
+  expect(original.render.name).toMatch(/Block$/)
+  expect((component?.render as { displayName?: string }).displayName).toBe(`BlockVisibility(${original.render.name})`)
+}
 const config: Config = { components: {} }
 const initialData = { content: [], root: { props: {} } }
 const props: PuckEditorProps = { pageId: '1', pageTitle: 'Dummy', pageSlug: 'dummy', initialData, config }
@@ -80,14 +93,15 @@ describe('editor integrations', () => {
     }])
 
     expect(context.config).toBe(config)
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expectBlock(result.config?.components.DummyBlock, dummy)
     expect(config.components).not.toHaveProperty('DummyBlock')
   })
 
   it.each(['slot', 'zone'] as const)('resolves template content in a %s against the page editor config', (location) => {
     const template: ComponentConfig<any> = {
+      label: 'Template',
       fields: { content: { type: 'slot' } },
-      render: () => createElement('div'),
+      render: function TemplateBlock() { return createElement('div') },
     }
     const hostConfig: Config = { components: { Template: template } }
     const nested = { type: 'DummyBlock', props: { id: 'dummy-1' } }
@@ -109,10 +123,10 @@ describe('editor integrations', () => {
     const children = location === 'slot'
       ? parent.props.content
       : result.initialData.zones!['template-1:content']
-    expect(result.config?.components[parent.type]).toBe(template)
+    expectBlock(result.config?.components[parent.type], template)
     expect(children).toEqual([nested])
     for (const child of children) {
-      expect(result.config?.components[child.type]).toBe(dummy)
+      expectBlock(result.config?.components[child.type], dummy)
     }
   })
 
@@ -165,7 +179,7 @@ describe('editor integrations', () => {
       name: 'dummy', components: { DummyBlock: dummy }, plugins: [{ name: 'bundle' }],
     }], [{ name: 'context' }])
     expect(result.plugins).toBe(false)
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expectBlock(result.config?.components.DummyBlock, dummy)
     expect(console.warn).toHaveBeenCalledExactlyOnceWith(
       '[payload-puck] integration "dummy": plugins disabled by plugins={false}; skipped',
     )
@@ -236,16 +250,16 @@ describe('editor integrations', () => {
     expect(context).not.toBe(firstContext)
     expect(context.integrations).toBe(next)
     expect(result.config).not.toBe(firstConfig)
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expectBlock(result.config?.components.DummyBlock, dummy)
     expect(result.plugins).toEqual([{ name: 'next' }])
   })
 
   it('applies context components first, then prop components, after the host config', () => {
-    const other: ComponentConfig<any> = { render: () => createElement('div') }
+    const other: ComponentConfig<any> = { label: 'Other', render: () => createElement('div') }
     const result = render({ integrations: [{ name: 'prop', components: { DummyBlock: other } }] }, [
       { name: 'context', components: { DummyBlock: dummy } },
     ])
-    expect(result.config?.components.DummyBlock).toBe(dummy)
+    expectBlock(result.config?.components.DummyBlock, dummy)
     expect(console.warn).toHaveBeenCalledTimes(1)
   })
 

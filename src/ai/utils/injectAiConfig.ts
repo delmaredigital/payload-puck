@@ -1,5 +1,6 @@
 import type { Config as PuckConfig } from '@puckeditor/core'
 import type { ComponentAiOverrides } from '../types.js'
+import { isBlockVisibilityField } from '../../visibility/withBlockVisibility.js'
 
 // Extended types to include AI configuration
 // These match what Puck AI expects but aren't in the core types yet
@@ -252,7 +253,8 @@ export function hasAiConfig(config: PuckConfig): boolean {
 
     if (component.fields) {
       for (const field of Object.values(component.fields)) {
-        if ((field as any).ai) {
+        // Show/hide's own field opts out of AI; that isn't AI configuration
+        if ((field as any).ai && !isBlockVisibilityField(field)) {
           return true
         }
       }

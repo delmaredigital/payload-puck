@@ -10,6 +10,7 @@ import '@puckeditor/plugin-heading-analyzer/dist/index.css'
 import { createAiPlugin } from '@puckeditor/plugin-ai'
 import '@puckeditor/plugin-ai/styles.css'
 import './ai-plugin-overrides.css'
+import './outline.css'
 
 import { Maximize2 } from 'lucide-react'
 import { HeaderActions } from './components/HeaderActions.js'
@@ -19,6 +20,7 @@ import { DarkModeStyles } from './components/DarkModeStyles.js'
 import { useUnsavedChanges } from './hooks/useUnsavedChanges.js'
 import { isDataEqual } from './utils/isDataEqual.js'
 import { createVersionHistoryPlugin } from './plugins/versionHistoryPlugin.js'
+import { composeVisibilityOverrides } from '../visibility/editor.js'
 import { ThemeProvider, type ThemeConfig } from '../theme/index.js'
 import { usePuckConfig } from '../views/PuckConfigContext.js'
 import type { LayoutDefinition } from '../layouts/index.js'
@@ -716,7 +718,7 @@ export function PuckEditorImpl({
 
   // Memoized overrides
   const overrides = useMemo<Partial<PuckOverrides>>(
-    () => ({
+    () => composeVisibilityOverrides({
       headerActions: ({ children }: { children: ReactNode }) => (
         <HeaderActions
           onBack={handleBack}
@@ -759,7 +761,9 @@ export function PuckEditorImpl({
           {children}
         </IframeWrapper>
       ),
-      // Merge custom overrides
+      // Merge custom overrides; composeVisibilityOverrides then adds show/hide
+      // to the resulting actionBar, componentOverlay, iframe and puck
+      // overrides without replacing them
       ...customOverrides,
     }),
     [

@@ -1,0 +1,24 @@
+/*
+ * Outline: make slot group rows ("Content", "Variant 1", ...) readable.
+ *
+ * Puck labels each named slot of a block with a muted, extra-small row.
+ * Puck 0.24 exposes two public variables for that row and nothing else, so
+ * only those are set here. Puck only reads them (with its own fallback); it
+ * never declares them. Both point at Puck's own tokens, so they follow Puck's
+ * theme (its UI stays light, including when Payload is in dark mode).
+ *
+ * Which host value wins:
+ * - unlayered host CSS setting them on :root (or anything more specific)
+ *   wins, because :where() gives this rule zero specificity;
+ * - host CSS inside a cascade layer (@layer, e.g. Tailwind v4) loses to this
+ *   unlayered rule on :root. Setting them on `body` or any element inside the
+ *   editor wins in every case, since a declared value beats an inherited one.
+ * Moving this into a low-priority @layer would not help: layer order follows
+ * stylesheet load order, which payload-puck doesn't control.
+ */
+:where(:root) {
+  /* Puck default: --puck-color-text-muted (grey-05). Now the same strength as block rows */
+  --puck-outline-zone-color-text: var(--puck-color-text);
+  /* Puck default: 90% of --puck-font-size-xxxs. Now the same size as block rows */
+  --puck-outline-zone-font-size: var(--puck-font-size-xxxs);
+}

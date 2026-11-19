@@ -50,7 +50,7 @@ export const CustomBannerConfig: ComponentConfig<CustomBannerProps> = {
         { label: 'No', value: false },
       ],
     },
-    // Colour picker with hex input, opacity slider and theme presets
+    // Color picker with hex input, opacity slider and theme presets
     backgroundColor: createColorPickerField({ label: 'Background Color', showOpacity: true }),
     textColor: createColorPickerField({ label: 'Text Color', showOpacity: false }),
     // Four sides, link/unlink toggle, unit selector

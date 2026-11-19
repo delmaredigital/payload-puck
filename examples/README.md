@@ -16,7 +16,7 @@ These are starting points to adapt, not a standalone application. Merge the `puc
 | `app/api/puck/pages/[id]/versions/route.ts` | Authenticated version listing and restore handler. |
 | `app/api/puck/pages/[id]/restore/route.ts` | Restore endpoint used by the editor's History panel. |
 | `lib/puck-layouts.ts` | Custom layouts, header/footer slots and editor backgrounds. |
-| `lib/puck-theme.ts` | Button styles, focus ring and colour picker presets. |
+| `lib/puck-theme.ts` | Button styles, focus ring and color picker presets. |
 | `components/CustomBanner.tsx` | Custom component using the public field helpers. |
 | `puck/custom-config.ts` | Adds the banner to the built-in editor config. |
 | `styles/puck-theme.css` | CSS variables for apps without an existing shadcn/ui theme. |

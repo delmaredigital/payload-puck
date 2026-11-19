@@ -1,6 +1,7 @@
 import { Render } from '@puckeditor/core'
 import type { Config as PuckConfig, Data as PuckData } from '@puckeditor/core'
 import { baseConfig } from '../config/index.js'
+import { withBlockVisibility } from '../visibility/withBlockVisibility.js'
 import { LayoutWrapper, getLayout, DEFAULT_LAYOUTS, type LayoutDefinition, type PageOverrides } from '../layouts/index.js'
 import type { BackgroundValue } from '../fields/shared.js'
 
@@ -70,7 +71,7 @@ export function PageRenderer({
     )
   }
 
-  const content = <Render config={config} data={data} />
+  const content = <Render config={withBlockVisibility(config)} data={data} />
 
   // Extract root props for page-level settings
   const rootProps = data.root?.props as {

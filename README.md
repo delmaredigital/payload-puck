@@ -176,6 +176,10 @@ Create the integration array once at module scope: a new array per render rebuil
 
 The editor applies integrations without `exclude`, so to opt out of an integration's component, omit that integration from the provider or define your own component under the same key, which wins.
 
+## Showing and hiding blocks
+
+Every block can be hidden from the live page, or only on phone, tablet or desktop, while staying editable (grayed out) in the editor. Nothing to set up. See [Showing and hiding blocks](https://plugins.delmaredigital.com/docs/puck/guides/show-hide).
+
 ## Running experiments on slots
 
 Use [@delmaredigital/payload-experiments](https://www.npmjs.com/package/@delmaredigital/payload-experiments) to run experiments on Puck slots through an integration.
