@@ -13,7 +13,7 @@ import { LIVE_CSS, LIVE_STYLE_HREF, VISIBILITY_WRAPPER_CLASS, hideOnClassName } 
 import { VISIBILITY_PROP, getBlockVisibility, type BlockVisibility } from './core.js'
 import { warnOnce } from '../config/merge.js'
 
-// Re-exported so this module's declarations import './index.js', which
+// Re-exported so this module's declarations import './core.js', which
 // carries the `blockVisibility` typing for component configs
 export type { BlockVisibilityComponentOptions } from './core.js'
 

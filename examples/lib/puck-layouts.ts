@@ -47,7 +47,7 @@ export const darkLayout = createLayout({
   stickyHeaderHeight: 80,
 })
 
-// Narrow, reading-optimised layout
+// Narrow, reading-optimized layout
 export const blogLayout = createLayout({
   value: 'blog',
   label: 'Blog Post',

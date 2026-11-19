@@ -241,6 +241,24 @@ describe('withBlockVisibility — copies of wrapped blocks', () => {
   const config = withBlockVisibility(hostConfig)
   const MyLeaf = vi.fn(({ text }: { text: string }) => createElement('em', null, text))
 
+  it('never wraps a render twice, whichever way a block is wrapped again', () => {
+    function Inner() { return null }
+    const displayName = (c: unknown) => ((c as ComponentConfig).render as { displayName?: string }).displayName
+    const first = withBlockVisibility({ components: { X: { fields: { a: { type: 'text' } }, render: Inner } } } as unknown as Config)
+    const x = first.components.X as ComponentConfig
+    const again = [
+      withBlockVisibility(first).components.X,
+      withBlockVisibility({ ...first }).components.X,
+      withBlockVisibility(first, { screenSizes: false }).components.X,
+      withBlockVisibility({ components: { X: { ...x, fields: { b: { type: 'text' }, ...x.fields } } } } as unknown as Config).components.X,
+      withBlockVisibility({ components: { X: { ...x, renderFields: () => null } } } as unknown as Config).components.X,
+    ]
+    for (const component of [x, ...again]) {
+      expect(displayName(component)).toBe('BlockVisibility(Inner)')
+      expect(isWrapped(component as ComponentConfig)).toBe(true)
+    }
+  })
+
   it('wraps again when a copy replaces render, so Hidden still hides', () => {
     const copy = { ...config.components.Leaf, render: MyLeaf } as unknown as ComponentConfig
     expect(isWrapped(copy)).toBe(false)

@@ -1,7 +1,8 @@
 /**
  * The `blockVisibility` key on component configs is typed by a module
- * augmentation in `src/visibility/index.ts`. Hosts only get it if the
- * published declarations they import load that file.
+ * augmentation in `src/visibility/core.ts`. Hosts only get it if the
+ * published declarations they import load that file (`/visibility`,
+ * `/render` and `/email` all do).
  *
  * This emits the package's declarations in memory (as `pnpm build:types`
  * does) and compiles small host files against them, importing only one entry
@@ -116,6 +117,20 @@ describe('published types for blockVisibility', () => {
 
   it('types blockVisibility for a host that imports only /email', () => {
     expect(compile(hostBlock('email'))).toEqual([])
+  })
+
+  it('types blockVisibility for a host that imports only /visibility', () => {
+    // A type-only import, nothing from withBlockVisibility
+    expect(compile(`
+import type { ComponentConfig } from '@puckeditor/core'
+import type { BlockVisibility } from '@delmaredigital/payload-puck/visibility'
+
+export const stored: BlockVisibility = { hidden: true }
+export const Row: ComponentConfig<{ text: string }> = {
+  blockVisibility: { screenSizes: false },
+  render: ({ text }) => text as any,
+}
+`)).toEqual([])
   })
 
   it('rejects the key when nothing loads the augmentation (the check is real)', () => {

@@ -61,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Editor dark-mode detection follows Payload's theme setting.** `useDarkMode` (and so `DarkModeStyles`) now reads Payload's `data-theme` attribute, so choosing dark or light in Payload's account settings is honored even when it differs from the OS preference. Previously only a `.dark` class or the OS preference counted. `DarkModeSource` gains an `'attribute'` value.
+- **Editor dark-mode detection follows Payload's theme setting.** `useDarkMode` (and so `DarkModeStyles`) now reads Payload's `data-theme` attribute, so choosing dark or light in Payload's account settings is honoured even when it differs from the OS preference. Previously only a `.dark` class or the OS preference counted. `DarkModeSource` gains an `'attribute'` value.
 
 ## [0.10.1] - 2026-10-29
 
@@ -126,7 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **The homepage swap on the built-in update endpoint is now authorized before it changes anything ([GHSA-cphw-vvv5-c8p7](https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-cphw-vvv5-c8p7)).** For `PATCH /api/puck/:collection/:id` with `swapHomepage: true` and `isHomepage: true`, the handler unset the current homepage, a deliberate `overrideAccess: true` write made without the caller's `req`, *before* the target page's own update was checked against collection access. A user who could read pages but not edit the target could therefore clear the site's homepage: their update was rejected, but the unset had already committed, outside any transaction.
 
-  The target page's update now runs first, under the caller's access control. Only once it succeeds are other homepages unset, inside the same transaction, so a failure in either step rolls back both. The previous-homepage lookup now also finds pages the editor cannot read, so a swap can no longer leave two homepages. `swapHomepage` now only bypasses the uniqueness check when `isHomepage: true` is also sent. Regression tests pin all four behaviors.
+  The target page's update now runs first, under the caller's access control. Only once it succeeds are other homepages unset, inside the same transaction, so a failure in either step rolls back both. The previous-homepage lookup now also finds pages the editor cannot read, so a swap can no longer leave two homepages. `swapHomepage` now only bypasses the uniqueness check when `isHomepage: true` is also sent. Regression tests pin all four behaviours.
 
   **Who can swap the homepage** is unchanged: anyone allowed to set `isHomepage` on a page they can edit. **Not affected:** the standalone `createPuckApiRoutesWithId` factory, which already ran both writes under the caller's access.
 
@@ -155,7 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Dev dependencies: `payload`, `@payloadcms/next` and `@payloadcms/ui` 3.87.1 → 3.88.0.** Dev-only; declaration output verified byte-identical, so the published package is unaffected. The peer floor stays `>=3.69.0`.
 
-  Checked explicitly against 3.88.0 because 0.9.0's access control depends on Payload internals: `createLocalReq` still threads the `user` option onto `req.user` (and still silently defaults a missing `collection`), still honors `headers` from a passed `req`, and all seven Local API operations still accept `overrideAccess`, `user` and `req`. This is also the version the GHSA-957g-hmmp-rchg reporter demonstrated against.
+  Checked explicitly against 3.88.0 because 0.9.0's access control depends on Payload internals: `createLocalReq` still threads the `user` option onto `req.user` (and still silently defaults a missing `collection`), still honours `headers` from a passed `req`, and all seven Local API operations still accept `overrideAccess`, `user` and `req`. This is also the version the GHSA-957g-hmmp-rchg reporter demonstrated against.
 
 ### Security
 
@@ -185,7 +185,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   **Better Auth compatibility:** any published `@delmaredigital/payload-better-auth` works — its strategy stamps `collection` on the user, which is what the resolution needs. `0.9.0` or later is recommended: it is the first release where this wiring, combined with the headers 0.9 forwards into Payload, is side-effect free for API-key requests. Current is `0.11.3` (requires Better Auth `1.7`).
 
-  Routes **fail closed**: if the Payload user cannot be determined the request returns `500` / `PUCK_ACCESS_MISCONFIGURED` and performs no database operation, with the remediation in the server log. It never silently downgrades to anonymous and never silently skips authorization. `dangerouslyDisableCollectionAccessControl: true` restores the old behavior as an emergency rollback and warns once per factory.
+  Routes **fail closed**: if the Payload user cannot be determined the request returns `500` / `PUCK_ACCESS_MISCONFIGURED` and performs no database operation, with the remediation in the server log. It never silently downgrades to anonymous and never silently skips authorization. `dangerouslyDisableCollectionAccessControl: true` restores the old behaviour as an emergency rollback and warns once per factory.
 
 - **The AI context and prompts endpoints now enforce collection access control ([GHSA-rrx7-m589-5wfq](https://github.com/delmaredigital/payload-puck/security/advisories/GHSA-rrx7-m589-5wfq)).** The eight handlers in `src/endpoints/context.ts` and `src/endpoints/prompts.ts` gated only on `if (!req.user)` and then called the Local API without `req` or `overrideAccess: false`, contradicting the invariant documented at the top of `src/endpoints/index.ts`. Because entries from both collections are concatenated into the AI system prompt, any authenticated user — including one from an unrelated auth-enabled collection, such as a front-end `customers` collection — could tamper with the prompts used by trusted editors, and defeat any hardening a deployer had applied to those collections' `access` rules.
 
@@ -201,7 +201,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Request headers now reach access rules.** The route factories forward the original request headers into every Payload operation. `createLocalReq` substitutes an empty `Headers` when none is passed, so an access rule that inspects them — an API-key scope check cannot see its own key otherwise — would silently misjudge the request; for an API-key caller that can fail **open**, treating a zero-scope key as a full session. Each operation receives its own request object, because Payload mutates the one it is given and sharing it across the several operations in a handler would leak locale, context and dataloader state between them.
 
-- **Payload access denials are reported as denials.** All request-facing handlers flattened every error into `500`, so a `Forbidden` read the same as a database outage — to clients, to `onError`, and to error monitoring. They now return the status Payload intended (`403`, `404`, `409`), with non-public error messages replaced by generic ones so internal detail is not echoed back. This also affects the built-in `/api/puck/*` endpoints, where the behavior was latent since 0.6.23.
+- **Payload access denials are reported as denials.** All request-facing handlers flattened every error into `500`, so a `Forbidden` read the same as a database outage — to clients, to `onError`, and to error monitoring. They now return the status Payload intended (`403`, `404`, `409`), with non-public error messages replaced by generic ones so internal detail is not echoed back. This also affects the built-in `/api/puck/*` endpoints, where the behaviour was latent since 0.6.23.
 - **`createPuckApiRoutes` POST returns `409` on a slug collision it cannot see.** Its uniqueness pre-check now runs under access control (so it can no longer be used to probe for documents the caller may not read), which means a collision with an unreadable document falls through to Payload's unique constraint. That `ValidationError` is mapped back to the same `409` the pre-check would have returned, instead of a generic `500`.
 
 ### Added
