@@ -311,6 +311,42 @@ describe('withBlockVisibility — copies of wrapped blocks', () => {
   })
 })
 
+describe('a block config with no render', () => {
+  // Puck fails on such a block only when it renders; wrapping must not fail
+  // earlier and take the whole page or editor down with it
+  function Note({ text }: { text: string }) {
+    return createElement('p', null, text)
+  }
+  const withoutRender = (): Config => ({
+    components: { Draft: { label: 'Draft', fields: { text: { type: 'text' } } }, Leaf: { render: Note } },
+  } as unknown as Config)
+
+  it.each([
+    ['page', {}],
+    ['email', { screenSizes: false }],
+  ] as const)('leaves it unchanged and still wraps the other blocks (%s)', (_path, options) => {
+    const source = withoutRender()
+    const draft = source.components.Draft
+    const wrapped = withBlockVisibility(source, options)
+    expect(wrapped.components.Draft).toBe(draft)
+    expect(draft.fields).not.toHaveProperty('_visibility')
+    expect(isWrapped(wrapped.components.Leaf)).toBe(true)
+    expect((wrapped.components.Leaf.render as { displayName?: string }).displayName).toBe('BlockVisibility(Note)')
+  })
+
+  it('renders the other blocks through PageRenderer', () => {
+    const html = renderToStaticMarkup(createElement(PageRenderer, {
+      config: withoutRender(), data: page([leaf('a', 'Still here')]),
+    }))
+    expect(html).toContain('<p>Still here</p>')
+  })
+
+  it('renders the other blocks in an email', () => {
+    const html = renderToEmailHtml(page([leaf('a', 'Still here')]), { config: withoutRender() })
+    expect(html).toContain('<p>Still here</p>')
+  })
+})
+
 describe('blockVisibility: { screenSizes: false }', () => {
   const Row = vi.fn(({ text }: { text: string }) => createElement('li', null, text))
   const config = withBlockVisibility({

@@ -173,6 +173,11 @@ function wrapResolveFields(resolveFields: ResolveFieldsFn, field: VisibilityFiel
 // -----------------------------------------------------------------------------
 
 function withComponentVisibility(name: string, component: ComponentConfig<any>, requested: boolean): ComponentConfig<any> {
+  // Nothing to wrap: Puck reports a block with no render when it renders.
+  // Failing here instead would take down every page that uses this config
+  const kind = typeof component.render
+  if (component.render === null || (kind !== 'function' && kind !== 'object')) return component
+
   const existing = (component.fields as Record<string, unknown> | undefined)?.[VISIBILITY_PROP]
   if (existing !== undefined && !isBlockVisibilityField(existing)) {
     warnOnce(`[payload-puck] component "${name}" defines its own "${VISIBILITY_PROP}" field; show/hide was not added to it`)

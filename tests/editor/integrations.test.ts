@@ -17,7 +17,7 @@ vi.mock('next/dynamic', () => ({
   default: () => (props: PuckEditorProps) => { capture.props = props; return null },
 }))
 
-const dummy: ComponentConfig<any> = { label: 'Dummy', render: () => createElement('div') }
+const dummy: ComponentConfig<any> = { label: 'Dummy', render: function DummyBlock() { return createElement('div') } }
 
 /**
  * The editor adds show/hide to every block, so a block is a wrapped copy of
@@ -26,6 +26,9 @@ const dummy: ComponentConfig<any> = { label: 'Dummy', render: () => createElemen
 function expectBlock(component: ComponentConfig<any> | undefined, original: ComponentConfig<any>) {
   expect(isWrapped(component)).toBe(true)
   expect(component?.label).toBe(original.label)
+  // The wrapper is named after the render it wraps, so this proves it wraps the original
+  expect(original.render.name).toMatch(/Block$/)
+  expect((component?.render as { displayName?: string }).displayName).toBe(`BlockVisibility(${original.render.name})`)
 }
 const config: Config = { components: {} }
 const initialData = { content: [], root: { props: {} } }
@@ -98,7 +101,7 @@ describe('editor integrations', () => {
     const template: ComponentConfig<any> = {
       label: 'Template',
       fields: { content: { type: 'slot' } },
-      render: () => createElement('div'),
+      render: function TemplateBlock() { return createElement('div') },
     }
     const hostConfig: Config = { components: { Template: template } }
     const nested = { type: 'DummyBlock', props: { id: 'dummy-1' } }
