@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-18
+
 ### Added
 
 - **Show and hide any block.** Every block, including your own and integration blocks, gets a Visibility setting at the top of its sidebar: Shown / Hidden, plus Hide on phone, tablet or desktop (phone below 768px, tablet 768px up to 1024px, desktop 1024px and up). The action bar has a Hide block / Show block button. In the editor a hidden block stays rendered and editable, grayed out with a "Hidden" or "Hidden on phone" badge, and its Outline row is tagged. On the live page a Hidden block renders nothing (its children don't run); a block hidden on some sizes is hidden with CSS and is still in the HTML. Hidden blocks, including ones hidden only on some screen sizes, remain in the saved page data your API returns. Don't use hiding for secrets or embargoed content. Ticking all three sizes is the same as Hidden. Puck's interactive preview leaves Hidden blocks out, like the live page. Stored as `props._visibility` in a stable shape other code may read, `{ hidden?: true, hideOn?: ('phone' | 'tablet' | 'desktop')[] }`; a missing or malformed value means shown, so no migration. Per-size hiding wraps the block in a `display: contents` element; block types whose root must be a direct child of its parent (`<li>`, `<tr>`, sibling selectors) can offer Shown/Hidden only with `blockVisibility: { screenSizes: false }`. Email blocks get Shown/Hidden only. `PuckEditor`, `PageRenderer`, `HybridPageRenderer`, `EmailRenderer` and `renderToEmailHtml` apply it automatically; wrap configs passed straight to Puck's `<Render>` with `withBlockVisibility` (from `/render` or `/email`).
