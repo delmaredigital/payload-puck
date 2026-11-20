@@ -266,6 +266,15 @@ export interface PuckPluginOptions {
    * ```
    */
   previewUrl?: string | ((page: any) => string | ((slug: string) => string))
+
+  /**
+   * Block copy and paste in the admin editor (on by default). `false` turns it
+   * off, including the plugin's admin Edit button and list cell deleting a
+   * copy left behind by another user or after signing out. `{ scope }` keeps
+   * copies apart between tenants or sites (see `PuckEditor`'s `copyPaste`).
+   * @default true
+   */
+  copyPaste?: boolean | { scope?: string }
 }
 
 /**

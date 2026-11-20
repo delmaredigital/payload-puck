@@ -156,6 +156,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     ai: aiConfig,
     previewUrl,
     rootPropsMapping,
+    copyPaste,
   } = options
 
   const { addEditButton = true } = pluginAdminConfig
@@ -303,8 +304,19 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
     }
 
     // Build the admin config with view registration
+    // copy and paste: the plugin option, else the host's own custom.puck.copyPaste.
+    // custom is server-only, so it is mirrored into admin.custom, which the
+    // Edit button and list cell (client components) can read through useConfig
+    const resolvedCopyPaste = copyPaste ?? incomingConfig.custom?.puck?.copyPaste
     const payloadAdminConfig: PayloadConfig['admin'] = {
       ...incomingConfig.admin,
+      custom: {
+        ...incomingConfig.admin?.custom,
+        puck: {
+          ...incomingConfig.admin?.custom?.puck,
+          ...(resolvedCopyPaste === undefined ? {} : { copyPaste: resolvedCopyPaste }),
+        },
+      },
     }
 
     // Register the Puck editor admin view if enabled
@@ -472,6 +484,7 @@ export function createPuckPlugin(options: PuckPluginOptions = {}): Plugin {
           // load view can hydrate root.props from the same mappings the save
           // endpoints use, keeping the round-trip symmetric for custom fields.
           rootPropsMapping: rootPropsMapping ?? incomingConfig.custom?.puck?.rootPropsMapping,
+          copyPaste: resolvedCopyPaste,
           ai: aiConfig?.enabled
             ? {
                 enabled: true,

@@ -66,6 +66,7 @@ export async function PuckEditorView({
     | string
     | ((page: any) => string | ((slug: string) => string))
     | undefined
+  const copyPaste = (payload.config as any).custom?.puck?.copyPaste as boolean | { scope?: string } | undefined
   const rootPropsMapping = (payload.config as any).custom?.puck?.rootPropsMapping as
     | RootPropsMapping[]
     | undefined
@@ -222,6 +223,7 @@ export async function PuckEditorView({
       pageSlug={page?.slug || ''}
       apiEndpoint={`/api/puck/${collection}`}
       initialStatus={page?._status}
+      copyPaste={copyPaste ?? true}
       backUrl={backUrl}
       previewUrlPrefix={previewUrlPrefix}
       layouts={layouts}

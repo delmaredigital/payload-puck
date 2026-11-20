@@ -456,7 +456,7 @@ describe('the sidebar control', () => {
       'Hiding on a screen size only hides it from view. The content is still in the page&#x27;s HTML.']) {
       expect(shown).toContain(text)
     }
-    expect(markup({ hidden: true })).toContain('Hidden blocks stay in the editor but are left out of the live page.')
+    expect(markup({ hidden: true })).toContain('A Hidden block stays in the editor but is left out of the page&#x27;s HTML entirely.')
   })
 
   it('reflects the stored state', () => {

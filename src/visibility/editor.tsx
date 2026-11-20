@@ -8,7 +8,7 @@
  * own `actionBar`, `iframe` or `puck` override keeps working with these added.
  */
 
-import { createElement, Fragment, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createElement, Fragment, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { ActionBar, createUsePuck, type ComponentData, type Config, type Data, type Overrides, type PuckAction } from '@puckeditor/core'
 import { Eye, EyeOff } from 'lucide-react'
 import { buildCanvasCss, buildOutlineCss, type VisibilityEntry } from './css.js'
@@ -104,14 +104,13 @@ export function ownerBlock(puck: PuckLookups, owner: string | null): ComponentDa
 export const OWNER_ATTRIBUTE = 'data-payload-puck-visibility-owner'
 
 /**
- * Hide/show toggle for the action bar. It acts on the block whose bar it sits
- * in: Puck draws each block's action bar and overlay together in one
- * `[data-puck-overlay]` element, and our componentOverlay override marks that
- * element with the block id. Puck gives the action bar no id of its own.
- *
- * Not shown when the block can't be edited (Puck `permissions.edit` false).
+ * The block whose action bar a component is rendered in. Puck draws each
+ * block's action bar and overlay together in one `[data-puck-overlay]`
+ * element, and our componentOverlay override marks that element with the
+ * block id; Puck gives the action bar no id of its own. Attach the returned
+ * ref to an element inside the action bar.
  */
-export function VisibilityAction() {
+export function useActionBarBlock(): [RefObject<HTMLSpanElement | null>, ComponentData | undefined] {
   const anchor = useRef<HTMLSpanElement>(null)
   const [owner, setOwner] = useState<string | null>(null)
 
@@ -124,6 +123,17 @@ export function VisibilityAction() {
   })
 
   const block = usePuck((s) => ownerBlock(s, owner))
+  return [anchor, block]
+}
+
+/**
+ * Hide/show toggle for the action bar. It acts on the block whose bar it sits
+ * in (see `useActionBarBlock`).
+ *
+ * Not shown when the block can't be edited (Puck `permissions.edit` false).
+ */
+export function VisibilityAction() {
+  const [anchor, block] = useActionBarBlock()
   const canEdit = usePuck((s) => (block ? s.getPermissions({ item: block }).edit !== false : false))
   const dispatch = usePuck((s) => s.dispatch)
   const getSelectorForId = usePuck((s) => s.getSelectorForId)

@@ -1,6 +1,8 @@
 'use client'
 
 import type { DefaultCellComponentProps } from 'payload'
+import { useAuth, useConfig } from '@payloadcms/ui'
+import { clipboardEnabled, useClipboardGuard } from '../clipboard/signOut.js'
 
 /**
  * Props for configuring the EditWithPuckCell component
@@ -75,6 +77,14 @@ export const EditWithPuckCell: React.FC<DefaultCellComponentProps> = ({
   // Get custom config from field
   const customConfig = (field as any)?.custom as EditWithPuckCellConfig | undefined
   const collectionSlug = customConfig?.collectionSlug || contextCollectionSlug || 'pages'
+
+  // Deletes a copied block left in this browser by someone else, or kept
+  // after signing out (see the block clipboard docs); checked once per list
+  const authUserId = (useAuth() as { user?: { id?: string | number } | null } | undefined)?.user?.id
+  // Outside Payload's config provider (a host's own list, Storybook) there is
+  // no config: the setting is unknown, so the guard stays on as by default
+  const config = (useConfig() as { config?: unknown } | undefined)?.config
+  useClipboardGuard(authUserId, { enabled: clipboardEnabled(config), clearWhenSignedOut: true })
 
   if (!id) {
     return null

@@ -22,7 +22,7 @@ export const VISIBILITY_STRINGS = {
   shown: 'Shown',
   hidden: 'Hidden',
   hideOn: { phone: 'Hide on phone', tablet: 'Hide on tablet', desktop: 'Hide on desktop' } satisfies Record<ScreenSize, string>,
-  hiddenHelp: 'Hidden blocks stay in the editor but are left out of the live page.',
+  hiddenHelp: "A Hidden block stays in the editor but is left out of the page's HTML entirely.",
   sizesHelp: "Hiding on a screen size only hides it from view. The content is still in the page's HTML.",
   hideAction: 'Hide block',
   showAction: 'Show block',

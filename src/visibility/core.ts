@@ -7,6 +7,7 @@
  */
 
 import type { ComponentData, Config, Data } from '@puckeditor/core'
+import type { BlockClipboardComponentOptions } from '../clipboard/types.js'
 
 /**
  * Per-block-type settings for show/hide, set on the component config:
@@ -34,6 +35,8 @@ declare module '@puckeditor/core' {
   interface ComponentConfigExtensions {
     /** payload-puck show/hide settings for this block type. */
     blockVisibility?: BlockVisibilityComponentOptions
+    /** payload-puck copy/paste settings for this block type. */
+    blockClipboard?: BlockClipboardComponentOptions
   }
 }
 

@@ -201,6 +201,17 @@ export interface PuckEditorProps {
   enableAi?: boolean
 
   /**
+   * Copy block / Paste after / Paste inside in each block's action bar, and
+   * Cmd/Ctrl+C and Cmd/Ctrl+V on a selected block. The copied block is kept in
+   * the browser for 24 hours for the signed-in user, so it can be pasted on
+   * another page; without a signed-in user it lasts only for the tab.
+   * `false` turns it off. `{ scope }` adds your own scope (a tenant or site)
+   * to the user's, so a copy can't be pasted in another tenant or site.
+   * @default true
+   */
+  copyPaste?: boolean | { scope?: string }
+
+  /**
    * AI plugin configuration options.
    * Only used when enableAi is true.
    */
@@ -382,6 +393,7 @@ export function PuckEditor({
   editorCss: editorCssProp,
   // AI integration props
   enableAi = false,
+  copyPaste = true,
   aiOptions,
   aiExamplePrompts,
   hasPromptsCollection = false,
@@ -644,6 +656,7 @@ export function PuckEditor({
       editorStylesheets={editorStylesheets}
       editorCss={editorCss}
       enableAi={enableAi}
+      copyPaste={copyPaste}
       aiOptions={mergedAiOptions}
       hasPromptsCollection={hasPromptsCollection}
       hasContextCollection={hasContextCollection}

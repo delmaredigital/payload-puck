@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useRef, type ReactNode, createElement, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Puck, type Config as PuckConfig, type Data, type DndConfig, type Plugin as PuckPlugin, type Overrides as PuckOverrides } from '@puckeditor/core'
-import { useLocale } from '@payloadcms/ui'
+import { useAuth, useLocale } from '@payloadcms/ui'
 import '@puckeditor/core/puck.css'
 import headingAnalyzer from '@puckeditor/plugin-heading-analyzer'
 import '@puckeditor/plugin-heading-analyzer/dist/index.css'
@@ -21,6 +21,8 @@ import { useUnsavedChanges } from './hooks/useUnsavedChanges.js'
 import { isDataEqual } from './utils/isDataEqual.js'
 import { createVersionHistoryPlugin } from './plugins/versionHistoryPlugin.js'
 import { composeVisibilityOverrides } from '../visibility/editor.js'
+import { composeClipboardOverrides, createEditorClipboard, type EditorClipboard } from '../clipboard/editor.js'
+import { useClipboardGuard } from '../clipboard/signOut.js'
 import { ThemeProvider, type ThemeConfig } from '../theme/index.js'
 import { usePuckConfig } from '../views/PuckConfigContext.js'
 import type { LayoutDefinition } from '../layouts/index.js'
@@ -92,6 +94,18 @@ interface PuckDataWithMeta extends Data {
       [key: string]: unknown
     }
   }
+}
+
+/**
+ * Adds show/hide (always) and the block clipboard (unless turned off) to the
+ * editor's overrides, keeping the host's own overrides in place.
+ */
+function withEditorBlockActions(
+  overrides: Partial<PuckOverrides>,
+  clipboard: EditorClipboard | undefined,
+): Partial<PuckOverrides> {
+  const withVisibility = composeVisibilityOverrides(overrides)
+  return clipboard ? composeClipboardOverrides(withVisibility, clipboard) : withVisibility
 }
 
 export interface PuckEditorImplProps {
@@ -212,6 +226,17 @@ export interface PuckEditorImplProps {
   enableAi?: boolean
 
   /**
+   * Copy block / Paste after / Paste inside in each block's action bar, and
+   * Cmd/Ctrl+C and Cmd/Ctrl+V on a selected block. The copied block is kept in
+   * the browser for 24 hours for the signed-in user, so it can be pasted on
+   * another page; without a signed-in user it lasts only for the tab.
+   * `false` turns it off. `{ scope }` adds your own scope (a tenant or site)
+   * to the user's, so a copy can't be pasted in another tenant or site.
+   * @default true
+   */
+  copyPaste?: boolean | { scope?: string }
+
+  /**
    * AI plugin configuration options.
    * Only used when enableAi is true.
    */
@@ -319,6 +344,7 @@ export function PuckEditorImpl({
   editorStylesheets: editorStylesheetsProp,
   editorCss: editorCssProp,
   enableAi = false,
+  copyPaste = true,
   aiOptions,
   hasPromptsCollection = false,
   hasContextCollection = false,
@@ -339,6 +365,21 @@ export function PuckEditorImpl({
 
   // Get current locale code
   const { code: currentLocale } = useLocale();
+  // Outside Payload's admin the auth context is empty: no user, so the
+  // clipboard lasts only for the tab
+  const authUserId = (useAuth() as { user?: { id?: string | number } | null } | undefined)?.user?.id
+  const clipboardEnabled = copyPaste !== false
+  // Deletes another user's leftover copy, and the copy on sign-out while open
+  useClipboardGuard(authUserId, { enabled: clipboardEnabled })
+  const clipboardHostScope = typeof copyPaste === 'object' ? copyPaste.scope : undefined
+  // One clipboard per user and scope: recomputing the overrides (on save,
+  // dirty state, a host's inline overrides) must not reset it
+  const clipboard = useMemo(
+    () => (clipboardEnabled ? createEditorClipboard({ userId: authUserId, scope: clipboardHostScope }) : undefined),
+    [clipboardEnabled, authUserId, clipboardHostScope],
+  )
+  const clipboardRef = useRef(clipboard)
+  clipboardRef.current = clipboard
   // Store the initial locale on mount
   const initialLocale = useRef(currentLocale);
   useEffect(() => {
@@ -605,6 +646,9 @@ export function PuckEditorImpl({
   // Handle data change
   const handleChange = useCallback(
     (data: Data) => {
+      // A paste at the top of the page is two Puck actions; only its final
+      // state is a change (see pasteBlock)
+      if (clipboardRef.current?.isPasting()) return
       latestDataRef.current = data as PuckDataWithMeta
       // Only mark dirty when the data actually differs from the last loaded/saved
       // state. Puck fires onChange for no-op mount-time resolves (which can differ
@@ -709,7 +753,7 @@ export function PuckEditorImpl({
 
   // Memoized overrides
   const overrides = useMemo<Partial<PuckOverrides>>(
-    () => composeVisibilityOverrides({
+    () => withEditorBlockActions({
       headerActions: ({ children }: { children: ReactNode }) => (
         <HeaderActions
           onBack={handleBack}
@@ -751,11 +795,11 @@ export function PuckEditorImpl({
           {children}
         </IframeWrapper>
       ),
-      // Merge custom overrides; composeVisibilityOverrides then adds show/hide
-      // to the resulting actionBar, componentOverlay, iframe and puck
-      // overrides without replacing them
+      // Merge custom overrides; withEditorBlockActions then adds show/hide and
+      // copy/paste to the resulting actionBar, componentOverlay, iframe and
+      // puck overrides without replacing them
       ...customOverrides,
-    }),
+    }, clipboard),
     [
       handleBack,
       handlePreview,
@@ -777,6 +821,7 @@ export function PuckEditorImpl({
       layoutStyles,
       layoutKey,
       customOverrides,
+      clipboard,
       mergedEditorStylesheets,
       mergedEditorCss,
       showPreviewDarkModeToggle,

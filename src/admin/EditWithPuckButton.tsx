@@ -1,7 +1,8 @@
 'use client'
 
 import type { UIFieldClientComponent } from 'payload'
-import { useDocumentInfo, useConfig } from '@payloadcms/ui'
+import { useAuth, useDocumentInfo, useConfig } from '@payloadcms/ui'
+import { clipboardEnabled, useClipboardGuard } from '../clipboard/signOut.js'
 
 /**
  * Props for EditWithPuckButton when used standalone
@@ -83,7 +84,8 @@ function PuckIcon({ size = 18 }: { size?: number }) {
 export const EditWithPuckButton: UIFieldClientComponent = (props) => {
   // Get document and config context from Payload
   const { id, collectionSlug } = useDocumentInfo()
-  const { config } = useConfig()
+  // Outside Payload's config provider there is no config: use the defaults
+  const config = (useConfig() as { config?: { routes?: { admin?: string } } } | undefined)?.config
 
   // Extract custom props passed via field config
   const customProps = (props as any)?.field?.custom as EditWithPuckButtonProps | undefined
@@ -91,8 +93,13 @@ export const EditWithPuckButton: UIFieldClientComponent = (props) => {
   const iconOnly = customProps?.iconOnly || false
   const collection = customProps?.collectionSlug || collectionSlug || 'pages'
 
+  // Deletes a copied block left in this browser by someone else, or kept
+  // after signing out (see the block clipboard docs)
+  const authUserId = (useAuth() as { user?: { id?: string | number } | null } | undefined)?.user?.id
+  useClipboardGuard(authUserId, { enabled: clipboardEnabled(config), clearWhenSignedOut: true })
+
   // Get admin route from config
-  const adminRoute = config.routes?.admin || '/admin'
+  const adminRoute = config?.routes?.admin || '/admin'
 
   // Build editor URL - defaults to admin view
   let editorPath: string

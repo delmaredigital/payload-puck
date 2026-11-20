@@ -12,7 +12,6 @@
 import React, { memo, useCallback, type CSSProperties } from 'react'
 import type { CustomField } from '@puckeditor/core'
 import { createUsePuck } from '@puckeditor/core'
-import type { Data } from '@puckeditor/core'
 import { RefreshCw } from 'lucide-react'
 import { VISIBILITY_PROP } from '../visibility/core.js'
 
@@ -103,55 +102,61 @@ export const ResetField = memo(ResetFieldInner)
 // Helper Functions
 // =============================================================================
 
+type FieldLike = { type?: string; arrayFields?: Record<string, FieldLike>; objectFields?: Record<string, FieldLike> }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value)
+
+/** Whether a field is a slot, or holds one at any depth. */
+function holdsSlot(field: FieldLike | undefined): boolean {
+  if (!field) return false
+  if (field.type === 'slot') return true
+  if (field.type === 'array') return Object.values(field.arrayFields ?? {}).some(holdsSlot)
+  if (field.type === 'object') return Object.values(field.objectFields ?? {}).some(holdsSlot)
+  return false
+}
+
 /**
- * Recursively update a component's props in Puck data structure
+ * Puts the block's current content back into reset props: a slot keeps its
+ * blocks; an array field holding slots keeps its items (resetting them would
+ * drop what's inside); an object field holding slots resets its other
+ * settings and keeps its slots.
  */
-function updateComponentInData(
-  data: Data,
-  componentId: string,
-  newProps: Record<string, unknown>
-): Data {
-  const updateItem = (item: { type: string; props: Record<string, unknown> }) => {
-    if (item.props?.id === componentId) {
-      return {
-        ...item,
-        props: {
-          ...newProps,
-          id: componentId,
-        },
-      }
-    }
-    return item
-  }
-
-  const updatedContent = data.content.map(updateItem)
-
-  const updatedZones: Record<string, Array<{ type: string; props: Record<string, unknown> }>> = {}
-  if (data.zones) {
-    for (const [zoneName, zoneContent] of Object.entries(data.zones)) {
-      updatedZones[zoneName] = (zoneContent as Array<{ type: string; props: Record<string, unknown> }>).map(updateItem)
+function keepContent(
+  next: Record<string, unknown>,
+  current: Record<string, unknown>,
+  fields: Record<string, FieldLike | undefined>,
+): Record<string, unknown> {
+  const out = { ...next }
+  for (const [name, field] of Object.entries(fields)) {
+    if (!holdsSlot(field) || !(name in current)) continue
+    if (field!.type === 'object' && isRecord(current[name])) {
+      out[name] = keepContent(isRecord(next[name]) ? next[name] : {}, current[name], field!.objectFields ?? {})
+    } else {
+      out[name] = current[name]
     }
   }
-
-  return {
-    ...data,
-    content: updatedContent,
-    zones: Object.keys(updatedZones).length > 0 ? updatedZones : data.zones,
-  }
+  return out
 }
 
 /**
  * Props a reset leaves the block with: its defaults, keeping whether it is
- * shown or hidden (that is not a style choice the reset should undo).
+ * shown or hidden (that is not a style choice the reset should undo) and
+ * everything inside its slots, at any depth (`fields` says where they are).
+ *
+ * Slots come from the block type's config fields, as Puck reads them: Puck
+ * 0.24 doesn't treat a slot added only by `resolveFields` as a slot (it isn't
+ * rendered or indexed as one), so Reset resets that prop like any other.
  */
 export function resetProps(
   defaultProps: Record<string, unknown>,
-  currentProps: Record<string, unknown>
+  currentProps: Record<string, unknown>,
+  fields: Record<string, FieldLike | undefined> = {},
 ): Record<string, unknown> {
   const { [VISIBILITY_PROP]: _ignored, ...defaults } = defaultProps
-  return VISIBILITY_PROP in currentProps
-    ? { ...defaults, [VISIBILITY_PROP]: currentProps[VISIBILITY_PROP] }
-    : defaults
+  const reset = keepContent(defaults, currentProps, fields)
+  if (VISIBILITY_PROP in currentProps) reset[VISIBILITY_PROP] = currentProps[VISIBILITY_PROP]
+  return reset
 }
 
 // =============================================================================
@@ -167,37 +172,46 @@ interface CreateResetFieldConfig<T> {
  * Creates a Puck field configuration for a reset button
  */
 export function createResetField<T extends object>(
-  config: CreateResetFieldConfig<T>
+  { label, defaultProps }: CreateResetFieldConfig<T>
 ): CustomField<unknown> {
   const ResetFieldWrapper = ({ readOnly }: { readOnly?: boolean }) => {
-    const appState = usePuck((s) => s.appState)
     const dispatch = usePuck((s) => s.dispatch)
+    const getSelectorForId = usePuck((s) => s.getSelectorForId)
     const selectedItem = usePuck((s) => s.selectedItem)
+    const config = usePuck((s) => s.config)
 
+    // Replaces just this block, wherever it is (top level or inside a slot),
+    // as one undo step
     const handleReset = useCallback(() => {
-      if (!selectedItem?.props?.id) {
+      const componentId = selectedItem?.props?.id as string | undefined
+      const selector = componentId ? getSelectorForId(componentId) : undefined
+      if (!selectedItem || !componentId || !selector) {
         console.warn('ResetField: No selected item found')
         return
       }
 
-      const componentId = selectedItem.props.id as string
-
-      const updatedData = updateComponentInData(
-        appState.data,
-        componentId,
-        resetProps(config.defaultProps as unknown as Record<string, unknown>, selectedItem.props)
-      )
-
       dispatch({
-        type: 'setData',
-        data: updatedData,
+        type: 'replace',
+        destinationIndex: selector.index,
+        destinationZone: selector.zone!,
+        data: {
+          type: selectedItem.type,
+          props: {
+            ...resetProps(
+              defaultProps as unknown as Record<string, unknown>,
+              selectedItem.props,
+              (config.components[selectedItem.type]?.fields ?? {}) as Record<string, FieldLike | undefined>,
+            ),
+            id: componentId,
+          },
+        },
       })
-    }, [appState.data, dispatch, selectedItem])
+    }, [config, dispatch, getSelectorForId, selectedItem])
 
     return (
       <ResetField
         onClick={handleReset}
-        label={config.label}
+        label={label}
         disabled={readOnly}
       />
     )

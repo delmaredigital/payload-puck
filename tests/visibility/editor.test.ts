@@ -195,6 +195,27 @@ describe('resetProps', () => {
       .toEqual({ text: 'Default', _visibility: { hideOn: ['phone'] } })
     expect(resetProps({ text: 'Default' }, { text: 'Custom' })).toEqual({ text: 'Default' })
   })
+
+  it('keeps what is inside slots at any depth, resetting everything else', () => {
+    const fields = {
+      content: { type: 'slot' },
+      tabs: { type: 'array', arrayFields: { label: { type: 'text' }, body: { type: 'slot' } } },
+      plain: { type: 'array', arrayFields: { label: { type: 'text' } } },
+      side: { type: 'object', objectFields: { heading: { type: 'text' }, aside: { type: 'slot' } } },
+    }
+    const child = { type: 'Leaf', props: { id: 'c' } }
+    expect(resetProps(
+      { title: 'Default', content: [], tabs: [], plain: [{ label: 'One' }], side: { heading: 'Default', aside: [] } },
+      { title: 'Custom', content: [child], tabs: [{ label: 'Mine', body: [child] }], plain: [{ label: 'Mine' }], side: { heading: 'Mine', aside: [child] } },
+      fields,
+    )).toEqual({
+      title: 'Default',
+      content: [child],
+      tabs: [{ label: 'Mine', body: [child] }],
+      plain: [{ label: 'One' }],
+      side: { heading: 'Default', aside: [child] },
+    })
+  })
 })
 
 describe('collectVisibilityEntries', () => {

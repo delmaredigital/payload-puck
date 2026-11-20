@@ -13,9 +13,9 @@
  */
 
 import React, { useState, useEffect, useCallback, memo, type CSSProperties } from 'react'
-import type { CustomField } from '@puckeditor/core'
+import type { ComponentData, Config, CustomField } from '@puckeditor/core'
+import { withNewIds } from '../clipboard/core.js'
 import { createUsePuck } from '@puckeditor/core'
-import type { Data } from '@puckeditor/core'
 import {
   Loader2,
   Save,
@@ -184,60 +184,27 @@ const styles = {
 }
 
 // =============================================================================
-// Helper Functions
+// Helpers
 // =============================================================================
 
 /**
- * Find and update a component's props in the Puck data tree.
+ * The block with a template loaded into its content. Every loaded block gets
+ * a new id (as a paste does), so loading a template twice, or into two
+ * blocks, never gives the page duplicate ids.
  */
-function updateComponentInData(
-  data: Data,
-  componentId: string,
-  propsToMerge: Record<string, unknown>
-): Data {
-  const updateInArray = (
-    items: Array<{ type: string; props: Record<string, unknown> }>
-  ): Array<{ type: string; props: Record<string, unknown> }> => {
-    return items.map((item) => {
-      if (item.props?.id === componentId) {
-        return {
-          ...item,
-          props: {
-            ...item.props,
-            ...propsToMerge,
-          },
-        }
-      }
-      if (item.props?.content && Array.isArray(item.props.content)) {
-        return {
-          ...item,
-          props: {
-            ...item.props,
-            content: updateInArray(item.props.content as Array<{ type: string; props: Record<string, unknown> }>),
-          },
-        }
-      }
-      return item
-    })
-  }
-
-  const updatedContent = data.content
-    ? updateInArray(data.content as Array<{ type: string; props: Record<string, unknown> }>)
-    : []
-
-  const updatedZones: Record<string, Array<{ type: string; props: Record<string, unknown> }>> = {}
-  if (data.zones) {
-    for (const [zoneName, zoneContent] of Object.entries(data.zones)) {
-      updatedZones[zoneName] = updateInArray(
-        zoneContent as Array<{ type: string; props: Record<string, unknown> }>
-      )
-    }
-  }
-
+export function withTemplateContent(
+  block: ComponentData,
+  content: unknown[],
+  templateId: string,
+  config: Config,
+): ComponentData {
   return {
-    ...data,
-    content: updatedContent,
-    zones: updatedZones,
+    type: block.type,
+    props: {
+      ...block.props,
+      content: (content as ComponentData[]).map((child) => withNewIds(child, config)),
+      templateId,
+    },
   }
 }
 
@@ -266,8 +233,8 @@ function TemplateFieldInner({
   })
 
   // Puck state access
-  const appState = usePuck((s) => s.appState)
   const dispatch = usePuck((s) => s.dispatch)
+  const config = usePuck((s) => s.config)
   const selectedItem = usePuck((s) => s.selectedItem)
   const getSelectorForId = usePuck((s) => s.getSelectorForId)
   const getItemById = usePuck((s) => s.getItemById)
@@ -326,31 +293,16 @@ function TemplateFieldInner({
       try {
         const selector = getSelectorForId(componentId)
 
-        if (selector) {
-          dispatch({
-            type: 'replace',
-            destinationIndex: selector.index,
-            destinationZone: selector.zone,
-            data: {
-              type: selectedItem.type,
-              props: {
-                ...selectedItem.props,
-                content: template.content,
-                templateId: templateId,
-              },
-            },
-          })
-        } else {
-          const updatedData = updateComponentInData(
-            appState.data,
-            componentId,
-            { content: template.content, templateId: templateId }
-          )
-          dispatch({
-            type: 'setData',
-            data: updatedData,
-          })
-        }
+        // The selected block is always in Puck's index; if it somehow isn't,
+        // there is nothing to replace
+        if (!selector) throw new Error(`Block ${componentId} not found`)
+
+        dispatch({
+          type: 'replace',
+          destinationIndex: selector.index,
+          destinationZone: selector.zone,
+          data: withTemplateContent(selectedItem, template.content, templateId, config),
+        })
 
         onChange(templateId)
       } catch (err) {
@@ -360,7 +312,7 @@ function TemplateFieldInner({
         setLoadingTemplate(false)
       }
     },
-    [componentId, selectedItem, templates, getSelectorForId, appState.data, dispatch, onChange]
+    [componentId, selectedItem, templates, getSelectorForId, dispatch, config, onChange]
   )
 
   // Handle clearing template selection

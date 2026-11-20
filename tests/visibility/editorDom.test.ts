@@ -77,8 +77,11 @@ function select(id: string) {
   })
 }
 
-/** Puck records history 300ms after the last change */
-const recorded = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 350)))
+/** Puck records history 300ms after the last change: run that timer now */
+const recorded = () => act(() => { vi.advanceTimersByTime(350) })
+
+/** Fakes only timers, so Puck's history debounce runs exactly when `recorded()` says. */
+const fakeHistoryTimers = () => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
 
 const button = (title: string) => document.querySelector<HTMLButtonElement>(`button[title="${title}"]`)
 
@@ -90,6 +93,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   act(() => root.unmount())
   container.remove()
   vi.unstubAllGlobals()
@@ -121,6 +125,7 @@ describe('block visibility in the Puck editor', () => {
   })
 
   it('toggles from the action bar, and undo/redo restore each state', async () => {
+    fakeHistoryTimers()
     mount()
     select('shown')
     await recorded()
@@ -186,11 +191,11 @@ describe('block visibility in the Puck editor', () => {
       },
     } as unknown as Config)
     mount({}, perBlock)
-    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 50)))
+    // Permissions resolve asynchronously: wait until the editable block shows its toggle
+    select('hidden')
+    await vi.waitFor(() => expect(button('Show block')).not.toBeNull())
     select('shown')
     expect(button('Hide block')).toBeNull()
-    select('hidden')
-    expect(button('Show block')).not.toBeNull()
   })
 
   it("keeps a host's own action bar, with the toggle inside it", () => {
@@ -254,6 +259,7 @@ describe('block visibility in the Puck editor', () => {
     })
 
     it('does not throw when undo removes a newly inserted, selected block', async () => {
+      fakeHistoryTimers()
       mount()
       await recorded()
       act(() => getPuck().dispatch({

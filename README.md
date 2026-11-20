@@ -180,6 +180,10 @@ The editor applies integrations without `exclude`, so to opt out of an integrati
 
 Every block can be hidden from the live page, or only on phone, tablet or desktop, while staying editable (grayed out) in the editor. Nothing to set up. See [Showing and hiding blocks](https://plugins.delmaredigital.com/docs/puck/guides/show-hide).
 
+## Copying and pasting blocks
+
+Every block's action bar has Copy block. Once a block is copied, Paste after puts it right after the selected block, and Paste inside fills one of a block's slots, including an empty one. Cmd/Ctrl+C and Cmd/Ctrl+V do the same on a selected block, outside text fields. The copied block, with everything inside it, is stored unencrypted in the browser for up to 24 hours, readable through the editor by the signed-in user only, so you can paste it on another page. Signing out doesn't delete it; see the docs for when it's deleted. Turn it off with `copyPaste={false}` on `PuckEditor`. See [Copying and pasting blocks](https://plugins.delmaredigital.com/docs/puck/guides/copy-paste).
+
 ## Running experiments on slots
 
 Use [@delmaredigital/payload-experiments](https://www.npmjs.com/package/@delmaredigital/payload-experiments) to run experiments on Puck slots through an integration.

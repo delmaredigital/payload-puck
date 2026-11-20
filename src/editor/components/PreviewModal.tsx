@@ -11,22 +11,40 @@ import type { Data as PuckData, Config as PuckConfig } from '@puckeditor/core'
 const EDITOR_ONLY_PROPS = ['editorPreviewFilter'] as const
 
 /**
- * Removes editor-only props from Puck data content items.
- * This ensures the preview renders as it would on the frontend,
- * without editor-specific state interfering.
+ * Removes editor-only props from every block in the data: top-level content,
+ * legacy zones, and blocks nested in slots at any depth (found by shape: an
+ * object with a string `type` and a `props` object). This keeps the preview
+ * rendering as the frontend would, without editor-specific state interfering.
  */
 function stripEditorOnlyProps(data: PuckData): PuckData {
+  const strip = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(strip)
+    // Only plain objects are rebuilt: a Date, a class instance, or a React
+    // element (a plain object marked by $$typeof) passes through untouched
+    if (!value || typeof value !== 'object') return value
+    const proto = Object.getPrototypeOf(value)
+    if ((proto !== Object.prototype && proto !== null) || '$$typeof' in value) return value
+    const record = value as Record<string, unknown>
+    const isBlock = typeof record.type === 'string' && !!record.props && typeof record.props === 'object'
+    const out: Record<string, unknown> = {}
+    for (const [key, item] of Object.entries(record)) out[key] = strip(item)
+    if (isBlock) {
+      const props = { ...(out.props as Record<string, unknown>) }
+      for (const prop of EDITOR_ONLY_PROPS) delete props[prop]
+      out.props = props
+    }
+    return out
+  }
   return {
     ...data,
-    content: data.content.map((item) => {
-      const cleanedProps = { ...item.props }
-      for (const prop of EDITOR_ONLY_PROPS) {
-        delete cleanedProps[prop]
-      }
-      return { ...item, props: cleanedProps }
-    }),
+    content: strip(data.content) as PuckData['content'],
+    ...(data.zones ? { zones: strip(data.zones) as PuckData['zones'] } : {}),
   }
 }
+
+/** Tests only. */
+export const stripEditorOnlyPropsForTests = stripEditorOnlyProps
+
 import {
   X,
   ExternalLink,

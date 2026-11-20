@@ -46,6 +46,12 @@
 
 // Main editor component
 export { PuckEditor, type PuckEditorProps } from './PuckEditor.js'
+export type {
+  BlockClipboardComponentOptions,
+  CanPasteArgs,
+  PasteAncestor,
+  PasteDestination,
+} from '../clipboard/types.js'
 
 // Ready-to-use editor page component (auto-fetches page data from route params)
 export { PuckEditorView, type PuckEditorViewProps } from '../admin/PuckEditorView.js'
