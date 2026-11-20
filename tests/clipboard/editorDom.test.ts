@@ -240,13 +240,13 @@ describe('copy and paste in the Puck editor', () => {
     expect(slot('other', 'content')).toMatchObject([{ type: 'Leaf', props: { text: 'One' } }])
   })
 
-  it('refuses a slot that disallows the block, and says why', async () => {
+  it('shows the hook message when pasting directly into a slot that disallows the block', async () => {
     await mount()
     select('exp')
     click('Copy block')
     click('Paste inside')
 
-    expect(status()).toBe("Variants blocks aren't allowed in Variant A.")
+    expect(status()).toBe("A Variants block can't go inside another one.")
     expect(slot('exp', 'a')).toEqual([])
   })
 
@@ -276,7 +276,7 @@ describe('copy and paste in the Puck editor', () => {
     await remount(initialData(), { insert: false })
     select('one')
     click('Paste after')
-    expect(status()).toBe("You can't add Text blocks here.")
+    expect(status()).toBe("Text can't be added here.")
     expect(slot('box', 'content')).toHaveLength(2)
   })
 
@@ -542,7 +542,7 @@ describe('copy and paste in the Puck editor', () => {
       click('Copy block')
       select('b1')
       click('Paste after')
-      expect(status()).toBe("Box blocks aren't allowed in Tabs 2 › Content.")
+      expect(status()).toBe("Box can't go in Tabs 2 › Content.")
       expect(tabBody(1)).toHaveLength(1)
     })
   })

@@ -19,6 +19,7 @@ import {
   withNewIds,
 } from '../../src/clipboard/core.js'
 import { memoryStorage } from './memoryStorage.js'
+import type { CanPasteArgs } from '../../src/clipboard/types.js'
 
 const config = {
   components: {
@@ -33,6 +34,11 @@ const config = {
 const leaf = (id: string): ComponentData => ({ type: 'Leaf', props: { id, text: id } })
 const box = (id: string, content: ComponentData[]): ComponentData => ({ type: 'Box', props: { id, content } })
 const anyone = () => true
+
+const withHooks = (hooks: Record<string, (args: any) => true | string>) => ({
+  components: Object.fromEntries(Object.entries(config.components).map(([type, component]) =>
+    [type, hooks[type] ? { ...component, blockClipboard: { canPaste: hooks[type] } } : component])),
+}) as unknown as Config
 
 const SCOPE = { storage: 'local' as const, key: 'user:a' }
 const store = (storage: Storage | (() => Storage | undefined), options: { key?: string; now?: () => number; target?: any } = {}) =>
@@ -312,13 +318,13 @@ describe('slotsInBlock', () => {
       ({ type: 'Tabs', props: { id: 't', tabs: [{ label: 'A', body }] } }) as unknown as ComponentData
     expect(checkPaste(tabs([leaf('x')]), { slotPath: 'default-zone' }, tabsConfig, anyone)).toEqual({ ok: true })
     expect(checkPaste(tabs([box('b', [])]), { slotPath: 'default-zone' }, tabsConfig, anyone))
-      .toEqual({ ok: false, reason: "Box blocks aren't allowed in Tabs 1 › Content." })
+      .toEqual({ ok: false, reason: "Box can't go in Tabs 1 › Content." })
     expect(checkPaste(tabs([{ type: 'Gone', props: {} }]), { slotPath: 'default-zone' }, tabsConfig, anyone))
       .toMatchObject({ ok: false, reason: expect.stringContaining('"Gone"') })
     // And the destination itself, by path
     const parent = tabs([])
     expect(checkPaste(box('b', []), { parent, slotPath: 'tabs[0].body' }, tabsConfig, anyone))
-      .toEqual({ ok: false, reason: "Box blocks aren't allowed in Tabs 1 › Content." })
+      .toEqual({ ok: false, reason: "Box can't go in Tabs 1 › Content." })
   })
 
   it('reports a malformed copy as unreadable', () => {
@@ -361,6 +367,97 @@ describe('randomUuid', () => {
 })
 
 describe('checkPaste', () => {
+  const root = { slotPath: 'default-zone' }
+  const destination = { zone: 'root:default-zone', index: 0, ancestors: [] }
+  const versions = (id: string, a: ComponentData[] = []): ComponentData => ({ type: 'Versions', props: { id, a } })
+
+  it.each(['direct', 'nested'])("shows the pasted type's hook message before a %s slot's disallow or insert refusal", (where) => {
+    const canPaste = vi.fn(({ ancestor }: CanPasteArgs) => ancestor ? true as const : 'A test cannot go inside another test.')
+    const hooked = withHooks({ Versions: canPaste })
+    const block = versions('v', where === 'nested' ? [versions('inner')] : [])
+    const target = where === 'direct' ? { parent: versions('p'), slotPath: 'a' } : root
+    const dest = where === 'direct'
+      ? { zone: 'p:a', index: 0, ancestors: [{ id: 'p', type: 'Versions', slot: 'a' }] }
+      : destination
+    const canInsert = vi.fn(() => false)
+
+    expect(checkPaste(block, target, hooked, canInsert, () => vetoPaste(block, dest, hooked)))
+      .toEqual({ ok: false, reason: 'A test cannot go inside another test.' })
+    expect(canPaste).toHaveBeenLastCalledWith({ block, destination: dest, ancestor: undefined })
+    expect(canInsert).not.toHaveBeenCalled()
+  })
+
+  it('shows a hook message before a refused insert permission when slots allow the paste', () => {
+    const hooked = withHooks({ Leaf: () => 'This text must stay here.' })
+    const block = leaf('a')
+    expect(checkPaste(block, root, hooked, () => false, () => vetoPaste(block, destination, hooked)))
+      .toEqual({ ok: false, reason: 'This text must stay here.' })
+  })
+
+  it.each([false, true])('keeps destination and nested allow/disallow refusals with hooks returning true: %s', (hooks) => {
+    const canPaste = vi.fn(() => true as const)
+    const hooked = withHooks(hooks ? Object.fromEntries(Object.keys(config.components).map((type) => [type, canPaste])) : {})
+    const onlyLeaves = (content: ComponentData[]): ComponentData => ({ type: 'OnlyLeaves', props: { id: 'o', content } })
+    const cases = [
+      { block: versions('v'), target: { parent: versions('p'), slotPath: 'a' }, reason: "Variants can't go in Variant A." },
+      { block: box('b', []), target: { parent: onlyLeaves([]), slotPath: 'content' }, reason: "Box can't go in Leaves." },
+      { block: versions('v', [versions('inner')]), target: root, reason: "Variants can't go in Variant A." },
+      { block: onlyLeaves([box('b', [])]), target: root, reason: "Box can't go in Leaves." },
+    ]
+    for (const { block, target, reason } of cases) {
+      const parent = 'parent' in target ? target.parent : undefined
+      const dest = parent
+        ? { zone: `${parent.props.id}:${target.slotPath}`, index: 0, ancestors: [{ id: parent.props.id, type: parent.type, slot: target.slotPath }] }
+        : destination
+      expect(checkPaste(block, target, hooked, anyone, () => vetoPaste(block, dest, hooked)))
+        .toEqual({ ok: false, reason })
+    }
+    if (hooks) expect(canPaste).toHaveBeenCalled()
+    else expect(canPaste).not.toHaveBeenCalled()
+  })
+
+  it('checks the destination before nested slot rules, then the insert permission', () => {
+    const block = versions('v', [versions('inner')])
+    const parent = { type: 'OnlyLeaves', props: { id: 'o', content: [] } } as ComponentData
+    expect(checkPaste(block, { parent, slotPath: 'content' }, config, () => false))
+      .toEqual({ ok: false, reason: "Variants can't go in Leaves." })
+    expect(checkPaste(block, root, config, () => false))
+      .toEqual({ ok: false, reason: "Variants can't go in Variant A." })
+  })
+
+  it('does not call any hook for an unreadable copy or unknown type at any depth', () => {
+    const canPaste = vi.fn(() => 'A hook refusal.')
+    const hooked = withHooks(Object.fromEntries(Object.keys(config.components).map((type) => [type, canPaste])))
+    const unreadable = 'The copied block came from a different version of the editor. Copy it again.'
+    const unknown = 'This editor has no "Gone" block, so the copied block can\'t be pasted here.'
+    for (const [block, reason] of [
+      [{ props: {} }, unreadable],
+      [{ type: 'Box', props: { content: 'not a list' } }, unreadable],
+      [versions('v', [versions('disallowed'), box('b', [{ props: {} } as ComponentData])]), unreadable],
+      [{ type: 'Gone', props: {} }, unknown],
+      [versions('v', [versions('disallowed'), box('b', [{ type: 'Gone', props: {} } as ComponentData])]), unknown],
+    ] as const) {
+      expect(checkPaste(block as ComponentData, root, hooked, anyone, () => vetoPaste(block as ComponentData, {
+        zone: 'p:content', index: 0, ancestors: [{ id: 'p', type: 'Box', slot: 'content' }],
+      }, hooked))).toEqual({ ok: false, reason })
+      expect(canPaste).not.toHaveBeenCalled()
+    }
+  })
+
+  it('uses labels ending in block without doubling the word in slot and insert refusals', () => {
+    const labeled = {
+      components: {
+        ...config.components,
+        Versions: { ...config.components.Versions, label: 'Promo block', fields: { a: { type: 'slot', label: 'Original', disallow: ['Versions'] } } },
+      },
+    } as Config
+    const block = versions('v')
+    expect(checkPaste(block, { parent: versions('p'), slotPath: 'a' }, labeled, anyone))
+      .toEqual({ ok: false, reason: "Promo block can't go in Original." })
+    expect(checkPaste(block, root, labeled, () => false))
+      .toEqual({ ok: false, reason: "Promo block can't be added here." })
+  })
+
   it('allows a known block into a slot that accepts it', () => {
     expect(checkPaste(leaf('a'), { parent: box('p', []), slotPath: 'content' }, config, anyone)).toEqual({ ok: true })
     expect(checkPaste(leaf('a'), { slotPath: 'default-zone' }, config, anyone)).toEqual({ ok: true })
@@ -375,20 +472,20 @@ describe('checkPaste', () => {
 
   it('follows the destination slot\'s allow and disallow lists', () => {
     expect(checkPaste({ type: 'Versions', props: { id: 'v', a: [] } }, { parent: { type: 'Versions', props: { id: 'p', a: [] } } as ComponentData, slotPath: 'a' }, config, anyone))
-      .toEqual({ ok: false, reason: "Variants blocks aren't allowed in Variant A." })
+      .toEqual({ ok: false, reason: "Variants can't go in Variant A." })
     expect(checkPaste(box('b', []), { parent: { type: 'OnlyLeaves', props: { id: 'p', content: [] } } as ComponentData, slotPath: 'content' }, config, anyone))
-      .toEqual({ ok: false, reason: "Box blocks aren't allowed in Leaves." })
+      .toEqual({ ok: false, reason: "Box can't go in Leaves." })
   })
 
   it('checks the slots inside the pasted block against this config', () => {
     const inside = { type: 'OnlyLeaves', props: { id: 'o', content: [box('b', [])] } } as ComponentData
     expect(checkPaste(inside, { slotPath: 'default-zone' }, config, anyone))
-      .toEqual({ ok: false, reason: "Box blocks aren't allowed in Leaves." })
+      .toEqual({ ok: false, reason: "Box can't go in Leaves." })
   })
 
   it('follows Puck\'s insert permission', () => {
     expect(checkPaste(leaf('a'), { slotPath: 'default-zone' }, config, (type) => type !== 'Leaf'))
-      .toEqual({ ok: false, reason: "You can't add Text blocks here." })
+      .toEqual({ ok: false, reason: "Text can't be added here." })
   })
 })
 
@@ -419,10 +516,6 @@ describe('vetoPaste', () => {
     index: 0,
     ancestors: [{ id: 'inner', type: 'Box', slot: 'content' }, { id: 'outer', type: 'Columns', slot: 'left' }],
   }
-  const withHooks = (hooks: Record<string, (args: any) => true | string>) => ({
-    components: Object.fromEntries(Object.entries(config.components).map(([type, component]) =>
-      [type, hooks[type] ? { ...component, blockClipboard: { canPaste: hooks[type] } } : component])),
-  }) as unknown as Config
 
   it('asks every ancestor, nearest first, then the pasted type, and stops at the first message', () => {
     const asked: string[] = []

@@ -297,17 +297,17 @@ export function pasteBlock(puck: PuckApi, zone: string, index: number, clipboard
   const ancestors = pasteAncestors(puck, zone)
   const [parentId, path = ''] = splitZone(zone)
   const parent = ancestors[0]?.id === parentId ? puck.getItemById(parentId) : undefined
-  const check = checkPaste(contents.block, { parent, slotPath: path }, config, (type) => getPermissions({ type }).insert !== false)
+  const check = checkPaste(
+    contents.block,
+    { parent, slotPath: path },
+    config,
+    (type) => getPermissions({ type }).insert !== false,
+    () => vetoPaste(contents.block, { zone, index, ancestors }, config),
+  )
   if (!check.ok) {
     status.show(check.reason)
     return false
   }
-  const veto = vetoPaste(contents.block, { zone, index, ancestors }, config)
-  if (veto) {
-    status.show(veto)
-    return false
-  }
-
   const block = withNewIds(contents.block, config)
   const slot = parent ? slotsInBlock(parent, config).find((s) => s.path === path) : undefined
   const parentSelector = parent ? puck.getSelectorForId(parentId) : undefined

@@ -23,8 +23,8 @@ export const CLIPBOARD_STRINGS = {
   pasted: 'Block pasted.',
   unreadable: 'The copied block came from a different version of the editor. Copy it again.',
   unknownType: (type: string) => `This editor has no "${type}" block, so the copied block can't be pasted here.`,
-  notAllowed: (block: string, slot: string) => `${block} blocks aren't allowed in ${slot}.`,
-  noInsert: (block: string) => `You can't add ${block} blocks here.`,
+  notAllowed: (block: string, slot: string) => `${block} can't go in ${slot}.`,
+  noInsert: (block: string) => `${block} can't be added here.`,
   cantCopy: "This block holds something that can't be copied.",
   vetoed: "This block can't be pasted here.",
 }
@@ -62,10 +62,11 @@ const isBlock = (value: unknown): value is ComponentData =>
   isRecord(value) && typeof value.type === 'string' && isRecord(value.props)
 
 /**
- * Whether `block` may be pasted at `target`:
+ * Whether `block` may be pasted at `target`, stopping at the first refusal:
  * - it is well formed: a `{ type, props }` whose slots, at every depth, are
  *   arrays of blocks (else the copy is reported as unreadable);
  * - its type, and every type nested in it, exists in this editor's config;
+ * - `veto` asks the `blockClipboard.canPaste` hooks, if supplied;
  * - the destination slot allows it (`allow` / `disallow`), and so does each
  *   slot inside it for the blocks it holds;
  * - Puck's `insert` permission allows its type.
@@ -79,9 +80,13 @@ export function checkPaste(
   target: SlotTarget,
   config: Config,
   canInsert: (type: string) => boolean,
+  veto?: () => string | undefined,
 ): PasteCheck {
-  const problem = findProblem(block, config)
+  const problem = findCopyProblem(block, config)
   if (problem) return { ok: false, reason: problem }
+
+  const refusal = veto?.()
+  if (refusal) return { ok: false, reason: refusal }
 
   if (target.parent) {
     const slot = slotsInBlock(target.parent, config).find((s) => s.path === target.slotPath)
@@ -90,27 +95,40 @@ export function checkPaste(
     }
   }
 
+  const disallowed = findDisallowed(block, config)
+  if (disallowed) return { ok: false, reason: disallowed }
+
   if (!canInsert(block.type)) return { ok: false, reason: CLIPBOARD_STRINGS.noInsert(blockLabel(block.type, config)) }
   return { ok: true }
 }
 
 /**
  * The first reason `block` can't be pasted at all, walking every slot at
- * every depth: malformed, an unknown type, or a nested block its slot
- * doesn't allow. Puck's walkTree throws on unknown types, so this walks
- * by itself.
+ * every depth: malformed or an unknown type. Puck's walkTree throws on
+ * unknown types, so this walks by itself.
  */
-function findProblem(block: unknown, config: Config): string | undefined {
+function findCopyProblem(block: unknown, config: Config): string | undefined {
   if (!isBlock(block)) return CLIPBOARD_STRINGS.unreadable
   if (!config.components[block.type]) return CLIPBOARD_STRINGS.unknownType(block.type)
   for (const slot of slotsInBlock(block, config)) {
     if (slot.value === undefined) continue
     if (!Array.isArray(slot.value)) return CLIPBOARD_STRINGS.unreadable
     for (const child of slot.value) {
-      const problem = findProblem(child, config)
+      const problem = findCopyProblem(child, config)
       if (problem) return problem
-      if (!slotAllows(slot, (child as ComponentData).type)) {
-        return CLIPBOARD_STRINGS.notAllowed(blockLabel((child as ComponentData).type, config), slot.label)
+    }
+  }
+  return undefined
+}
+
+/** The first nested slot refusal, after the whole copy is readable and known. */
+function findDisallowed(block: ComponentData, config: Config): string | undefined {
+  for (const slot of slotsInBlock(block, config)) {
+    for (const child of (slot.value ?? []) as ComponentData[]) {
+      const problem = findDisallowed(child, config)
+      if (problem) return problem
+      if (!slotAllows(slot, child.type)) {
+        return CLIPBOARD_STRINGS.notAllowed(blockLabel(child.type, config), slot.label)
       }
     }
   }
