@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-11-20
+
 ### Fixed
 
 - **A block type's own `canPaste` message wins over generic slot and permission text.** Paste checks now read the copy and check every block type before asking the hooks, then check slot allow lists and the insert permission. Generic refusal text no longer doubles "block" when a label ends in that word.
